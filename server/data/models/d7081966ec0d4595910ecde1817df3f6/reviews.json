@@ -1,0 +1,59 @@
+{
+  "next_rev_id": 3,
+  "next_dr_id": 1,
+  "tickets": [
+    {
+      "id": "REV-001",
+      "kind": "comment",
+      "modelId": "d7081966ec0d4595910ecde1817df3f6",
+      "title": "string",
+      "description": "",
+      "type": "comment",
+      "priority": "medium",
+      "status": "open",
+      "author": "string",
+      "tag": "",
+      "pin": {
+        "position": [
+          0.0
+        ],
+        "normal": [
+          0.0
+        ],
+        "cameraState": {
+          "additionalProp1": {}
+        }
+      },
+      "replies": [],
+      "createdAt": "2026-01-31T01:34:57.667138+00:00",
+      "updatedAt": "2026-01-31T01:34:57.667138+00:00"
+    },
+    {
+      "id": "REV-002",
+      "kind": "comment",
+      "modelId": "d7081966ec0d4595910ecde1817df3f6",
+      "title": "string",
+      "description": "",
+      "type": "comment",
+      "priority": "medium",
+      "status": "open",
+      "author": "string",
+      "tag": "",
+      "pin": {
+        "position": [
+          0.0
+        ],
+        "normal": [
+          0.0
+        ],
+        "cameraState": {
+          "additionalProp1": {}
+        }
+      },
+      "replies": [],
+      "createdAt": "2026-01-31T01:34:58.815712+00:00",
+      "updatedAt": "2026-01-31T01:34:58.815712+00:00"
+    }
+  ],
+  "design_reviews": []
+}

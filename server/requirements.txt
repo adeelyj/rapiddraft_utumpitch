@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+aiofiles
+matplotlib
+numpy
+trimesh
+pytest

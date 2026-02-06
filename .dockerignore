@@ -1,0 +1,9 @@
+**/__pycache__/
+**/.pytest_cache/
+**/node_modules/
+.git/
+.claude/
+media/
+server/data/models/
+server/FreeCAD_1.0.2-conda-Windows-x86_64-py311/
+*.mp4

@@ -1,0 +1,30 @@
+{
+  "modelId": "4cf2cc60ecd542aebc9d950392f8fc8a",
+  "originalName": "Hold_down_modified_parts.stp",
+  "stepPath": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\19_RapidDraft_ProductversionFinal_ReviewOverlayed_Claude\\server\\data\\models\\4cf2cc60ecd542aebc9d950392f8fc8a\\source.step",
+  "previewPath": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\19_RapidDraft_ProductversionFinal_ReviewOverlayed_Claude\\server\\data\\models\\4cf2cc60ecd542aebc9d950392f8fc8a\\preview.glb",
+  "views": {
+    "top": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\19_RapidDraft_ProductversionFinal_ReviewOverlayed_Claude\\server\\data\\models\\4cf2cc60ecd542aebc9d950392f8fc8a\\views\\top.png",
+    "bottom": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\19_RapidDraft_ProductversionFinal_ReviewOverlayed_Claude\\server\\data\\models\\4cf2cc60ecd542aebc9d950392f8fc8a\\views\\bottom.png",
+    "left": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\19_RapidDraft_ProductversionFinal_ReviewOverlayed_Claude\\server\\data\\models\\4cf2cc60ecd542aebc9d950392f8fc8a\\views\\left.png",
+    "right": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\19_RapidDraft_ProductversionFinal_ReviewOverlayed_Claude\\server\\data\\models\\4cf2cc60ecd542aebc9d950392f8fc8a\\views\\right.png"
+  },
+  "viewMetadata": {
+    "top": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\19_RapidDraft_ProductversionFinal_ReviewOverlayed_Claude\\server\\data\\models\\4cf2cc60ecd542aebc9d950392f8fc8a\\views\\top.json",
+    "bottom": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\19_RapidDraft_ProductversionFinal_ReviewOverlayed_Claude\\server\\data\\models\\4cf2cc60ecd542aebc9d950392f8fc8a\\views\\bottom.json",
+    "left": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\19_RapidDraft_ProductversionFinal_ReviewOverlayed_Claude\\server\\data\\models\\4cf2cc60ecd542aebc9d950392f8fc8a\\views\\left.json",
+    "right": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\19_RapidDraft_ProductversionFinal_ReviewOverlayed_Claude\\server\\data\\models\\4cf2cc60ecd542aebc9d950392f8fc8a\\views\\right.json"
+  },
+  "shapeViews": {},
+  "shapeViewMetadata": {},
+  "occViews": {
+    "x": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\19_RapidDraft_ProductversionFinal_ReviewOverlayed_Claude\\server\\data\\models\\4cf2cc60ecd542aebc9d950392f8fc8a\\occ_views\\x.png",
+    "y": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\19_RapidDraft_ProductversionFinal_ReviewOverlayed_Claude\\server\\data\\models\\4cf2cc60ecd542aebc9d950392f8fc8a\\occ_views\\y.png",
+    "z": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\19_RapidDraft_ProductversionFinal_ReviewOverlayed_Claude\\server\\data\\models\\4cf2cc60ecd542aebc9d950392f8fc8a\\occ_views\\z.png"
+  },
+  "midViews": {},
+  "isometricShape2d": {},
+  "isometricShape2dMetadata": {},
+  "isometricMatplotlib": {},
+  "isometricMatplotlibMetadata": {}
+}

@@ -1,0 +1,141 @@
+{
+  "next_rev_id": 2,
+  "next_dr_id": 2,
+  "tickets": [
+    {
+      "id": "REV-001",
+      "kind": "comment",
+      "modelId": "629dcd359dc74e449f27442e4da3567c",
+      "title": "wer",
+      "description": "asdf",
+      "type": "comment",
+      "priority": "medium",
+      "status": "open",
+      "author": "asdf",
+      "tag": "sdaf",
+      "pin": {
+        "position": [
+          0.5060792592767029,
+          361.1383417661987,
+          -26.001953125
+        ],
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "cameraState": {
+          "position": [
+            -62.10407956648666,
+            250.16731918614704,
+            84.17406421682313
+          ],
+          "target": [
+            0,
+            368.4956970214844,
+            0
+          ]
+        }
+      },
+      "replies": [
+        {
+          "id": "rd52ad587",
+          "author": "sdf",
+          "text": "sadf",
+          "createdAt": "2026-01-31T23:07:01.242209+00:00"
+        }
+      ],
+      "createdAt": "2026-01-31T23:06:56.336198+00:00",
+      "updatedAt": "2026-01-31T23:07:01.242209+00:00"
+    }
+  ],
+  "design_reviews": [
+    {
+      "id": "DR-001",
+      "kind": "design_review",
+      "modelId": "629dcd359dc74e449f27442e4da3567c",
+      "templateId": "dfa",
+      "templateName": "Design for Assembly",
+      "title": "Design for Assembly",
+      "author": "sdf",
+      "status": "in_progress",
+      "pin": {
+        "position": [
+          -29.142132132365077,
+          355.7956848144531,
+          -1.1237986285141233
+        ],
+        "normal": [
+          0.0,
+          -1.0,
+          0.0
+        ],
+        "cameraState": {
+          "position": [
+            -62.10407956648666,
+            250.16731918614704,
+            84.17406421682313
+          ],
+          "target": [
+            0,
+            368.4956970214844,
+            0
+          ]
+        }
+      },
+      "checklist": [
+        {
+          "id": "item-1",
+          "text": "Part can be assembled from a single direction (top-down preferred)",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-2",
+          "text": "Part is self-locating with alignment features (pins, slots, chamfers)",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-3",
+          "text": "No flexible or tangling components (cables, springs) that complicate handling",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-4",
+          "text": "Fastener count is minimized (snap-fits preferred over screws)",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-5",
+          "text": "Part symmetry allows insertion without orientation errors",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-6",
+          "text": "Assembly sequence avoids obstructed access to fasteners",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-7",
+          "text": "Adequate clearance for tools and fingers during assembly",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-8",
+          "text": "Subassemblies can be tested independently before final assembly",
+          "status": "pending",
+          "note": ""
+        }
+      ],
+      "replies": [],
+      "createdAt": "2026-01-31T23:07:07.784693+00:00",
+      "updatedAt": "2026-01-31T23:07:07.784693+00:00"
+    }
+  ]
+}

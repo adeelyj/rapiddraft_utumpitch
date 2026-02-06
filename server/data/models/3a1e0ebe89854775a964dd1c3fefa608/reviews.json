@@ -1,0 +1,46 @@
+{
+  "next_rev_id": 2,
+  "next_dr_id": 1,
+  "tickets": [
+    {
+      "id": "REV-001",
+      "kind": "comment",
+      "modelId": "3a1e0ebe89854775a964dd1c3fefa608",
+      "title": "test",
+      "description": "set",
+      "type": "comment",
+      "priority": "medium",
+      "status": "open",
+      "author": "set",
+      "tag": "set",
+      "pin": {
+        "position": [
+          29.371812738191693,
+          368.7537693476728,
+          -38.601806640625
+        ],
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "cameraState": {
+          "position": [
+            111.95054545794034,
+            480.4462424794247,
+            111.95054545794036
+          ],
+          "target": [
+            0,
+            368.4956970214844,
+            0
+          ]
+        }
+      },
+      "replies": [],
+      "createdAt": "2026-01-31T02:56:10.565466+00:00",
+      "updatedAt": "2026-01-31T02:56:10.565466+00:00"
+    }
+  ],
+  "design_reviews": []
+}

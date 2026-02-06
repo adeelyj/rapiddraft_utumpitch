@@ -1,0 +1,94 @@
+{
+  "next_rev_id": 1,
+  "next_dr_id": 2,
+  "tickets": [],
+  "design_reviews": [
+    {
+      "id": "DR-001",
+      "kind": "design_review",
+      "modelId": "ecb871036c5a4f9cacb67325d5b15263",
+      "templateId": "dfa",
+      "templateName": "Design for Assembly",
+      "title": "Design for Assembly",
+      "author": "asf",
+      "status": "failed",
+      "pin": {
+        "position": [
+          42.467901833379074,
+          364.2688903808594,
+          -32.169363091041305
+        ],
+        "normal": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "cameraState": {
+          "position": [
+            70.55676519321484,
+            439.0524622146993,
+            70.55676519321486
+          ],
+          "target": [
+            0,
+            368.4956970214844,
+            0
+          ]
+        }
+      },
+      "checklist": [
+        {
+          "id": "item-1",
+          "text": "Part can be assembled from a single direction (top-down preferred)",
+          "status": "pass",
+          "note": ""
+        },
+        {
+          "id": "item-2",
+          "text": "Part is self-locating with alignment features (pins, slots, chamfers)",
+          "status": "fail",
+          "note": ""
+        },
+        {
+          "id": "item-3",
+          "text": "No flexible or tangling components (cables, springs) that complicate handling",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-4",
+          "text": "Fastener count is minimized (snap-fits preferred over screws)",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-5",
+          "text": "Part symmetry allows insertion without orientation errors",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-6",
+          "text": "Assembly sequence avoids obstructed access to fasteners",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-7",
+          "text": "Adequate clearance for tools and fingers during assembly",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-8",
+          "text": "Subassemblies can be tested independently before final assembly",
+          "status": "pending",
+          "note": ""
+        }
+      ],
+      "replies": [],
+      "createdAt": "2026-01-31T04:17:56.570668+00:00",
+      "updatedAt": "2026-01-31T04:18:22.990738+00:00"
+    }
+  ]
+}

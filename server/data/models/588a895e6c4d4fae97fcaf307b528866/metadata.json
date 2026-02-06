@@ -1,0 +1,27 @@
+{
+  "modelId": "588a895e6c4d4fae97fcaf307b528866",
+  "originalName": "bracket.step",
+  "stepPath": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\588a895e6c4d4fae97fcaf307b528866\\source.step",
+  "previewPath": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\588a895e6c4d4fae97fcaf307b528866\\preview.glb",
+  "views": {
+    "top": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\588a895e6c4d4fae97fcaf307b528866\\views\\top.png",
+    "bottom": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\588a895e6c4d4fae97fcaf307b528866\\views\\bottom.png",
+    "left": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\588a895e6c4d4fae97fcaf307b528866\\views\\left.png",
+    "right": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\588a895e6c4d4fae97fcaf307b528866\\views\\right.png"
+  },
+  "shapeViews": {
+    "top": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\588a895e6c4d4fae97fcaf307b528866\\shape2d\\top.png",
+    "side": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\588a895e6c4d4fae97fcaf307b528866\\shape2d\\side.png",
+    "bottom": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\588a895e6c4d4fae97fcaf307b528866\\shape2d\\bottom.png"
+  },
+  "occViews": {
+    "x": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\588a895e6c4d4fae97fcaf307b528866\\occ_views\\x.png",
+    "y": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\588a895e6c4d4fae97fcaf307b528866\\occ_views\\y.png",
+    "z": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\588a895e6c4d4fae97fcaf307b528866\\occ_views\\z.png"
+  },
+  "midViews": {
+    "mid_x": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\588a895e6c4d4fae97fcaf307b528866\\mid_views\\mid_x.png",
+    "mid_y": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\588a895e6c4d4fae97fcaf307b528866\\mid_views\\mid_y.png",
+    "mid_z": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\588a895e6c4d4fae97fcaf307b528866\\mid_views\\mid_z.png"
+  }
+}

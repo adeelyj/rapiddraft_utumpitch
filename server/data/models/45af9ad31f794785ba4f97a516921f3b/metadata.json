@@ -1,0 +1,29 @@
+{
+  "modelId": "45af9ad31f794785ba4f97a516921f3b",
+  "originalName": "bracket.step",
+  "stepPath": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\45af9ad31f794785ba4f97a516921f3b\\source.step",
+  "previewPath": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\45af9ad31f794785ba4f97a516921f3b\\preview.glb",
+  "views": {
+    "top": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\45af9ad31f794785ba4f97a516921f3b\\views\\top.png",
+    "bottom": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\45af9ad31f794785ba4f97a516921f3b\\views\\bottom.png",
+    "left": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\45af9ad31f794785ba4f97a516921f3b\\views\\left.png",
+    "right": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\45af9ad31f794785ba4f97a516921f3b\\views\\right.png"
+  },
+  "shapeViews": {
+    "top": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\45af9ad31f794785ba4f97a516921f3b\\shape2d\\top.png",
+    "side": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\45af9ad31f794785ba4f97a516921f3b\\shape2d\\side.png",
+    "bottom": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\45af9ad31f794785ba4f97a516921f3b\\shape2d\\bottom.png"
+  },
+  "occViews": {
+    "x": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\45af9ad31f794785ba4f97a516921f3b\\occ_views\\x.png",
+    "y": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\45af9ad31f794785ba4f97a516921f3b\\occ_views\\y.png",
+    "z": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\45af9ad31f794785ba4f97a516921f3b\\occ_views\\z.png"
+  },
+  "midViews": {
+    "mid_x": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\45af9ad31f794785ba4f97a516921f3b\\mid_views\\mid_x.png",
+    "mid_y": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\45af9ad31f794785ba4f97a516921f3b\\mid_views\\mid_y.png",
+    "mid_z": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\45af9ad31f794785ba4f97a516921f3b\\mid_views\\mid_z.png"
+  },
+  "isometricShape2d": {},
+  "isometricMatplotlib": {}
+}

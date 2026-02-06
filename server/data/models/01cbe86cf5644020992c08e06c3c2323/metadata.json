@@ -1,0 +1,28 @@
+{
+  "modelId": "01cbe86cf5644020992c08e06c3c2323",
+  "originalName": "bracket.step",
+  "stepPath": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\01cbe86cf5644020992c08e06c3c2323\\source.step",
+  "previewPath": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\01cbe86cf5644020992c08e06c3c2323\\preview.glb",
+  "views": {},
+  "viewMetadata": {},
+  "shapeViews": {
+    "top": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\01cbe86cf5644020992c08e06c3c2323\\shape2d\\top.png",
+    "side": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\01cbe86cf5644020992c08e06c3c2323\\shape2d\\side.png",
+    "bottom": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\01cbe86cf5644020992c08e06c3c2323\\shape2d\\bottom.png"
+  },
+  "shapeViewMetadata": {
+    "top": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\01cbe86cf5644020992c08e06c3c2323\\shape2d\\top.json",
+    "side": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\01cbe86cf5644020992c08e06c3c2323\\shape2d\\side.json",
+    "bottom": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\01cbe86cf5644020992c08e06c3c2323\\shape2d\\bottom.json"
+  },
+  "occViews": {},
+  "midViews": {},
+  "isometricShape2d": {
+    "isometric_shape2d": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\01cbe86cf5644020992c08e06c3c2323\\isometric_shape2d\\isometric_shape2d.png"
+  },
+  "isometricShape2dMetadata": {
+    "isometric_shape2d": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\01cbe86cf5644020992c08e06c3c2323\\isometric_shape2d\\isometric_shape2d.json"
+  },
+  "isometricMatplotlib": {},
+  "isometricMatplotlibMetadata": {}
+}

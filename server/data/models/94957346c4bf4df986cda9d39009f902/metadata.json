@@ -1,0 +1,26 @@
+{
+  "modelId": "94957346c4bf4df986cda9d39009f902",
+  "originalName": "Hold_down_modified_parts.stp",
+  "stepPath": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\20_RapidDraft_ProductversionFinal_ReviewOverlayed_CODEX\\server\\data\\models\\94957346c4bf4df986cda9d39009f902\\source.step",
+  "previewPath": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\20_RapidDraft_ProductversionFinal_ReviewOverlayed_CODEX\\server\\data\\models\\94957346c4bf4df986cda9d39009f902\\preview.glb",
+  "views": {
+    "top": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\20_RapidDraft_ProductversionFinal_ReviewOverlayed_CODEX\\server\\data\\models\\94957346c4bf4df986cda9d39009f902\\views\\top.png",
+    "bottom": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\20_RapidDraft_ProductversionFinal_ReviewOverlayed_CODEX\\server\\data\\models\\94957346c4bf4df986cda9d39009f902\\views\\bottom.png",
+    "left": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\20_RapidDraft_ProductversionFinal_ReviewOverlayed_CODEX\\server\\data\\models\\94957346c4bf4df986cda9d39009f902\\views\\left.png",
+    "right": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\20_RapidDraft_ProductversionFinal_ReviewOverlayed_CODEX\\server\\data\\models\\94957346c4bf4df986cda9d39009f902\\views\\right.png"
+  },
+  "viewMetadata": {
+    "top": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\20_RapidDraft_ProductversionFinal_ReviewOverlayed_CODEX\\server\\data\\models\\94957346c4bf4df986cda9d39009f902\\views\\top.json",
+    "bottom": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\20_RapidDraft_ProductversionFinal_ReviewOverlayed_CODEX\\server\\data\\models\\94957346c4bf4df986cda9d39009f902\\views\\bottom.json",
+    "left": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\20_RapidDraft_ProductversionFinal_ReviewOverlayed_CODEX\\server\\data\\models\\94957346c4bf4df986cda9d39009f902\\views\\left.json",
+    "right": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\20_RapidDraft_ProductversionFinal_ReviewOverlayed_CODEX\\server\\data\\models\\94957346c4bf4df986cda9d39009f902\\views\\right.json"
+  },
+  "shapeViews": {},
+  "shapeViewMetadata": {},
+  "occViews": {},
+  "midViews": {},
+  "isometricShape2d": {},
+  "isometricShape2dMetadata": {},
+  "isometricMatplotlib": {},
+  "isometricMatplotlibMetadata": {}
+}

@@ -1,0 +1,46 @@
+[
+  {
+    "id": "dfa",
+    "name": "Design for Assembly",
+    "description": "Evaluate part design for ease of assembly",
+    "items": [
+      "Part can be assembled from a single direction (top-down preferred)",
+      "Part is self-locating with alignment features (pins, slots, chamfers)",
+      "No flexible or tangling components (cables, springs) that complicate handling",
+      "Fastener count is minimized (snap-fits preferred over screws)",
+      "Part symmetry allows insertion without orientation errors",
+      "Assembly sequence avoids obstructed access to fasteners",
+      "Adequate clearance for tools and fingers during assembly",
+      "Subassemblies can be tested independently before final assembly"
+    ]
+  },
+  {
+    "id": "mfg",
+    "name": "Manufacturing Review",
+    "description": "Evaluate part design for manufacturability",
+    "items": [
+      "Wall thickness is uniform and meets minimum for chosen process",
+      "Draft angles are sufficient for mold release (1-3 degrees minimum)",
+      "Undercuts are eliminated or can be formed with simple side actions",
+      "Corner radii are adequate to prevent stress concentration",
+      "Tolerances are achievable with the intended manufacturing process",
+      "Material selection is compatible with the manufacturing method",
+      "Surface finish requirements are specified and achievable",
+      "Part can be fixtured/held securely during machining operations"
+    ]
+  },
+  {
+    "id": "tolerance",
+    "name": "Tolerance & Fit Review",
+    "description": "Review dimensional tolerances and mating features",
+    "items": [
+      "Critical dimensions have explicit tolerances specified",
+      "GD&T callouts use appropriate feature control frames",
+      "Datum features are accessible for inspection",
+      "Stack-up analysis completed for mating assemblies",
+      "Fit types (clearance/transition/interference) are appropriate",
+      "Thermal expansion has been considered for mating parts",
+      "Surface roughness is specified for mating surfaces"
+    ]
+  }
+]

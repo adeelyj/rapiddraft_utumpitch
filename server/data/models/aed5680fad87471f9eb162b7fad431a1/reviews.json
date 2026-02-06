@@ -1,0 +1,46 @@
+{
+  "next_rev_id": 2,
+  "next_dr_id": 1,
+  "tickets": [
+    {
+      "id": "REV-001",
+      "kind": "comment",
+      "modelId": "aed5680fad87471f9eb162b7fad431a1",
+      "title": "issue with the hook",
+      "description": " should be updated",
+      "type": "comment",
+      "priority": "medium",
+      "status": "open",
+      "author": "Adeel",
+      "tag": "#metal",
+      "pin": {
+        "position": [
+          1.601601507801206,
+          372.88080348143427,
+          -12.863682480972784
+        ],
+        "normal": [
+          0.9395100647023626,
+          0.0,
+          0.34252129615976074
+        ],
+        "cameraState": {
+          "position": [
+            130.57360601596775,
+            499.06930303745213,
+            130.57360601596775
+          ],
+          "target": [
+            0,
+            368.4956970214844,
+            0
+          ]
+        }
+      },
+      "replies": [],
+      "createdAt": "2026-01-31T02:43:45.277388+00:00",
+      "updatedAt": "2026-01-31T02:43:45.277388+00:00"
+    }
+  ],
+  "design_reviews": []
+}

@@ -1,0 +1,24 @@
+{
+  "modelId": "c3730919867b4a1a94d05c5a0908608a",
+  "originalName": "bracket.step",
+  "stepPath": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\c3730919867b4a1a94d05c5a0908608a\\source.step",
+  "previewPath": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\c3730919867b4a1a94d05c5a0908608a\\preview.glb",
+  "views": {},
+  "viewMetadata": {},
+  "shapeViews": {
+    "top": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\c3730919867b4a1a94d05c5a0908608a\\shape2d\\top.png",
+    "side": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\c3730919867b4a1a94d05c5a0908608a\\shape2d\\side.png",
+    "bottom": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\c3730919867b4a1a94d05c5a0908608a\\shape2d\\bottom.png"
+  },
+  "shapeViewMetadata": {
+    "top": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\c3730919867b4a1a94d05c5a0908608a\\shape2d\\top.json",
+    "side": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\c3730919867b4a1a94d05c5a0908608a\\shape2d\\side.json",
+    "bottom": "C:\\Users\\adeel\\OneDrive\\100_Knowledge\\203_TextCAD\\Code\\05_SimpltPrompt_Codex\\server\\data\\models\\c3730919867b4a1a94d05c5a0908608a\\shape2d\\bottom.json"
+  },
+  "occViews": {},
+  "midViews": {},
+  "isometricShape2d": {},
+  "isometricShape2dMetadata": {},
+  "isometricMatplotlib": {},
+  "isometricMatplotlibMetadata": {}
+}

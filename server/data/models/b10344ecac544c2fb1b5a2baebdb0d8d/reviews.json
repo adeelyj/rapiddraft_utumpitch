@@ -1,0 +1,46 @@
+{
+  "next_rev_id": 2,
+  "next_dr_id": 1,
+  "tickets": [
+    {
+      "id": "REV-001",
+      "kind": "comment",
+      "modelId": "b10344ecac544c2fb1b5a2baebdb0d8d",
+      "title": "sdf",
+      "description": "sdf",
+      "type": "comment",
+      "priority": "medium",
+      "status": "open",
+      "author": "sdf",
+      "tag": "sdf",
+      "pin": {
+        "position": [
+          -37.0177275397491,
+          372.0119306184396,
+          22.075765852393033
+        ],
+        "normal": [
+          0.9876889745757128,
+          -0.00010209428678263909,
+          0.15643042887601447
+        ],
+        "cameraState": {
+          "position": [
+            81.28909118278645,
+            454.78235283227184,
+            79.14274089370886
+          ],
+          "target": [
+            0,
+            368.4956970214844,
+            0
+          ]
+        }
+      },
+      "replies": [],
+      "createdAt": "2026-01-31T04:09:38.426415+00:00",
+      "updatedAt": "2026-01-31T04:09:38.426415+00:00"
+    }
+  ],
+  "design_reviews": []
+}

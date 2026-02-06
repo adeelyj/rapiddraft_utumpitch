@@ -1,0 +1,53 @@
+{
+  "next_rev_id": 2,
+  "next_dr_id": 1,
+  "tickets": [
+    {
+      "id": "REV-001",
+      "kind": "comment",
+      "modelId": "4b99853dceb04a9c8b650678db4bc50a",
+      "title": "test",
+      "description": "sete",
+      "type": "comment",
+      "priority": "medium",
+      "status": "open",
+      "author": "ast",
+      "tag": "sdf",
+      "pin": {
+        "position": [
+          29.064873721783442,
+          364.2688903808594,
+          -29.827525242310458
+        ],
+        "normal": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "cameraState": {
+          "position": [
+            130.57360601596775,
+            499.06930303745213,
+            130.57360601596775
+          ],
+          "target": [
+            0,
+            368.4956970214844,
+            0
+          ]
+        }
+      },
+      "replies": [
+        {
+          "id": "rc8a8175c",
+          "author": "asdf",
+          "text": "sdf",
+          "createdAt": "2026-01-31T02:47:45.005381+00:00"
+        }
+      ],
+      "createdAt": "2026-01-31T02:47:30.333667+00:00",
+      "updatedAt": "2026-01-31T02:47:45.005381+00:00"
+    }
+  ],
+  "design_reviews": []
+}

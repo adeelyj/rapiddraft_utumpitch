@@ -1,0 +1,134 @@
+{
+  "next_rev_id": 2,
+  "next_dr_id": 2,
+  "tickets": [
+    {
+      "id": "REV-001",
+      "kind": "comment",
+      "modelId": "e9ea133be93c4dd0bd07f4268abfef34",
+      "title": "sdf",
+      "description": "sdf",
+      "type": "comment",
+      "priority": "medium",
+      "status": "open",
+      "author": "sdf",
+      "tag": "sdf",
+      "pin": {
+        "position": [
+          -1.297603214071387,
+          377.45981975894705,
+          -5.622769186476944
+        ],
+        "normal": [
+          0.7722229777921452,
+          0.6330175029969395,
+          -0.054410600707508104
+        ],
+        "cameraState": {
+          "position": [
+            95.98359891200157,
+            464.47929593348596,
+            95.98359891200158
+          ],
+          "target": [
+            0,
+            368.4956970214844,
+            0
+          ]
+        }
+      },
+      "replies": [],
+      "createdAt": "2026-01-31T03:08:14.632085+00:00",
+      "updatedAt": "2026-01-31T03:08:14.632085+00:00"
+    }
+  ],
+  "design_reviews": [
+    {
+      "id": "DR-001",
+      "kind": "design_review",
+      "modelId": "e9ea133be93c4dd0bd07f4268abfef34",
+      "templateId": "mfg",
+      "templateName": "Manufacturing Review",
+      "title": "Design for Assembly",
+      "author": "sdf",
+      "status": "in_progress",
+      "pin": {
+        "position": [
+          -37.54863265665335,
+          367.51798972958886,
+          25.429133205663675
+        ],
+        "normal": [
+          0.9876892635102875,
+          -0.0006506331338822264,
+          0.15642728477804366
+        ],
+        "cameraState": {
+          "position": [
+            95.98359891200157,
+            464.47929593348596,
+            95.98359891200158
+          ],
+          "target": [
+            0,
+            368.4956970214844,
+            0
+          ]
+        }
+      },
+      "checklist": [
+        {
+          "id": "item-1",
+          "text": "Wall thickness is uniform and meets minimum for chosen process",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-2",
+          "text": "Draft angles are sufficient for mold release (1-3 degrees minimum)",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-3",
+          "text": "Undercuts are eliminated or can be formed with simple side actions",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-4",
+          "text": "Corner radii are adequate to prevent stress concentration",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-5",
+          "text": "Tolerances are achievable with the intended manufacturing process",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-6",
+          "text": "Material selection is compatible with the manufacturing method",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-7",
+          "text": "Surface finish requirements are specified and achievable",
+          "status": "pending",
+          "note": ""
+        },
+        {
+          "id": "item-8",
+          "text": "Part can be fixtured/held securely during machining operations",
+          "status": "pending",
+          "note": ""
+        }
+      ],
+      "replies": [],
+      "createdAt": "2026-01-31T03:08:24.561750+00:00",
+      "updatedAt": "2026-01-31T03:08:24.561750+00:00"
+    }
+  ]
+}
