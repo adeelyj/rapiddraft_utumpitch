@@ -76,14 +76,15 @@ const ViewsPanel = ({
 
   return (
     <aside className="views-panel">
+      <h2>Views</h2>
       <button className="views-panel__section-button" onClick={onGenerateIsometricViews} disabled={disableGenerate}>
-        Get Isometric Views
+        Generate Isometric Views
       </button>
       <div className="views-panel__grid">
         {isometricShape2DExpectedViews.map((name) => (
           <ViewCard
             key={name}
-            label={isometricShape2DMetadata[name] ? `${name} (with md)` : `${name}`}
+            label="shape 2d"
             src={isometricShape2DViews[name]}
             onClick={() =>
               onSelectThumbnail &&
@@ -95,7 +96,7 @@ const ViewsPanel = ({
         {isometricMatplotlibExpectedViews.map((name) => (
           <ViewCard
             key={name}
-            label={isometricMatplotlibMetadata[name] ? `${name} (with md)` : `${name}`}
+            label="mathplotlib"
             src={isometricMatplotlibViews[name]}
             onClick={() =>
               onSelectThumbnail &&
@@ -106,9 +107,9 @@ const ViewsPanel = ({
         ))}
       </div>
       <button className="views-panel__section-button" onClick={onGenerateViews} disabled={disableGenerate}>
-        Get Mesh Views
+        Generate Mesh Views
       </button>
-      <div className="views-panel__grid">
+      <div className="views-panel__grid views-panel__grid--mesh">
         {expectedViews.map((name) => (
           <ViewCard
             key={name}
@@ -119,7 +120,7 @@ const ViewsPanel = ({
         ))}
       </div>
       <button className="views-panel__section-button" onClick={onGenerateShape2DViews} disabled={disableGenerate}>
-        Get Shape2D Views
+        Generate Shape2D Views
       </button>
       <div className="views-panel__grid">
         {shapeExpectedViews.map((name) => (
@@ -132,7 +133,7 @@ const ViewsPanel = ({
         ))}
       </div>
       <button className="views-panel__section-button" onClick={onGenerateOccViews} disabled={disableGenerate}>
-        Get OCC Views
+        Generate OCC Views
       </button>
       <div className="views-panel__grid">
         {occExpectedViews.map((name) => (
@@ -140,11 +141,16 @@ const ViewsPanel = ({
         ))}
       </div>
       <button className="views-panel__section-button" onClick={onGenerateMidViews} disabled={disableGenerate}>
-        Get Mid Views
+        Generate Mid Views
       </button>
       <div className="views-panel__grid">
         {midExpectedViews.map((name) => (
-          <ViewCard key={name} label={name} src={midViews[name]} onClick={() => onSelectThumbnail && midViews[name] && onSelectThumbnail(name, midViews[name])} />
+          <ViewCard
+            key={name}
+            label={name.replace(/_/g, " ")}
+            src={midViews[name]}
+            onClick={() => onSelectThumbnail && midViews[name] && onSelectThumbnail(name, midViews[name])}
+          />
         ))}
       </div>
     </aside>

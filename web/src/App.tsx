@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Toolbar from "./components/Toolbar";
 import ModelViewer from "./components/ModelViewer";
 import ViewsPanel from "./components/ViewsPanel";
@@ -66,9 +66,10 @@ const App = () => {
   const [reviewFormOpen, setReviewFormOpen] = useState(false);
   const [fitTrigger, setFitTrigger] = useState(0);
   const [infoDialog, setInfoDialog] = useState<null | "compare" | "collaborate">(null);
-  const [leftOpen, setLeftOpen] = useState(true);
-  const [leftTab, setLeftTab] = useState<"reviews" | "com" | "dfm" | "km" | "req">("reviews");
-  const [rightOpen, setRightOpen] = useState(true);
+  const importInputRef = useRef<HTMLInputElement | null>(null);
+  const [globalPaneOpen, setGlobalPaneOpen] = useState(false);
+  const [leftOpen, setLeftOpen] = useState(false);
+  const [leftTab, setLeftTab] = useState<"views" | "reviews" | "com" | "dfm" | "km" | "req">("reviews");
   const [pinMode, setPinMode] = useState<"none" | "comment" | "review">("none");
 
   const previewUrl = useMemo(() => {
@@ -834,13 +835,24 @@ const App = () => {
     setDimensions((prev) => prev.slice(0, -1));
   };
 
-  const handleLeftRailToggle = (tab: "reviews" | "com" | "dfm" | "km" | "req") => {
+  const handleLeftRailToggle = (tab: "views" | "reviews" | "com" | "dfm" | "km" | "req") => {
     setLeftOpen((prev) => !(prev && leftTab === tab));
     setLeftTab(tab);
   };
 
-  const handleRightRailToggle = () => {
-    setRightOpen((prev) => !prev);
+  const handleBrandToggle = () => {
+    setGlobalPaneOpen((prev) => !prev);
+  };
+
+  const handleImportClick = () => {
+    importInputRef.current?.click();
+  };
+
+  const handleImportFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    await importModel(file);
+    event.target.value = "";
   };
 
   const handleCommentPin = (payload: {
@@ -927,21 +939,56 @@ const App = () => {
   return (
     <div className="app-shell">
       <Toolbar
-        onImport={importModel}
-        onExportViews={exportViews}
-        onOpenCompare={() => setInfoDialog("compare")}
-        onOpenCollaborate={() => setInfoDialog("collaborate")}
-        canExport={Object.keys(views).length > 0}
+        brandPaneActive={globalPaneOpen}
+        onBrandToggle={handleBrandToggle}
         busyAction={busyAction}
         statusMessage={statusMessage}
         logMessage={logMessage}
       />
-      <main
-        className={`workspace ${leftOpen ? "" : "workspace--left-collapsed"} ${
-          rightOpen ? "" : "workspace--right-collapsed"
-        }`}
-      >
+      {globalPaneOpen && <button className="global-pane__backdrop" onClick={() => setGlobalPaneOpen(false)} aria-label="Close global pane" />}
+      <aside className={`global-pane ${globalPaneOpen ? "global-pane--open" : ""}`}>
+        <div className="global-pane__content">
+          <input
+            type="file"
+            ref={importInputRef}
+            accept=".step,.stp"
+            className="sr-only"
+            onChange={handleImportFileChange}
+          />
+          <button className="toolbar__button global-pane__button" onClick={handleImportClick} disabled={Boolean(busyAction)}>
+            Import STEP
+          </button>
+          <button
+            className="toolbar__button global-pane__button"
+            onClick={exportViews}
+            disabled={Object.keys(views).length === 0 || Boolean(busyAction)}
+          >
+            Export Views
+          </button>
+          <button className="toolbar__button global-pane__button" onClick={() => setInfoDialog("compare")} disabled={Boolean(busyAction)}>
+            Compare Models
+          </button>
+          <button className="toolbar__button global-pane__button" onClick={() => setInfoDialog("collaborate")} disabled={Boolean(busyAction)}>
+            Collaborate
+          </button>
+        </div>
+      </aside>
+      <main className={`workspace ${leftOpen ? "" : "workspace--left-collapsed"}`}>
         <aside className="sidebar-rail sidebar-rail--left">
+          <button
+            className={`sidebar-rail__button ${leftOpen && leftTab === "views" ? "sidebar-rail__button--active" : ""}`}
+            onClick={() => handleLeftRailToggle("views")}
+          >
+            <span className="sidebar-rail__icon">V</span>
+            <span className="sidebar-rail__label">Views</span>
+          </button>
+          <button
+            className={`sidebar-rail__button ${leftOpen && leftTab === "com" ? "sidebar-rail__button--active" : ""}`}
+            onClick={() => handleLeftRailToggle("com")}
+          >
+            <span className="sidebar-rail__icon">C</span>
+            <span className="sidebar-rail__label">Comments</span>
+          </button>
           <button
             className={`sidebar-rail__button ${leftOpen && leftTab === "reviews" ? "sidebar-rail__button--active" : ""}`}
             onClick={() => handleLeftRailToggle("reviews")}
@@ -950,57 +997,79 @@ const App = () => {
             <span className="sidebar-rail__label">Reviews</span>
           </button>
           <button
-            className={`sidebar-rail__button ${leftOpen && leftTab === "com" ? "sidebar-rail__button--active" : ""}`}
-            onClick={() => handleLeftRailToggle("com")}
-          >
-            <span className="sidebar-rail__icon">C</span>
-            <span className="sidebar-rail__label">COM</span>
-          </button>
-          <button
             className={`sidebar-rail__button ${leftOpen && leftTab === "dfm" ? "sidebar-rail__button--active" : ""}`}
             onClick={() => handleLeftRailToggle("dfm")}
           >
-            <span className="sidebar-rail__icon">D</span>
-            <span className="sidebar-rail__label">DFM</span>
+            <span className="sidebar-rail__icon">M</span>
+            <span className="sidebar-rail__label">Design For Manufacturing</span>
           </button>
           <button
             className={`sidebar-rail__button ${leftOpen && leftTab === "km" ? "sidebar-rail__button--active" : ""}`}
             onClick={() => handleLeftRailToggle("km")}
           >
             <span className="sidebar-rail__icon">K</span>
-            <span className="sidebar-rail__label">KM</span>
+            <span className="sidebar-rail__label">Knowledge Management</span>
           </button>
           <button
             className={`sidebar-rail__button ${leftOpen && leftTab === "req" ? "sidebar-rail__button--active" : ""}`}
             onClick={() => handleLeftRailToggle("req")}
           >
             <span className="sidebar-rail__icon">Q</span>
-            <span className="sidebar-rail__label">REQ</span>
+            <span className="sidebar-rail__label">Requirements</span>
           </button>
         </aside>
         <aside className={`sidebar-panel sidebar-panel--left ${leftOpen ? "sidebar-panel--open" : ""}`}>
-          <ReviewPanel
-            tickets={tickets}
-            designReviews={designReviews}
-            selectedItemId={selectedItemId}
-            mode={leftTab}
-            onSelect={handleSelectTicket}
-            onUpdateTicket={updateTicket}
-            onDeleteTicket={deleteTicket}
-            onAddReply={addTicketReply}
-            onDeleteReply={deleteTicketReply}
-            onUpdateReview={updateReview}
-            onDeleteReview={deleteReview}
-            onUpdateChecklistItem={updateChecklistItem}
-            onAddReviewReply={addReviewReply}
-            onStartReview={() => {
-              setPendingReviewPin(null);
-              setReviewFormOpen(false);
-              setPinMode("review");
-              setLeftOpen(true);
-              setLeftTab("reviews");
-            }}
-          />
+          {leftTab === "views" ? (
+            <ViewsPanel
+              views={viewUrls}
+              viewMetadata={viewMetadataUrls}
+              shapeViews={shapeViewUrls}
+              shapeViewMetadata={shapeViewMetadataUrls}
+              occViews={occViewUrls}
+              midViews={midViewUrls}
+              isometricShape2DViews={isometricShape2DViewUrls}
+              isometricShape2DMetadata={isometricShape2DMetadataUrls}
+              isometricMatplotlibViews={isometricMatplotlibViewUrls}
+              isometricMatplotlibMetadata={isometricMatplotlibMetadataUrls}
+              expectedViews={["top", "bottom", "left", "right", "front", "back"]}
+              shapeExpectedViews={["top", "side", "bottom"]}
+              occExpectedViews={["x", "y", "z"]}
+              midExpectedViews={["mid_x", "mid_y", "mid_z"]}
+              isometricShape2DExpectedViews={["isometric_shape2d"]}
+              isometricMatplotlibExpectedViews={["isometric_matplotlib"]}
+              onSelectThumbnail={handleSelectThumbnailForAssignment}
+              onGenerateViews={generateViews}
+              onGenerateShape2DViews={generateShape2DViews}
+              onGenerateOccViews={generateOccViews}
+              onGenerateMidViews={generateMidViews}
+              onGenerateIsometricViews={generateIsometricViews}
+              canGenerate={Boolean(model)}
+              busyAction={busyAction}
+            />
+          ) : (
+            <ReviewPanel
+              tickets={tickets}
+              designReviews={designReviews}
+              selectedItemId={selectedItemId}
+              mode={leftTab}
+              onSelect={handleSelectTicket}
+              onUpdateTicket={updateTicket}
+              onDeleteTicket={deleteTicket}
+              onAddReply={addTicketReply}
+              onDeleteReply={deleteTicketReply}
+              onUpdateReview={updateReview}
+              onDeleteReview={deleteReview}
+              onUpdateChecklistItem={updateChecklistItem}
+              onAddReviewReply={addReviewReply}
+              onStartReview={() => {
+                setPendingReviewPin(null);
+                setReviewFormOpen(false);
+                setPinMode("review");
+                setLeftOpen(true);
+                setLeftTab("reviews");
+              }}
+            />
+          )}
         </aside>
         <div className="workspace__main">
           {isDrawingOpen ? (
@@ -1055,30 +1124,8 @@ const App = () => {
                   setPinMode("none");
                 }}
               />
-            <div className="viewer__mode-stack">
-                <button
-                  className={`viewer__comment-toggle ${pinMode === "comment" ? "viewer__comment-toggle--active" : ""}`}
-                  onClick={() => {
-                    setPinMode((prev) => (prev === "comment" ? "none" : "comment"));
-                    setLeftTab("com");
-                    setLeftOpen(true);
-                  }}
-                  disabled={!previewUrl}
-                >
-                  Comment (C)
-                </button>
-                <button
-                  className={`viewer__comment-toggle ${pinMode === "review" ? "viewer__comment-toggle--active" : ""}`}
-                  onClick={() => {
-                    setPinMode((prev) => (prev === "review" ? "none" : "review"));
-                    setLeftTab("reviews");
-                    setLeftOpen(true);
-                  }}
-                  disabled={!previewUrl}
-                >
-                  Review (R)
-                </button>
-                {previewUrl && (
+              {previewUrl && (
+                <div className="viewer__mode-stack">
                   <button
                     className="viewer__fit"
                     onClick={() => setFitTrigger((t) => t + 1)}
@@ -1086,47 +1133,11 @@ const App = () => {
                   >
                     Fit to screen
                   </button>
-                )}
-            </div>
+                </div>
+              )}
           </div>
         )}
         </div>
-        <aside className={`sidebar-panel sidebar-panel--right ${rightOpen ? "sidebar-panel--open" : ""}`}>
-          <ViewsPanel
-            views={viewUrls}
-            viewMetadata={viewMetadataUrls}
-            shapeViews={shapeViewUrls}
-            shapeViewMetadata={shapeViewMetadataUrls}
-            occViews={occViewUrls}
-            midViews={midViewUrls}
-            isometricShape2DViews={isometricShape2DViewUrls}
-            isometricShape2DMetadata={isometricShape2DMetadataUrls}
-            isometricMatplotlibViews={isometricMatplotlibViewUrls}
-            isometricMatplotlibMetadata={isometricMatplotlibMetadataUrls}
-            expectedViews={["top", "left", "right", "bottom"]}
-            shapeExpectedViews={["top", "side", "bottom"]}
-            occExpectedViews={["x", "y", "z"]}
-            midExpectedViews={["mid_x", "mid_y", "mid_z"]}
-            isometricShape2DExpectedViews={["isometric_shape2d"]}
-            isometricMatplotlibExpectedViews={["isometric_matplotlib"]}
-            onSelectThumbnail={handleSelectThumbnailForAssignment}
-            onGenerateViews={generateViews}
-            onGenerateShape2DViews={generateShape2DViews}
-            onGenerateOccViews={generateOccViews}
-            onGenerateMidViews={generateMidViews}
-            onGenerateIsometricViews={generateIsometricViews}
-            canGenerate={Boolean(model)}
-            busyAction={busyAction}
-          />
-        </aside>
-        <aside className="sidebar-rail sidebar-rail--right">
-          <button
-            className={`sidebar-rail__button ${rightOpen ? "sidebar-rail__button--active" : ""}`}
-            onClick={handleRightRailToggle}
-          >
-            <span className="sidebar-rail__icon">V</span>
-            <span className="sidebar-rail__label">Views</span>
-          </button>
         {infoDialog && (
           <div className="modal-backdrop">
             <div className="modal">
@@ -1142,7 +1153,6 @@ const App = () => {
             </div>
           </div>
         )}
-        </aside>
       </main>
     </div>
   );

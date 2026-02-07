@@ -255,7 +255,6 @@ const ModelViewer = ({
           Create Drawing
         </button>
       )}
-      <div className="viewer__title">RapidDraft</div>
     </section>
   );
 };
