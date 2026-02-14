@@ -812,19 +812,19 @@ const ReviewPanel = ({
 
       case "com":
 
-        return "COM";
+        return "Comments";
 
       case "dfm":
 
-        return "DFM (Design for Manufacturing)";
+        return "Design for Manufacturing";
 
       case "km":
 
-        return "KM (Lessons Learned)";
+        return "Knowledge Management";
 
       case "req":
 
-        return "REQ (Requirements)";
+        return "Requirements";
 
       default:
 
@@ -1391,4 +1391,3 @@ const ReviewPanel = ({
 
 
 export default ReviewPanel;
-

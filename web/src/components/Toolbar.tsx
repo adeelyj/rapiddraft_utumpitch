@@ -1,75 +1,33 @@
-import { useRef } from "react";
-import clsx from "clsx";
-
 type ToolbarProps = {
-  onImport: (file: File) => Promise<void>;
-  onExportViews: () => Promise<void>;
-  onOpenCompare: () => void;
-  onOpenCollaborate: () => void;
-  canExport: boolean;
+  brandPaneActive: boolean;
+  onBrandToggle: () => void;
   busyAction?: string;
   statusMessage?: string;
   logMessage?: string;
 };
 
 const Toolbar = ({
-  onImport,
-  onExportViews,
-  onOpenCompare,
-  onOpenCollaborate,
-  canExport,
+  brandPaneActive,
+  onBrandToggle,
   busyAction,
   statusMessage,
   logMessage,
 }: ToolbarProps) => {
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
-  const handleImportClick = () => {
-    inputRef.current?.click();
-  };
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    await onImport(file);
-    event.target.value = "";
-  };
-
-  const busy = Boolean(busyAction);
-
   return (
     <header className="toolbar">
       <div className="toolbar__brand">
+        <button className="toolbar__brand-button" onClick={onBrandToggle} aria-label="Toggle left pane">
+          <img
+            src={brandPaneActive ? "/rd_icon.png" : "/rd_logo.png"}
+            alt="RapidDraft"
+            className={`toolbar__brand-image ${brandPaneActive ? "toolbar__brand-image--icon" : "toolbar__brand-image--logo"}`}
+          />
+        </button>
         <span className="toolbar__status">{statusMessage ?? "Ready"}</span>
       </div>
-      <div className="toolbar__center">
-        <button className="toolbar__button" onClick={onOpenCompare} disabled={busy}>
-          Model compare
-        </button>
-        <button className="toolbar__button" onClick={onOpenCollaborate} disabled={busy}>
-          Collaborate
-        </button>
-      </div>
       <div className="toolbar__actions">
-        <input
-          type="file"
-          ref={inputRef}
-          accept=".step,.stp"
-          className="sr-only"
-          onChange={handleFileChange}
-        />
         {logMessage && <span className="toolbar__log">{logMessage}</span>}
-        <button className="toolbar__button" onClick={handleImportClick} disabled={busy}>
-          Import STEP
-        </button>
-        <button
-          className={clsx("toolbar__button", !canExport && "toolbar__button--disabled")}
-          onClick={onExportViews}
-          disabled={!canExport || busy}
-        >
-          Export Views
-        </button>
-        {busy && <span className="toolbar__busy-chip">Working: {busyAction}</span>}
+        {busyAction && <span className="toolbar__busy-chip">Working: {busyAction}</span>}
       </div>
     </header>
   );
