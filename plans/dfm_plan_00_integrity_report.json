@@ -1,0 +1,172 @@
+{
+  "plan": "dfm_plan_00_contract_stabilization",
+  "generated_at_utc": "2026-02-16T17:24:35.782008+00:00",
+  "overall_status": "pass_with_warnings",
+  "checks": [
+    {
+      "check": "required_bundle_files_exist",
+      "status": "pass",
+      "details": {
+        "missing": []
+      }
+    },
+    {
+      "check": "required_schema_files_exist",
+      "status": "pass",
+      "details": {
+        "missing": []
+      }
+    },
+    {
+      "check": "manifest_file_entries_resolve",
+      "status": "pass",
+      "details": {
+        "missing": [],
+        "total_entries": 20
+      }
+    },
+    {
+      "check": "bundle_json_parse",
+      "status": "pass",
+      "details": {
+        "invalid": []
+      }
+    },
+    {
+      "check": "schema_json_parse",
+      "status": "pass",
+      "details": {
+        "invalid": []
+      }
+    },
+    {
+      "check": "manifest_counts_match_actual",
+      "status": "pass",
+      "details": {
+        "count_match": {
+          "expected_rule_count": true,
+          "pack_counts": true,
+          "reference_count": true,
+          "roles_count": true,
+          "templates_count": true
+        },
+        "expected_rule_count": 130,
+        "actual_rule_count": 130,
+        "expected_pack_counts": {
+          "A_DRAWING": 25,
+          "B_CNC": 25,
+          "C_SHEET": 20,
+          "D_WELD": 15,
+          "E_ASSEMBLY": 15,
+          "F_OVERLAY": 30
+        },
+        "actual_pack_counts": {
+          "A_DRAWING": 25,
+          "B_CNC": 25,
+          "C_SHEET": 20,
+          "D_WELD": 15,
+          "E_ASSEMBLY": 15,
+          "F_OVERLAY": 30
+        },
+        "expected_reference_count": 34,
+        "actual_reference_count": 34,
+        "expected_roles_count": 5,
+        "actual_roles_count": 5,
+        "expected_templates_count": 5,
+        "actual_templates_count": 5
+      }
+    },
+    {
+      "check": "schema_validation_jsonschema",
+      "status": "pass",
+      "details": {
+        "jsonschema_available": true,
+        "results": [
+          {
+            "data": "rule_library.json",
+            "schema": "rule_library.schema.json",
+            "valid": true,
+            "error": null
+          },
+          {
+            "data": "overlays.json",
+            "schema": "overlays.schema.json",
+            "valid": true,
+            "error": null
+          },
+          {
+            "data": "roles.json",
+            "schema": "roles.schema.json",
+            "valid": true,
+            "error": null
+          },
+          {
+            "data": "report_templates.json",
+            "schema": "report_templates.schema.json",
+            "valid": true,
+            "error": null
+          },
+          {
+            "data": "ui_bindings.json",
+            "schema": "ui_bindings.schema.json",
+            "valid": true,
+            "error": null
+          },
+          {
+            "data": "accounts_pilot_targets.json",
+            "schema": "accounts_pilot_targets.schema.json",
+            "valid": true,
+            "error": null
+          },
+          {
+            "data": "cost_model.json",
+            "schema": "cost_model.schema.json",
+            "valid": true,
+            "error": null
+          },
+          {
+            "data": "supplier_profile_template.json",
+            "schema": "supplier_profile_template.schema.json",
+            "valid": true,
+            "error": null
+          }
+        ]
+      }
+    },
+    {
+      "check": "prompt_refs_unresolved_only_expected_outputs",
+      "status": "pass",
+      "details": {
+        "referenced_total": 26,
+        "unresolved_expected_outputs": [
+          "plans/dfm_phase0_discovery.json",
+          "plans/dfm_phase0_discovery.md",
+          "plans/dfm_phase1_handoff.json",
+          "plans/dfm_phase1_handoff.md",
+          "plans/dfm_phase2_handoff.md",
+          "plans/dfm_phase2_release_notes.md",
+          "plans/dfm_phase3_handoff.json",
+          "plans/dfm_phase3_handoff.md"
+        ],
+        "unresolved_unexpected": []
+      }
+    },
+    {
+      "check": "phase2_duplicate_hardening_line_removed",
+      "status": "pass",
+      "details": {
+        "line_count": 1
+      }
+    },
+    {
+      "check": "pytest_server_tests_gate",
+      "status": "warn",
+      "details": {
+        "command": "python -m pytest -q server/tests",
+        "returncode": 1,
+        "environment_warning": "E   AssertionError: Missing dependencies: aiofiles, FreeCAD",
+        "summary_tail": "numpy - OK\nmatplotlib - OK\nFreeCAD - MISSING (Module use of python311.dll conflicts with this version of Python.)\n============================== warnings summary ===============================\nserver/tests/test_dependencies.py::test_dependencies_available\n  C:\\ProgramData\\anaconda3\\Lib\\importlib\\__init__.py:88: PendingDeprecationWarning: Please use `import python_multipart` instead.\n    return _bootstrap._gcd_import(name[level:], package, level)\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ===========================\nFAILED server/tests/test_dependencies.py::test_dependencies_available - Asser...\n1 failed, 7 passed, 1 warning in 1.84s"
+      }
+    }
+  ]
+}

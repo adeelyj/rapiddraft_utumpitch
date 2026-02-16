@@ -1,0 +1,423 @@
+{
+  "version": "1.0.0",
+  "accounts": [
+    {
+      "company_id": "somic_verpackungsmaschinen",
+      "name": "SOMIC Verpackungsmaschinen",
+      "city": "Amerang",
+      "distance_km": 73.0,
+      "employee_range": "600+",
+      "what_they_make": "End-of-line packaging machines for food/sweets/pharma.",
+      "why_fit": "Drawing-heavy custom machinery; frequent customer-specific variants and documentation packages (inference from business model).",
+      "cad_plm_signals": null,
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://career.somic-packaging.com/",
+        "https://www.somic-packaging.com/unternehmen.html"
+      ],
+      "pilot_priority": "tier_1"
+    },
+    {
+      "company_id": "multivac",
+      "name": "MULTIVAC",
+      "city": "Wolfertschwenden",
+      "distance_km": 119.0,
+      "employee_range": "7,400 worldwide; ~2,400 at Wolfertschwenden site",
+      "what_they_make": "Packaging machines/lines for food, life science/healthcare, industrial goods.",
+      "why_fit": "High part counts + line variants; drawing generation/checking can reduce engineering bottlenecks in modular machine platforms (inference).",
+      "cad_plm_signals": null,
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://multivac.com/de/de/company/about-us",
+        "https://multivac.com/de/de/career/our-career-locations/career-in-wolfertschwenden"
+      ],
+      "pilot_priority": "tier_1"
+    },
+    {
+      "company_id": "krones",
+      "name": "Krones",
+      "city": "Neutraubling",
+      "distance_km": 124.0,
+      "employee_range": "~20,000 worldwide",
+      "what_they_make": "Complete beverage/liquid-food processing, bottling, packaging, intralogistics & recycling lines.",
+      "why_fit": "Very drawing- and PLM-intensive machinery portfolio; explicit Teamcenter configuration role suggests complex change/release workflows.",
+      "cad_plm_signals": "Teamcenter explicitly (configuration/customization role). NX usage referenced in a published case about NX CAE at Krones.",
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://www.krones.com/",
+        "https://www.krones.com/de/unternehmen/ueber-uns/mitarbeiter.php",
+        "https://www.krones.com/de/karriere/job-detail.php?job=71051"
+      ],
+      "pilot_priority": "tier_1"
+    },
+    {
+      "company_id": "kiefel",
+      "name": "Kiefel",
+      "city": "Freilassing",
+      "distance_km": 136.0,
+      "employee_range": null,
+      "what_they_make": "Thermoforming and welding machine solutions for polymers & natural fibers; system supplier from product development to series production.",
+      "why_fit": "Tooling + machine platforms tend to be drawing-heavy; automation can standardize drawing packs and DFM checks for formed parts (inference).",
+      "cad_plm_signals": null,
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://www.kiefel.com/de/ueber-uns",
+        "https://www.kiefel.com/de/ueber-uns/standorte-kontakte"
+      ],
+      "pilot_priority": "tier_1"
+    },
+    {
+      "company_id": "rofa_industrial_automation",
+      "name": "ROFA Industrial Automation",
+      "city": "Kolbermoor",
+      "distance_km": 56.0,
+      "employee_range": "~1,200",
+      "what_they_make": "Turnkey conveyor systems, automation, intralogistics and special machine construction.",
+      "why_fit": "Project-based equipment → frequent revisions and multi-discipline handoffs; strong fit for drawing checks + release-package automation (inference).",
+      "cad_plm_signals": "Public PLM signal: listed as a customer of PRO.FILE (document/product lifecycle management solution).",
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://www.rofa-group.com/en/",
+        "https://www.rofa-group.com/en/products-solutions/"
+      ],
+      "pilot_priority": "tier_1"
+    },
+    {
+      "company_id": "grenzebach",
+      "name": "Grenzebach",
+      "city": "Asbach-Bäumenheim",
+      "distance_km": 97.5,
+      "employee_range": "~1,600 (reported)",
+      "what_they_make": "Industrial automation solutions and production plant engineering (e.g., glass & materials industries, intralogistics, etc.).",
+      "why_fit": "Complex product structures and cross-functional coordination (inference); automation tool aligns with drawing/release discipline.",
+      "cad_plm_signals": "PLM signal: public case describes EPLAN integration into PTC Windchill at Grenzebach (indicates formal PLM backbone, though not Teamcenter).",
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://www.grenzebach.com/de/unternehmen/",
+        "https://xplm.com/de/customer-stories/grenzebach/"
+      ],
+      "pilot_priority": "tier_1"
+    },
+    {
+      "company_id": "bbs_automation_hallbergmoos",
+      "name": "BBS Automation Hallbergmoos",
+      "city": "Hallbergmoos",
+      "distance_km": 35.0,
+      "employee_range": "51–200 at Hallbergmoos site",
+      "what_they_make": "Assembly and injection-molding automation systems (local entity of a larger automation group).",
+      "why_fit": "Assembly/test automation is drawing- and documentation-heavy; good pilot for automated drawing checks and manufacturing feedback loops (inference).",
+      "cad_plm_signals": "Corporate signal: group states ~2,500 employees globally. (Local CAD/PLM stack unspecified.)",
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://de.linkedin.com/company/bbsautomation-hallbergmoos",
+        "https://www.bbsautomation.com/de/unternehmen"
+      ],
+      "pilot_priority": "tier_1"
+    },
+    {
+      "company_id": "fipa",
+      "name": "FIPA",
+      "city": "Ismaning",
+      "distance_km": 15.0,
+      "employee_range": "50–99",
+      "what_they_make": "Vacuum, gripper, and lifting technology; also customized system solutions around material flow.",
+      "why_fit": "EOAT/gripper variants → repeatable drawings + DFM checks for machined/sheet-metal + purchased components (inference).",
+      "cad_plm_signals": null,
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://fipa.com/de/ueber-uns/",
+        "https://www.wlw.de/de/firma/fipa-gmbh-335036"
+      ],
+      "pilot_priority": "tier_1"
+    },
+    {
+      "company_id": "bauer_kompressoren",
+      "name": "BAUER KOMPRESSOREN",
+      "city": "Geretsried",
+      "distance_km": null,
+      "employee_range": "201–500 (company size); group-level statements ~1,200–1,550 in job text",
+      "what_they_make": "High- and medium-pressure compressors; German “Werk München” develops/manufactures compressors and systems.",
+      "why_fit": "Safety-/compliance-driven mechanical products; strong fit for automated drawing checks and release discipline (inference).",
+      "cad_plm_signals": null,
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://www.bauer-kompressoren.de/de/unternehmen/index.html",
+        "https://de.linkedin.com/company/bauer-kompressoren-gmbh"
+      ],
+      "pilot_priority": "tier_1"
+    },
+    {
+      "company_id": "bucher_hydraulics_erding",
+      "name": "Bucher Hydraulics Erding",
+      "city": "Erding",
+      "distance_km": 40.0,
+      "employee_range": "~260 at Erding site",
+      "what_they_make": "Hydraulic components/systems; Erding site described as specializing in a defined product portfolio.",
+      "why_fit": "Hydraulics = manufacturing-critical tolerances; DFM + drawing checks can reduce scrap/rework and shorten release cycles (inference).",
+      "cad_plm_signals": "CAD signal from job posting: CAD ideally Creo and SolidWorks (plus CAQ/CAM references).",
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://www.bucherhydraulics.com/de/karriere/standorte-und-stellenangebote/erdingerding-deutschland",
+        "https://www.bucherhydraulics.com/de/karriere/standorte-und-stellenangebote/erding-deutschland/cax-application-engineer-m-w-cax-application-engineer-m-w-d"
+      ],
+      "pilot_priority": "tier_1"
+    },
+    {
+      "company_id": "g_ntner",
+      "name": "Güntner",
+      "city": "Fürstenfeldbruck",
+      "distance_km": 28.7,
+      "employee_range": "“~1,807 employees” visible on LinkedIn; “~5,000 worldwide” stated in a recruiting profile (treat as range).",
+      "what_they_make": "Refrigeration and heat-exchanger solutions (industrial/commercial cooling).",
+      "why_fit": "Heat-exchanger portfolios are configuration- and drawing-heavy; strong DFM leverage around sheet metal and assemblies (inference).",
+      "cad_plm_signals": null,
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://guntner.com/de-de",
+        "https://guentner.softgarden.io/de/vacancies"
+      ],
+      "pilot_priority": "tier_2"
+    },
+    {
+      "company_id": "sennebogen",
+      "name": "SENNEBOGEN",
+      "city": "Straubing",
+      "distance_km": 126.1,
+      "employee_range": "2,200+",
+      "what_they_make": "Configurable material handlers, cranes, telehandlers, and related equipment.",
+      "why_fit": "Variant-rich heavy machines (weldments + hydraulics) → high document load and strong value from automated drawing validation and DFM checks (inference).",
+      "cad_plm_signals": "Job postings publicly reference Siemens NX and Teamcenter for CAM/programming contexts (signal, not official stack confirmation).",
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://www.sennebogen.com/",
+        "https://www.sennebogen.com/karriere"
+      ],
+      "pilot_priority": "tier_2"
+    },
+    {
+      "company_id": "dmg_mori",
+      "name": "DMG MORI",
+      "city": "Pfronten",
+      "distance_km": 127.7,
+      "employee_range": "~1,600 at Pfronten plant",
+      "what_they_make": "Milling-focused machine tool development/production site; >50 machine types noted.",
+      "why_fit": "Precision machines with many BOMs/drawings; strong target for drawing automation, although org size may slow pilots (inference).",
+      "cad_plm_signals": null,
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://de.dmgmori.com/unternehmen/standorte/produktionsstandorte/pfronten",
+        "https://de.dmgmori-career.com/unternehmen/standorte/produktionsstandorte/pfronten"
+      ],
+      "pilot_priority": "tier_3"
+    },
+    {
+      "company_id": "grob_werke",
+      "name": "GROB-WERKE",
+      "city": "Mindelheim",
+      "distance_km": 86.0,
+      "employee_range": "~6,100 at Mindelheim plant",
+      "what_they_make": "Large manufacturing site; described as major employer with extensive production area.",
+      "why_fit": "Large-scale engineering org; likely heavy drawing governance but potentially slower approvals (inference).",
+      "cad_plm_signals": null,
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://www.grobgroup.com/unternehmen/standorte/"
+      ],
+      "pilot_priority": "tier_3"
+    },
+    {
+      "company_id": "kraussmaffei",
+      "name": "KraussMaffei",
+      "city": "Parsdorf",
+      "distance_km": 25.0,
+      "employee_range": "4,200 employees stated on company “in numbers” page",
+      "what_they_make": "Plastics processing machinery/technologies; global footprint.",
+      "why_fit": "Machine platforms + process equipment → drawing-heavy; org likely has formal standards where automated checking adds value (inference).",
+      "cad_plm_signals": null,
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://www.kraussmaffei.com/de/unternehmen?lang=en"
+      ],
+      "pilot_priority": "tier_3"
+    },
+    {
+      "company_id": "al_ko_gardentech",
+      "name": "AL-KO Gardentech",
+      "city": "Kötz",
+      "distance_km": 111.5,
+      "employee_range": "~700",
+      "what_they_make": "Premium garden tools; R&D/manufacturing organization described as global player.",
+      "why_fit": "Many SKUs and product variants → strong fit for drawing consistency checks and repeatable drawing pack generation (inference).",
+      "cad_plm_signals": null,
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://al-ko.com/einsatzbereiche-gardentech/",
+        "https://al-ko.dvinci-hr.com/"
+      ],
+      "pilot_priority": "tier_3"
+    },
+    {
+      "company_id": "hmt_medizintechnik",
+      "name": "HMT Medizintechnik",
+      "city": "Maisach",
+      "distance_km": 25.0,
+      "employee_range": "~105 (stated)",
+      "what_they_make": "Medical device manufacturer; “100% medtech made-to-measure” positioning.",
+      "why_fit": "Regulated documentation + quality gates → strong ROI for automated drawing checks and revision traceability (inference).",
+      "cad_plm_signals": null,
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://www.bvmed.de/verband/mitglieder/hmt-medizintechnik",
+        "https://www.hmt-ffb.de/"
+      ],
+      "pilot_priority": "tier_3"
+    },
+    {
+      "company_id": "em_ger_tebau",
+      "name": "EM Gerätebau",
+      "city": "Mammendorf",
+      "distance_km": 35.0,
+      "employee_range": "~150",
+      "what_they_make": "Sheet-metal fabrication and assemblies; CNC-based production.",
+      "why_fit": "Classic drawing-heavy sheet metal + assemblies; ideal for automated drawing checks and DFM for bend rules/cutouts (inference).",
+      "cad_plm_signals": null,
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://emg-gmbh.de/"
+      ],
+      "pilot_priority": "tier_2"
+    },
+    {
+      "company_id": "peschke_kainz_ger_tebau",
+      "name": "Peschke & Kainz Gerätebau",
+      "city": "Ebersberg",
+      "distance_km": 35.0,
+      "employee_range": "~60 (Germany)",
+      "what_they_make": "Sheet-metal “Gerätebau”/assembly; emphasizes cost-optimized design advice depending on lot size/use case.",
+      "why_fit": "Strong match for automated DFM review + drawing checking as a service to reduce quotation/iteration loops (inference).",
+      "cad_plm_signals": null,
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://www.peschke-kainz.de/unternehmen/",
+        "https://www.peschke-kainz.de/karriere/"
+      ],
+      "pilot_priority": "tier_2"
+    },
+    {
+      "company_id": "gwk_pr_zisionstechnik",
+      "name": "GWK Präzisionstechnik",
+      "city": "Munich",
+      "distance_km": 0.0,
+      "employee_range": "~20 employees",
+      "what_they_make": "Lab devices + special machines; offers design, manufacturing, assembly, device documentation and certification.",
+      "why_fit": "“Documentation-heavy” small org; high leverage for automated drawings + compliance-oriented checking (inference).",
+      "cad_plm_signals": null,
+      "roles_to_contact": [
+        "Head of Mechanical Design",
+        "Engineering Manager",
+        "Manufacturing Engineering Lead",
+        "Quality Lead"
+      ],
+      "sources": [
+        "https://www.gwk-munich.com/",
+        "https://www.gwk-munich.com/karriere.html"
+      ],
+      "pilot_priority": "tier_2"
+    }
+  ]
+}

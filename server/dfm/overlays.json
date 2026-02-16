@@ -1,0 +1,100 @@
+{
+  "version": "1.0.0",
+  "overlays": [
+    {
+      "overlay_id": "machinery",
+      "label": "Machinery and Industrial Automation",
+      "adds_refs": [
+        "REF-MACH-REG",
+        "REF-MACH-ISO"
+      ],
+      "adds_rules_pack": "F_OVERLAY",
+      "rule_prefixes": [
+        "MACH-"
+      ],
+      "extra_report_sections": [
+        "risk_matrix"
+      ]
+    },
+    {
+      "overlay_id": "food",
+      "label": "Food Machinery and Hygienic Design",
+      "adds_refs": [
+        "REF-FOOD-EN",
+        "REF-FOOD-ISO",
+        "REF-HYG-1"
+      ],
+      "adds_rules_pack": "F_OVERLAY",
+      "rule_prefixes": [
+        "FOOD-"
+      ],
+      "extra_report_sections": [
+        "hygiene_checklist",
+        "cleanability_findings"
+      ]
+    },
+    {
+      "overlay_id": "pressure_hvac",
+      "label": "Pressure, HVAC, and Refrigeration",
+      "adds_refs": [
+        "REF-PED-EU",
+        "REF-HVAC-EN"
+      ],
+      "adds_rules_pack": "F_OVERLAY",
+      "rule_prefixes": [
+        "PRES-",
+        "HVAC-"
+      ],
+      "extra_report_sections": [
+        "ped_compliance_matrix"
+      ]
+    },
+    {
+      "overlay_id": "medical",
+      "label": "Medical Devices",
+      "adds_refs": [
+        "REF-MDR-EU",
+        "REF-MED-QMS",
+        "REF-MED-RISK"
+      ],
+      "adds_rules_pack": "F_OVERLAY",
+      "rule_prefixes": [
+        "MED-"
+      ],
+      "extra_report_sections": [
+        "risk_matrix",
+        "traceability_matrix"
+      ]
+    },
+    {
+      "overlay_id": "automotive",
+      "label": "Automotive Supplier Quality Discipline",
+      "adds_refs": [
+        "REF-AUTO-QMS",
+        "REF-VDA-6-3",
+        "REF-GM-CSR"
+      ],
+      "adds_rules_pack": "F_OVERLAY",
+      "rule_prefixes": [
+        "AUTO-"
+      ],
+      "extra_report_sections": [
+        "audit_readiness_matrix"
+      ]
+    },
+    {
+      "overlay_id": "lab",
+      "label": "Lab and Test Equipment",
+      "adds_refs": [
+        "REF-LAB-IEC"
+      ],
+      "adds_rules_pack": "F_OVERLAY",
+      "rule_prefixes": [
+        "LAB-"
+      ],
+      "extra_report_sections": [
+        "safety_requirements_matrix"
+      ]
+    }
+  ]
+}

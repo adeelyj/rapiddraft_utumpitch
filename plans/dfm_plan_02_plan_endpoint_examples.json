@@ -1,0 +1,418 @@
+{
+  "config_snapshot": {
+    "bundle": {
+      "version": "1.0.1",
+      "generated_at": "2026-02-16T18:20:00+00:00",
+      "source_dir": "server\\dfm"
+    },
+    "manifest": {
+      "expected_rule_count": 130,
+      "pack_counts": {
+        "A_DRAWING": 25,
+        "B_CNC": 25,
+        "C_SHEET": 20,
+        "D_WELD": 15,
+        "E_ASSEMBLY": 15,
+        "F_OVERLAY": 30
+      },
+      "reference_count": 34,
+      "roles_count": 5,
+      "templates_count": 5
+    }
+  },
+  "single_route_ai_selected": {
+    "request": {
+      "extracted_part_facts": {
+        "bends_present": true,
+        "constant_thickness": true,
+        "sheet_thickness": 2.0
+      },
+      "selected_process_override": null,
+      "selected_overlay": "medical",
+      "selected_role": "quality_engineer",
+      "selected_template": "medical_design_review",
+      "run_both_if_mismatch": true
+    },
+    "response": {
+      "ai_recommendation": {
+        "process_id": "sheet_metal",
+        "process_label": "Sheet Metal",
+        "confidence": 0.78,
+        "confidence_level": "medium",
+        "reasons": [
+          "bends detected",
+          "constant thickness profile"
+        ],
+        "candidate_scores": [
+          {
+            "process_id": "sheet_metal",
+            "process_label": "Sheet Metal",
+            "score": 0.78
+          },
+          {
+            "process_id": "additive",
+            "process_label": "Additive Manufacturing (Optional)",
+            "score": 0.5
+          },
+          {
+            "process_id": "cnc_milling",
+            "process_label": "CNC Milling",
+            "score": 0.5
+          },
+          {
+            "process_id": "cnc_turning",
+            "process_label": "CNC Turning",
+            "score": 0.5
+          },
+          {
+            "process_id": "plastics",
+            "process_label": "Plastics Process (Optional)",
+            "score": 0.5
+          },
+          {
+            "process_id": "weldment",
+            "process_label": "Weldment and Fabrication",
+            "score": 0.5
+          }
+        ]
+      },
+      "selected_process": {
+        "process_id": "sheet_metal",
+        "process_label": "Sheet Metal",
+        "selected_via": "ai_recommendation"
+      },
+      "selected_packs": [
+        "A_DRAWING",
+        "C_SHEET",
+        "E_ASSEMBLY",
+        "F_OVERLAY"
+      ],
+      "mismatch": {
+        "has_mismatch": false,
+        "user_selected_process": null,
+        "ai_process": {
+          "process_id": "sheet_metal",
+          "process_label": "Sheet Metal"
+        },
+        "run_both_requested": true,
+        "policy_allows_run_both": true,
+        "run_both_executed": false,
+        "banner": null
+      },
+      "execution_plans": [
+        {
+          "plan_id": "plan_1",
+          "route_source": "ai_recommendation",
+          "process_id": "sheet_metal",
+          "process_label": "Sheet Metal",
+          "pack_ids": [
+            "A_DRAWING",
+            "C_SHEET",
+            "E_ASSEMBLY",
+            "F_OVERLAY"
+          ],
+          "pack_labels": [
+            "Drawing and Specification Completeness",
+            "Sheet Metal DFM",
+            "Assembly, Fixture, and Serviceability",
+            "Industry Overlay and Compliance"
+          ],
+          "overlay_id": "medical",
+          "overlay_label": "Medical Devices",
+          "role_id": "quality_engineer",
+          "role_label": "Quality Engineer",
+          "template_id": "medical_design_review",
+          "template_label": "Medical Design Review",
+          "template_sections": [
+            "header_metadata",
+            "dfm_summary",
+            "issues_table",
+            "manufacturability_risks",
+            "compliance_matrix",
+            "evidence_appendix",
+            "standards_references_auto"
+          ],
+          "suppressed_template_sections": [],
+          "standards_used_mode": "findings.refs_auto"
+        }
+      ]
+    }
+  },
+  "run_both_on_mismatch_enabled": {
+    "request": {
+      "extracted_part_facts": {
+        "bends_present": true,
+        "constant_thickness": true,
+        "sheet_thickness": 2.0
+      },
+      "selected_process_override": "cnc_milling",
+      "selected_overlay": "medical",
+      "selected_role": "quality_engineer",
+      "selected_template": "medical_design_review",
+      "run_both_if_mismatch": true
+    },
+    "response": {
+      "ai_recommendation": {
+        "process_id": "sheet_metal",
+        "process_label": "Sheet Metal",
+        "confidence": 0.78,
+        "confidence_level": "medium",
+        "reasons": [
+          "bends detected",
+          "constant thickness profile"
+        ],
+        "candidate_scores": [
+          {
+            "process_id": "sheet_metal",
+            "process_label": "Sheet Metal",
+            "score": 0.78
+          },
+          {
+            "process_id": "additive",
+            "process_label": "Additive Manufacturing (Optional)",
+            "score": 0.5
+          },
+          {
+            "process_id": "cnc_milling",
+            "process_label": "CNC Milling",
+            "score": 0.5
+          },
+          {
+            "process_id": "cnc_turning",
+            "process_label": "CNC Turning",
+            "score": 0.5
+          },
+          {
+            "process_id": "plastics",
+            "process_label": "Plastics Process (Optional)",
+            "score": 0.5
+          },
+          {
+            "process_id": "weldment",
+            "process_label": "Weldment and Fabrication",
+            "score": 0.5
+          }
+        ]
+      },
+      "selected_process": {
+        "process_id": "cnc_milling",
+        "process_label": "CNC Milling",
+        "selected_via": "user_override"
+      },
+      "selected_packs": [
+        "A_DRAWING",
+        "B_CNC",
+        "E_ASSEMBLY",
+        "F_OVERLAY"
+      ],
+      "mismatch": {
+        "has_mismatch": true,
+        "user_selected_process": {
+          "process_id": "cnc_milling",
+          "process_label": "CNC Milling"
+        },
+        "ai_process": {
+          "process_id": "sheet_metal",
+          "process_label": "Sheet Metal"
+        },
+        "run_both_requested": true,
+        "policy_allows_run_both": true,
+        "run_both_executed": true,
+        "banner": "User selected CNC Milling, AI recommended Sheet Metal (0.78). Results include both."
+      },
+      "execution_plans": [
+        {
+          "plan_id": "plan_1",
+          "route_source": "user_override",
+          "process_id": "cnc_milling",
+          "process_label": "CNC Milling",
+          "pack_ids": [
+            "A_DRAWING",
+            "B_CNC",
+            "E_ASSEMBLY",
+            "F_OVERLAY"
+          ],
+          "pack_labels": [
+            "Drawing and Specification Completeness",
+            "CNC Machining DFM",
+            "Assembly, Fixture, and Serviceability",
+            "Industry Overlay and Compliance"
+          ],
+          "overlay_id": "medical",
+          "overlay_label": "Medical Devices",
+          "role_id": "quality_engineer",
+          "role_label": "Quality Engineer",
+          "template_id": "medical_design_review",
+          "template_label": "Medical Design Review",
+          "template_sections": [
+            "header_metadata",
+            "dfm_summary",
+            "issues_table",
+            "manufacturability_risks",
+            "compliance_matrix",
+            "evidence_appendix",
+            "standards_references_auto"
+          ],
+          "suppressed_template_sections": [],
+          "standards_used_mode": "findings.refs_auto"
+        },
+        {
+          "plan_id": "plan_2",
+          "route_source": "ai_recommendation",
+          "process_id": "sheet_metal",
+          "process_label": "Sheet Metal",
+          "pack_ids": [
+            "A_DRAWING",
+            "C_SHEET",
+            "E_ASSEMBLY",
+            "F_OVERLAY"
+          ],
+          "pack_labels": [
+            "Drawing and Specification Completeness",
+            "Sheet Metal DFM",
+            "Assembly, Fixture, and Serviceability",
+            "Industry Overlay and Compliance"
+          ],
+          "overlay_id": "medical",
+          "overlay_label": "Medical Devices",
+          "role_id": "quality_engineer",
+          "role_label": "Quality Engineer",
+          "template_id": "medical_design_review",
+          "template_label": "Medical Design Review",
+          "template_sections": [
+            "header_metadata",
+            "dfm_summary",
+            "issues_table",
+            "manufacturability_risks",
+            "compliance_matrix",
+            "evidence_appendix",
+            "standards_references_auto"
+          ],
+          "suppressed_template_sections": [],
+          "standards_used_mode": "findings.refs_auto"
+        }
+      ]
+    }
+  },
+  "mismatch_with_run_both_disabled": {
+    "request": {
+      "extracted_part_facts": {
+        "bends_present": true,
+        "constant_thickness": true,
+        "sheet_thickness": 2.0
+      },
+      "selected_process_override": "cnc_milling",
+      "selected_overlay": "medical",
+      "selected_role": "quality_engineer",
+      "selected_template": "medical_design_review",
+      "run_both_if_mismatch": false
+    },
+    "response": {
+      "ai_recommendation": {
+        "process_id": "sheet_metal",
+        "process_label": "Sheet Metal",
+        "confidence": 0.78,
+        "confidence_level": "medium",
+        "reasons": [
+          "bends detected",
+          "constant thickness profile"
+        ],
+        "candidate_scores": [
+          {
+            "process_id": "sheet_metal",
+            "process_label": "Sheet Metal",
+            "score": 0.78
+          },
+          {
+            "process_id": "additive",
+            "process_label": "Additive Manufacturing (Optional)",
+            "score": 0.5
+          },
+          {
+            "process_id": "cnc_milling",
+            "process_label": "CNC Milling",
+            "score": 0.5
+          },
+          {
+            "process_id": "cnc_turning",
+            "process_label": "CNC Turning",
+            "score": 0.5
+          },
+          {
+            "process_id": "plastics",
+            "process_label": "Plastics Process (Optional)",
+            "score": 0.5
+          },
+          {
+            "process_id": "weldment",
+            "process_label": "Weldment and Fabrication",
+            "score": 0.5
+          }
+        ]
+      },
+      "selected_process": {
+        "process_id": "cnc_milling",
+        "process_label": "CNC Milling",
+        "selected_via": "user_override"
+      },
+      "selected_packs": [
+        "A_DRAWING",
+        "B_CNC",
+        "E_ASSEMBLY",
+        "F_OVERLAY"
+      ],
+      "mismatch": {
+        "has_mismatch": true,
+        "user_selected_process": {
+          "process_id": "cnc_milling",
+          "process_label": "CNC Milling"
+        },
+        "ai_process": {
+          "process_id": "sheet_metal",
+          "process_label": "Sheet Metal"
+        },
+        "run_both_requested": false,
+        "policy_allows_run_both": true,
+        "run_both_executed": false,
+        "banner": "User selected CNC Milling, AI recommended Sheet Metal (0.78). Results include both."
+      },
+      "execution_plans": [
+        {
+          "plan_id": "plan_1",
+          "route_source": "user_override",
+          "process_id": "cnc_milling",
+          "process_label": "CNC Milling",
+          "pack_ids": [
+            "A_DRAWING",
+            "B_CNC",
+            "E_ASSEMBLY",
+            "F_OVERLAY"
+          ],
+          "pack_labels": [
+            "Drawing and Specification Completeness",
+            "CNC Machining DFM",
+            "Assembly, Fixture, and Serviceability",
+            "Industry Overlay and Compliance"
+          ],
+          "overlay_id": "medical",
+          "overlay_label": "Medical Devices",
+          "role_id": "quality_engineer",
+          "role_label": "Quality Engineer",
+          "template_id": "medical_design_review",
+          "template_label": "Medical Design Review",
+          "template_sections": [
+            "header_metadata",
+            "dfm_summary",
+            "issues_table",
+            "manufacturability_risks",
+            "compliance_matrix",
+            "evidence_appendix",
+            "standards_references_auto"
+          ],
+          "suppressed_template_sections": [],
+          "standards_used_mode": "findings.refs_auto"
+        }
+      ]
+    }
+  }
+}

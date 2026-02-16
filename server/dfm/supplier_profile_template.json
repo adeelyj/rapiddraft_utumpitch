@@ -1,0 +1,47 @@
+{
+  "version": "1.0.0",
+  "template_id": "supplier_profile_template_v1",
+  "description": "Supplier capability profile used to configure thresholds per process.",
+  "supported_processes": {
+    "value": null,
+    "notes": "configurable"
+  },
+  "machine_envelopes": {
+    "cnc_milling_xyz_mm": null,
+    "cnc_turning_max_diameter_mm": null,
+    "cnc_turning_max_length_mm": null,
+    "sheet_metal_max_sheet_mm": null,
+    "notes": "configurable"
+  },
+  "min_wall": {
+    "cnc_milling_mm": null,
+    "cnc_turning_mm": null,
+    "sheet_metal_mm": null,
+    "notes": "configurable"
+  },
+  "hole_depth_ratios": {
+    "drilled_recommended_max_depth_by_diameter": null,
+    "drilled_hard_max_depth_by_diameter": null,
+    "notes": "configurable"
+  },
+  "bend_constraints": {
+    "min_inside_radius_by_material": null,
+    "min_flange_length_multiple_of_thickness": null,
+    "min_hole_to_bend_distance_multiple_of_thickness": null,
+    "notes": "configurable"
+  },
+  "weld_capabilities": {
+    "supported_processes": null,
+    "min_max_thickness_mm": null,
+    "qualified_joint_types": null,
+    "inspection_methods": null,
+    "notes": "configurable"
+  },
+  "inspection_capabilities": {
+    "cmm": null,
+    "surface_roughness_tester": null,
+    "thread_gauging": null,
+    "ndt_methods": null,
+    "notes": "configurable"
+  }
+}

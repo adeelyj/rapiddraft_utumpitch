@@ -1,0 +1,234 @@
+{
+  "version": "1.0.0",
+  "templates": [
+    {
+      "template_id": "executive_1page",
+      "label": "1-page Executive Summary",
+      "description": "Compact top-level view of manufacturability status and top actions.",
+      "sections": [
+        {
+          "section_key": "header_metadata",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "dfm_summary",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "issues_table",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "manufacturability_risks",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "cost_summary",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "cost_drivers",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "cost_compare_routes",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "standards_references_auto",
+          "enabled_by_default": true
+        }
+      ]
+    },
+    {
+      "template_id": "dfm_issue_list",
+      "label": "DFM Issue List",
+      "description": "Detailed issue table with evidence and suggested fixes.",
+      "sections": [
+        {
+          "section_key": "header_metadata",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "issues_table",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "evidence_appendix",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "fixture_plan",
+          "enabled_by_default": true,
+          "role_variants": {
+            "cnc_engineer": true,
+            "sheet_metal_engineer": true
+          }
+        },
+        {
+          "section_key": "cost_summary",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "cost_drivers",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "cost_compare_routes",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "standards_references_auto",
+          "enabled_by_default": true
+        }
+      ]
+    },
+    {
+      "template_id": "supplier_rfq_dfm_pack",
+      "label": "Supplier RFQ DFM Pack",
+      "description": "Supplier-ready pack emphasizing manufacturability and fixture concerns.",
+      "sections": [
+        {
+          "section_key": "header_metadata",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "dfm_summary",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "issues_table",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "manufacturability_risks",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "assembly_risks",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "fixture_plan",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "evidence_appendix",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "cost_summary",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "cost_drivers",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "cost_compare_routes",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "standards_references_auto",
+          "enabled_by_default": true
+        }
+      ]
+    },
+    {
+      "template_id": "medical_design_review",
+      "label": "Medical Design Review",
+      "description": "Risk and compliance-focused template for medical-device contexts.",
+      "sections": [
+        {
+          "section_key": "header_metadata",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "dfm_summary",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "issues_table",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "manufacturability_risks",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "compliance_matrix",
+          "enabled_by_default": true,
+          "overlay_required": "medical"
+        },
+        {
+          "section_key": "evidence_appendix",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "cost_summary",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "cost_drivers",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "cost_compare_routes",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "standards_references_auto",
+          "enabled_by_default": true
+        }
+      ]
+    },
+    {
+      "template_id": "automotive_supplier_pack",
+      "label": "Automotive Supplier Pack",
+      "description": "Audit-oriented report with process evidence and compliance traceability.",
+      "sections": [
+        {
+          "section_key": "header_metadata",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "dfm_summary",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "issues_table",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "assembly_risks",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "compliance_matrix",
+          "enabled_by_default": true,
+          "overlay_required": "automotive"
+        },
+        {
+          "section_key": "evidence_appendix",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "cost_summary",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "cost_drivers",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "cost_compare_routes",
+          "enabled_by_default": true
+        },
+        {
+          "section_key": "standards_references_auto",
+          "enabled_by_default": true
+        }
+      ]
+    }
+  ]
+}

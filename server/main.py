@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import io
-import json
+import os
 import shutil
 import zipfile
 from pathlib import Path
@@ -10,11 +10,18 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from .cad_service import CADProcessingError, CADService
 from .cad_service_occ import CADServiceOCC
-from .dfm_review import generate_dfm_report_markdown, list_rule_sets, resolve_roles
+from .dfm_bundle import DfmBundleValidationError, load_dfm_bundle
+from .dfm_planning import (
+    DfmPlanningError,
+    build_component_profile_options,
+    build_dfm_config,
+    plan_dfm_execution,
+)
+from .dfm_review_v2 import DfmReviewV2Body, DfmReviewV2Error, generate_dfm_review_v2
 from .model_store import ModelStore
 from .review_store import ReviewStore
 
@@ -23,7 +30,12 @@ DATA_DIR = BASE_DIR / "data"
 MODELS_DIR = DATA_DIR / "models"
 PROCESS_DIR = DATA_DIR / "processing"
 WEB_DIST_DIR = BASE_DIR.parent / "web" / "dist"
-DFM_PROFILE_OPTIONS_PATH = DATA_DIR / "dfm_profile_options.json"
+DFM_COST_ENABLED = os.getenv("DFM_COST_ENABLED", "true").strip().lower() not in {
+    "0",
+    "false",
+    "off",
+    "no",
+}
 
 # Drawing template lives at the repo root under /template.
 TEMPLATE_PNG = BASE_DIR.parent / "template" / "a4_iso_minimal.png"
@@ -40,6 +52,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Fail fast on startup if the canonical DFM bundle is missing or invalid.
+try:
+    DFM_BUNDLE = load_dfm_bundle(bundle_dir=BASE_DIR / "dfm", repo_root=BASE_DIR.parent)
+except DfmBundleValidationError as exc:
+    raise RuntimeError(f"DFM bundle validation failed during startup: {exc}") from exc
 
 
 class PinPositionBody(BaseModel):
@@ -89,32 +107,19 @@ class UpdateChecklistItemBody(BaseModel):
     note: str | None = None
 
 
-class DfmReviewBody(BaseModel):
-    technology: str
-    material: str
-    rule_set_id: str
-    image_data_url: str | None = None
-
-
 class ComponentProfileBody(BaseModel):
     material: str
     manufacturing_process: str
     industry: str
 
 
-class DfmPartReviewBody(BaseModel):
-    rule_set_id: str
-    component_node_name: str
-    image_data_url: str | None = None
-
-
-def _load_dfm_profile_options() -> dict:
-    if not DFM_PROFILE_OPTIONS_PATH.exists():
-        raise HTTPException(status_code=500, detail="DFM profile options file is missing")
-    try:
-        return json.loads(DFM_PROFILE_OPTIONS_PATH.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="DFM profile options file is invalid JSON")
+class DfmPlanBody(BaseModel):
+    extracted_part_facts: dict[str, object] = Field(default_factory=dict)
+    selected_process_override: str | None = None
+    selected_overlay: str | None = None
+    selected_role: str
+    selected_template: str
+    run_both_if_mismatch: bool = True
 
 
 def _collect_option_labels(options: dict, key: str) -> set[str]:
@@ -151,38 +156,25 @@ async def list_review_templates():
     return review_store.list_templates()
 
 
-@app.get("/api/dfm/rule-sets")
-async def list_dfm_rule_sets():
-    return list_rule_sets()
+@app.get("/api/dfm/config")
+async def get_dfm_config():
+    return build_dfm_config(DFM_BUNDLE)
 
 
-@app.get("/api/dfm/profile-options")
-async def get_dfm_profile_options():
-    return _load_dfm_profile_options()
-
-
-@app.post("/api/dfm/review")
-async def create_dfm_review(body: DfmReviewBody):
-    available_rule_set_ids = {item["id"] for item in list_rule_sets()}
-    if body.rule_set_id not in available_rule_set_ids:
-        raise HTTPException(status_code=400, detail="Invalid rule_set_id")
-
-    report_markdown, structured = generate_dfm_report_markdown(
-        technology=body.technology,
-        material=body.material,
-        industry="None",
-        rule_set_id=body.rule_set_id,
-        component_name="Global Context",
-    )
-    return {
-        "title": "DFM Review Report",
-        "technology": body.technology,
-        "material": body.material,
-        "ruleSetId": body.rule_set_id,
-        "rolesUsed": resolve_roles(body.technology),
-        "reportMarkdown": report_markdown,
-        "structured": structured,
-    }
+@app.post("/api/dfm/plan")
+async def create_dfm_plan(body: DfmPlanBody):
+    try:
+        return plan_dfm_execution(
+            DFM_BUNDLE,
+            extracted_part_facts=body.extracted_part_facts,
+            selected_process_override=body.selected_process_override,
+            selected_overlay=body.selected_overlay,
+            selected_role=body.selected_role,
+            selected_template=body.selected_template,
+            run_both_if_mismatch=body.run_both_if_mismatch,
+        )
+    except DfmPlanningError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.get("/api/models/{model_id}/component-profiles")
@@ -203,7 +195,7 @@ async def upsert_component_profile(model_id: str, node_name: str, body: Componen
     if not component:
         raise HTTPException(status_code=400, detail="Unknown component node_name")
 
-    options = _load_dfm_profile_options()
+    options = build_component_profile_options(DFM_BUNDLE)
     material_labels = _collect_option_labels(options, "materials")
     process_labels = _collect_option_labels(options, "manufacturingProcesses")
     industry_labels = _collect_option_labels(options, "industries")
@@ -224,47 +216,56 @@ async def upsert_component_profile(model_id: str, node_name: str, body: Componen
     return {"nodeName": node_name, "profile": metadata.component_profiles[node_name]}
 
 
-@app.post("/api/models/{model_id}/dfm/review")
-async def create_component_dfm_review(model_id: str, body: DfmPartReviewBody):
+@app.post("/api/models/{model_id}/dfm/review-v2")
+async def create_component_dfm_review_v2(model_id: str, body: DfmReviewV2Body):
     metadata = model_store.get(model_id)
     if not metadata:
         raise HTTPException(status_code=404, detail="Model not found")
 
-    component = _get_component_entry(metadata, body.component_node_name)
-    if not component:
-        raise HTTPException(status_code=400, detail="Unknown component_node_name")
+    component = None
+    if body.component_node_name:
+        component = _get_component_entry(metadata, body.component_node_name)
+        if not component:
+            raise HTTPException(status_code=400, detail="Unknown component_node_name")
 
-    available_rule_set_ids = {item["id"] for item in list_rule_sets()}
-    if body.rule_set_id not in available_rule_set_ids:
-        raise HTTPException(status_code=400, detail="Invalid rule_set_id")
-
-    profile = metadata.component_profiles.get(body.component_node_name, {})
-    material = profile.get("material", "")
-    technology = profile.get("manufacturingProcess", "")
-    industry = profile.get("industry", "")
-    if not material or not technology or not industry:
-        raise HTTPException(status_code=400, detail="Selected component profile is incomplete")
-
-    display_name = component.get("displayName") or body.component_node_name
-    report_markdown, structured = generate_dfm_report_markdown(
-        technology=technology,
-        material=material,
-        industry=industry,
-        rule_set_id=body.rule_set_id,
-        component_name=display_name,
+    component_node_name = body.component_node_name
+    component_display_name = (
+        (component or {}).get("displayName")
+        if component
+        else "Global Context"
     )
-    return {
-        "title": "DFM Review Report",
-        "componentNodeName": body.component_node_name,
-        "componentDisplayName": display_name,
-        "technology": technology,
-        "material": material,
-        "industry": industry,
-        "ruleSetId": body.rule_set_id,
-        "rolesUsed": resolve_roles(technology),
-        "reportMarkdown": report_markdown,
-        "structured": structured,
+    component_profile = (
+        metadata.component_profiles.get(component_node_name, {})
+        if component_node_name
+        else {}
+    )
+    component_context = {
+        "component_node_name": component_node_name,
+        "component_display_name": component_display_name,
+        "profile": component_profile,
+        "triangle_count": (component or {}).get("triangleCount") if component else None,
     }
+
+    planning_inputs = body.planning_inputs.dict() if body.planning_inputs else None
+    execution_plans = (
+        [plan.dict() for plan in body.execution_plans]
+        if body.execution_plans
+        else None
+    )
+    try:
+        return generate_dfm_review_v2(
+            DFM_BUNDLE,
+            model_id=model_id,
+            component_context=component_context,
+            planning_inputs=planning_inputs,
+            execution_plans=execution_plans,
+            selected_execution_plan_id=body.selected_execution_plan_id,
+            screenshot_data_url=body.screenshot_data_url,
+            context_payload=body.context_payload,
+            cost_enabled=DFM_COST_ENABLED,
+        )
+    except (DfmReviewV2Error, DfmPlanningError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.get("/api/models/{model_id}/tickets")

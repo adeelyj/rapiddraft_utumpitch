@@ -1,0 +1,117 @@
+{
+  "version": "1.0.0",
+  "screens": {
+    "dfm_review_panel": {
+      "flow_order": [
+        "manufacturing_process",
+        "industry_overlay",
+        "role_lens",
+        "report_template",
+        "advanced_llm_model",
+        "run_both_if_mismatch",
+        "generate_review"
+      ],
+      "controls": [
+        {
+          "control_id": "manufacturing_process",
+          "label": "Manufacturing process",
+          "type": "select",
+          "default_mode": "auto",
+          "auto_display_format": "Auto: {process_label} ({confidence})",
+          "options_source": "process_classifier.process_families",
+          "allow_override": true
+        },
+        {
+          "control_id": "industry_overlay",
+          "label": "Industry overlay",
+          "type": "select",
+          "required": false,
+          "options_source": "overlays.overlays"
+        },
+        {
+          "control_id": "role_lens",
+          "label": "Role lens",
+          "type": "select",
+          "required": true,
+          "default": "general_dfm",
+          "options_source": "roles.roles"
+        },
+        {
+          "control_id": "report_template",
+          "label": "Report template",
+          "type": "select",
+          "required": true,
+          "options_source": "report_templates.templates"
+        },
+        {
+          "control_id": "advanced_llm_model",
+          "label": "Advanced: LLM model selector",
+          "type": "select",
+          "required": false,
+          "options": [
+            "gpt-4.1",
+            "gpt-4.1-mini",
+            "gpt-5"
+          ]
+        },
+        {
+          "control_id": "run_both_if_mismatch",
+          "label": "Run both if mismatch",
+          "type": "toggle",
+          "default": true,
+          "description": "When user override differs from high-confidence AI recommendation, run both plans and report mismatch."
+        }
+      ],
+      "standards_used_auto": {
+        "label": "Standards used (auto)",
+        "read_only": true,
+        "data_source": "findings.refs",
+        "deduplicate": true,
+        "sort": "alpha"
+      },
+      "cost_outputs": {
+        "label": "Should-cost (auto)",
+        "read_only": true,
+        "data_source": "review.cost_estimate",
+        "route_compare_data_source": "review.cost_compare_routes",
+        "show_route_delta_on_mismatch": true
+      }
+    },
+    "report_template_builder_panel": {
+      "controls": [
+        {
+          "control_id": "template_type",
+          "label": "Template type",
+          "type": "select",
+          "options_source": "report_templates.templates"
+        },
+        {
+          "control_id": "overlay_pack",
+          "label": "Overlay pack (optional)",
+          "type": "select",
+          "required": false,
+          "options_source": "overlays.overlays"
+        },
+        {
+          "control_id": "default_role_lens",
+          "label": "Default role lens",
+          "type": "select",
+          "options_source": "roles.roles"
+        },
+        {
+          "control_id": "section_tree",
+          "label": "Section tree",
+          "type": "tree",
+          "nodes_source": "report_templates.templates[].sections"
+        }
+      ]
+    }
+  },
+  "interaction_rules": {
+    "primary_trigger": "manufacturing_process",
+    "overlay_adds_pack": "F_OVERLAY",
+    "role_is_lens_only": true,
+    "template_controls_layout_only": true,
+    "mismatch_banner_enabled": true
+  }
+}

@@ -1,0 +1,4232 @@
+{
+  "generated_from": "server.dfm_review_v2.generate_dfm_review_v2",
+  "scenarios": [
+    {
+      "name": "single_route_planned",
+      "component_context": {
+        "component_node_name": "component_1",
+        "component_display_name": "Part 1",
+        "profile": {
+          "material": "Aluminum",
+          "manufacturingProcess": "Sheet Metal",
+          "industry": "Medical"
+        },
+        "triangle_count": 2800
+      },
+      "request": {
+        "model_id": "model-golden-single",
+        "planning_inputs": {
+          "extracted_part_facts": {
+            "bends_present": true,
+            "constant_thickness": true,
+            "sheet_thickness": 2.0
+          },
+          "selected_process_override": null,
+          "selected_overlay": "medical",
+          "selected_role": "quality_engineer",
+          "selected_template": "medical_design_review",
+          "run_both_if_mismatch": true
+        },
+        "execution_plans": null,
+        "selected_execution_plan_id": null,
+        "screenshot_data_url": null,
+        "context_payload": {
+          "quantity": 1
+        }
+      },
+      "response": {
+        "model_id": "model-golden-single",
+        "component_context": {
+          "component_node_name": "component_1",
+          "component_display_name": "Part 1",
+          "profile": {
+            "material": "Aluminum",
+            "manufacturingProcess": "Sheet Metal",
+            "industry": "Medical"
+          },
+          "triangle_count": 2800
+        },
+        "ai_recommendation": {
+          "process_id": "sheet_metal",
+          "process_label": "Sheet Metal",
+          "confidence": 0.78,
+          "confidence_level": "medium",
+          "reasons": [
+            "bends detected",
+            "constant thickness profile"
+          ],
+          "candidate_scores": [
+            {
+              "process_id": "sheet_metal",
+              "process_label": "Sheet Metal",
+              "score": 0.78
+            },
+            {
+              "process_id": "additive",
+              "process_label": "Additive Manufacturing (Optional)",
+              "score": 0.5
+            },
+            {
+              "process_id": "cnc_milling",
+              "process_label": "CNC Milling",
+              "score": 0.5
+            },
+            {
+              "process_id": "cnc_turning",
+              "process_label": "CNC Turning",
+              "score": 0.5
+            },
+            {
+              "process_id": "plastics",
+              "process_label": "Plastics Process (Optional)",
+              "score": 0.5
+            },
+            {
+              "process_id": "weldment",
+              "process_label": "Weldment and Fabrication",
+              "score": 0.5
+            }
+          ]
+        },
+        "mismatch": {
+          "has_mismatch": false,
+          "user_selected_process": null,
+          "ai_process": {
+            "process_id": "sheet_metal",
+            "process_label": "Sheet Metal"
+          },
+          "run_both_requested": true,
+          "policy_allows_run_both": true,
+          "run_both_executed": false,
+          "banner": null
+        },
+        "route_count": 1,
+        "finding_count_total": 43,
+        "standards_used_auto_union": [
+          {
+            "ref_id": "REF-AUTO-QMS",
+            "title": "IATF 16949 automotive QMS requirements",
+            "url": "https://www.iatfglobaloversight.org/iatf-16949/",
+            "type": "standard",
+            "notes": "Automotive quality system expectations linked to process discipline."
+          },
+          {
+            "ref_id": "REF-BLT-1",
+            "title": "ISO 898-1: Mechanical properties of bolts/screws/studs",
+            "url": "https://www.iso.org/standard/67643.html",
+            "type": "standard",
+            "notes": "Fastener property classes and test requirements."
+          },
+          {
+            "ref_id": "REF-DFA-1",
+            "title": "DFMA principles overview (Boothroyd Dewhurst)",
+            "url": "https://www.dfma.com/software/boothroyd-dewhurst/",
+            "type": "guide",
+            "notes": "Part-count reduction and assembly simplification principles."
+          },
+          {
+            "ref_id": "REF-FIX-1",
+            "title": "Carr Lane fixture design principles (3-2-1 locating)",
+            "url": "https://www.carrlane.com/engineering-resources/fixture-design-principles",
+            "type": "guide",
+            "notes": "Fixture location and repeatability fundamentals."
+          },
+          {
+            "ref_id": "REF-GM-CSR",
+            "title": "GM customer specific requirements context (IATF)",
+            "url": "https://www.iatfglobaloversight.org/oem-requirements/",
+            "type": "guide",
+            "notes": "Customer-specific quality/control plan expectations for suppliers."
+          },
+          {
+            "ref_id": "REF-GPS-1",
+            "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
+            "url": "https://www.iso.org/standard/76602.html",
+            "type": "standard",
+            "notes": "Core GPS interpretation principles including independency."
+          },
+          {
+            "ref_id": "REF-GPS-2",
+            "title": "ISO 1101: Geometrical tolerancing",
+            "url": "https://www.iso.org/standard/79211.html",
+            "type": "standard",
+            "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules."
+          },
+          {
+            "ref_id": "REF-GPS-3",
+            "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
+            "url": "https://www.iso.org/standard/26209.html",
+            "type": "standard",
+            "notes": "Default dimension tolerance classes when not individually specified."
+          },
+          {
+            "ref_id": "REF-GPS-4",
+            "title": "ISO 2768-2: General geometrical tolerances",
+            "url": "https://www.iso.org/standard/26210.html",
+            "type": "standard",
+            "notes": "Default geometrical tolerances for unspecified features."
+          },
+          {
+            "ref_id": "REF-GPS-5",
+            "title": "ISO 21920-1: Surface texture profile method",
+            "url": "https://www.iso.org/standard/74517.html",
+            "type": "standard",
+            "notes": "Surface texture specification framework used in modern GPS practice."
+          },
+          {
+            "ref_id": "REF-HYG-1",
+            "title": "EHEDG hygienic design guidance",
+            "url": "https://www.ehedg.org/guidelines",
+            "type": "guide",
+            "notes": "Practical hygienic design heuristics for geometry and finish."
+          },
+          {
+            "ref_id": "REF-MED-QMS",
+            "title": "ISO 13485: Medical devices QMS requirements",
+            "url": "https://www.iso.org/standard/59752.html",
+            "type": "standard",
+            "notes": "Quality-system requirements for medical device lifecycle control."
+          },
+          {
+            "ref_id": "REF-MED-RISK",
+            "title": "ISO 14971: Medical device risk management",
+            "url": "https://www.iso.org/standard/72704.html",
+            "type": "standard",
+            "notes": "Risk analysis, controls, and residual-risk evaluation process."
+          },
+          {
+            "ref_id": "REF-PED-EU",
+            "title": "Directive 2014/68/EU (Pressure Equipment Directive)",
+            "url": "https://eur-lex.europa.eu/eli/dir/2014/68/oj",
+            "type": "eu_reg",
+            "notes": "Pressure equipment safety requirements and conformity paths."
+          },
+          {
+            "ref_id": "REF-SM-1",
+            "title": "Protolabs sheet metal design guidelines",
+            "url": "https://www.protolabs.com/resources/design-tips/sheet-metal-design-guidelines/",
+            "type": "guide",
+            "notes": "Bend, flange, relief, and hole-placement rules."
+          },
+          {
+            "ref_id": "REF-TOR-1",
+            "title": "ISO 16047: Torque/clamp force testing for threaded fasteners",
+            "url": "https://www.iso.org/standard/63234.html",
+            "type": "standard",
+            "notes": "Method for torque-clamp behavior verification."
+          },
+          {
+            "ref_id": "REF-WLD-1",
+            "title": "ISO 2553: Weld symbol representation on drawings",
+            "url": "https://www.iso.org/standard/76349.html",
+            "type": "standard",
+            "notes": "Standardized weld-symbol notation and positioning."
+          },
+          {
+            "ref_id": "REF-WLD-2",
+            "title": "ISO 5817: Quality levels for weld imperfections",
+            "url": "https://www.iso.org/standard/54925.html",
+            "type": "standard",
+            "notes": "Imperfection quality classes for fusion welds."
+          }
+        ],
+        "cost_estimate": {
+          "plan_id": "plan_1",
+          "route_source": "ai_recommendation",
+          "process_id": "sheet_metal",
+          "process_label": "Sheet Metal",
+          "currency": "USD",
+          "quantity": 1,
+          "unit_cost": 134.1382,
+          "total_cost": 134.1382,
+          "cost_range": {
+            "unit_low": 83.1657,
+            "unit_high": 185.1107,
+            "total_low": 83.1657,
+            "total_high": 185.1107
+          },
+          "confidence": 0.23,
+          "confidence_level": "low",
+          "assumptions": [
+            "Body count defaulted to 1.",
+            "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+            "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+            "Triangle count used to improve defaulted volume estimate.",
+            "Supplier-specific process rates not provided; using default model rates.",
+            "Material key inferred from component material profile."
+          ],
+          "cost_drivers": [
+            {
+              "rule_id": "SM-005",
+              "impact_type": "scrap",
+              "delta_percent": 0.5,
+              "notes": "Insufficient relief often increases forming failure and scrap risk."
+            },
+            {
+              "rule_id": "ASM-004",
+              "impact_type": "setup",
+              "delta_percent": 0.25,
+              "notes": "Assembly orientation complexity can add fixture/setup effort."
+            }
+          ],
+          "breakdown": {
+            "material_cost": 1.6607,
+            "process_cost": 16.3296,
+            "setup_cost_per_unit": 80.196,
+            "inspection_cost": 21.58,
+            "overhead_cost": 14.372
+          },
+          "metrics_used": {
+            "body_count": 1.0,
+            "part_volume_mm3": 896000.0,
+            "surface_area_mm2": 24000.0,
+            "bbox_x_mm": 120.0,
+            "bbox_y_mm": 80.0,
+            "bbox_z_mm": 40.0,
+            "bbox_volume_mm3": 384000.0
+          }
+        },
+        "cost_estimate_by_route": [
+          {
+            "plan_id": "plan_1",
+            "route_source": "ai_recommendation",
+            "process_id": "sheet_metal",
+            "process_label": "Sheet Metal",
+            "currency": "USD",
+            "quantity": 1,
+            "unit_cost": 134.1382,
+            "total_cost": 134.1382,
+            "cost_range": {
+              "unit_low": 83.1657,
+              "unit_high": 185.1107,
+              "total_low": 83.1657,
+              "total_high": 185.1107
+            },
+            "confidence": 0.23,
+            "confidence_level": "low",
+            "assumptions": [
+              "Body count defaulted to 1.",
+              "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+              "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+              "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+              "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+              "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+              "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+              "Triangle count used to improve defaulted volume estimate.",
+              "Supplier-specific process rates not provided; using default model rates.",
+              "Material key inferred from component material profile."
+            ],
+            "cost_drivers": [
+              {
+                "rule_id": "SM-005",
+                "impact_type": "scrap",
+                "delta_percent": 0.5,
+                "notes": "Insufficient relief often increases forming failure and scrap risk."
+              },
+              {
+                "rule_id": "ASM-004",
+                "impact_type": "setup",
+                "delta_percent": 0.25,
+                "notes": "Assembly orientation complexity can add fixture/setup effort."
+              }
+            ],
+            "breakdown": {
+              "material_cost": 1.6607,
+              "process_cost": 16.3296,
+              "setup_cost_per_unit": 80.196,
+              "inspection_cost": 21.58,
+              "overhead_cost": 14.372
+            },
+            "metrics_used": {
+              "body_count": 1.0,
+              "part_volume_mm3": 896000.0,
+              "surface_area_mm2": 24000.0,
+              "bbox_x_mm": 120.0,
+              "bbox_y_mm": 80.0,
+              "bbox_z_mm": 40.0,
+              "bbox_volume_mm3": 384000.0
+            }
+          }
+        ],
+        "cost_compare_routes": null,
+        "routes": [
+          {
+            "plan_id": "plan_1",
+            "route_source": "ai_recommendation",
+            "process_id": "sheet_metal",
+            "process_label": "Sheet Metal",
+            "pack_ids": [
+              "A_DRAWING",
+              "C_SHEET",
+              "E_ASSEMBLY",
+              "F_OVERLAY"
+            ],
+            "pack_labels": [
+              "Drawing and Specification Completeness",
+              "Sheet Metal DFM",
+              "Assembly, Fixture, and Serviceability",
+              "Industry Overlay and Compliance"
+            ],
+            "overlay_id": "medical",
+            "overlay_label": "Medical Devices",
+            "role_id": "quality_engineer",
+            "role_label": "Quality Engineer",
+            "template_id": "medical_design_review",
+            "template_label": "Medical Design Review",
+            "finding_count": 43,
+            "findings": [
+              {
+                "rule_id": "SPEC-001",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "General tolerances declared (ISO 2768-1/-2 or equivalent)",
+                "description": "General tolerances declared (ISO 2768-1/-2 or equivalent)",
+                "refs": [
+                  "REF-GPS-3",
+                  "REF-GPS-4"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_title_block",
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-002",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "GPS fundamentals declared (defaults/interpretation consistent with ISO 8015 framework)",
+                "description": "GPS fundamentals declared (defaults/interpretation consistent with ISO 8015 framework)",
+                "refs": [
+                  "REF-GPS-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-003",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Units shown (mm/in) and consistent across drawing",
+                "description": "Units shown (mm/in) and consistent across drawing",
+                "refs": [
+                  "REF-GPS-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_title_block"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-004",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Projection method shown (1st/3rd angle) if multi-view drawing",
+                "description": "Projection method shown (1st/3rd angle) if multi-view drawing",
+                "refs": [
+                  "REF-GPS-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_title_block"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-005",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Material specified (grade + condition/heat treat if relevant)",
+                "description": "Material specified (grade + condition/heat treat if relevant)",
+                "refs": [
+                  "REF-GPS-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_title_block",
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-006",
+                "pack_id": "A_DRAWING",
+                "severity": "critical",
+                "title": "Surface texture requirement present where function-critical",
+                "description": "Surface texture requirement present where function-critical",
+                "refs": [
+                  "REF-GPS-5"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes",
+                    "surface_finish_spec"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-008",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "\u201cDeburr/break edges\u201d requirement present if sharp edges unacceptable",
+                "description": "\u201cDeburr/break edges\u201d requirement present if sharp edges unacceptable",
+                "refs": [
+                  "REF-GPS-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-014",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Fasteners in BOM include property class (e",
+                "description": "Fasteners in BOM include property class (e.g., 8.8/10.9)",
+                "refs": [
+                  "REF-BLT-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bom_items"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-015",
+                "pack_id": "A_DRAWING",
+                "severity": "critical",
+                "title": "Torque/clamp requirements specified when joint performance is critical",
+                "description": "Torque/clamp requirements specified when joint performance is critical",
+                "refs": [
+                  "REF-TOR-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes",
+                    "bom_items",
+                    "assembly_model"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-016",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Welds use ISO 2553 symbols (not ambiguous sketches)",
+                "description": "Welds use ISO 2553 symbols (not ambiguous sketches)",
+                "refs": [
+                  "REF-WLD-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "weld_symbols",
+                    "weld_data"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-017",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Weld symbol includes size (a/z) and length/intermittent pattern if applicable",
+                "description": "Weld symbol includes size (a/z) and length/intermittent pattern if applicable",
+                "refs": [
+                  "REF-WLD-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "weld_symbols",
+                    "weld_data"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-018",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Weld quality level specified when required (B/C/D)",
+                "description": "Weld quality level specified when required (B/C/D)",
+                "refs": [
+                  "REF-WLD-2"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes",
+                    "weld_notes",
+                    "weld_data"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-019",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Weld inspection/testing notes present when specified (NDT, pressure test etc",
+                "description": "Weld inspection/testing notes present when specified (NDT, pressure test etc.)",
+                "refs": [
+                  "REF-WLD-1",
+                  "REF-PED-EU"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-020",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Coating/finish type and thickness specified when functional (corrosion, hygiene)",
+                "description": "Coating/finish type and thickness specified when functional (corrosion, hygiene)",
+                "refs": [
+                  "REF-HYG-1",
+                  "REF-PED-EU"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-021",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Revision + change note present for released drawings",
+                "description": "Revision + change note present for released drawings",
+                "refs": [
+                  "REF-MED-QMS",
+                  "REF-AUTO-QMS"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_title_block"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-022",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "CTQs flagged (special characteristics) if auto/medical process requires it",
+                "description": "CTQs flagged (special characteristics) if auto/medical process requires it",
+                "refs": [
+                  "REF-GM-CSR",
+                  "REF-AUTO-QMS"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bom_items"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-023",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Inspection method expectation indicated for hard-to-measure GD&T",
+                "description": "Inspection method expectation indicated for hard-to-measure GD&T",
+                "refs": [
+                  "REF-GPS-2"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-025",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Assembly drawing includes BOM + callouts for joining method",
+                "description": "Assembly drawing includes BOM + callouts for joining method",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "assembly_model"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-001",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Min flange length \u2265 4\u00d7 thickness",
+                "description": "Min flange length \u2265 4\u00d7 thickness",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "flange_length"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-002",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Prefer consistent bend radii across bends (tooling reuse)",
+                "description": "Prefer consistent bend radii across bends (tooling reuse)",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "radii_set",
+                    "bend_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-003",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Hole/slot diameter \u2265 material thickness",
+                "description": "Hole/slot diameter \u2265 material thickness",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "hole_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-005",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Hole-to-bend proximity: flag distortion-prone features",
+                "description": "Hole-to-bend proximity: flag distortion-prone features",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bend_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-006",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Tabs: width \u2265 2\u00d7t (or \u2265 3",
+                "description": "Tabs: width \u2265 2\u00d7t (or \u2265 3.2 mm) and length \u2264 5\u00d7 width",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "geometry_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-007",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Notches: width \u2265 t (or \u2265 1",
+                "description": "Notches: width \u2265 t (or \u2265 1.016 mm), length \u2264 5\u00d7 width",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "geometry_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-010",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Bend angle tolerance expectation \u00b11\u00b0",
+                "description": "Bend angle tolerance expectation \u00b11\u00b0; flag if drawing demands tighter without process note",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bend_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-011",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Multi-bend stack-up: flag tight across-bend tolerances",
+                "description": "Multi-bend stack-up: flag tight across-bend tolerances",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bend_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-012",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Hem design: check minimum inside diameter and return length vs thickness",
+                "description": "Hem design: check minimum inside diameter and return length vs thickness",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "geometry_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-015",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Edge burr control note present (deburr, edge break)",
+                "description": "Edge burr control note present (deburr, edge break)",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-019",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Very long bends near max envelope: flag handling/deflection risk",
+                "description": "Very long bends near max envelope: flag handling/deflection risk",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bend_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-020",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Prefer symmetric bend layout to reduce twist/warp",
+                "description": "Prefer symmetric bend layout to reduce twist/warp",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bend_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "ASM-001",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Reduce part count by combining parts where no \u201cminimum part criteria\u201d applies",
+                "description": "Reduce part count by combining parts where no \u201cminimum part criteria\u201d applies",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bom_items"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "ASM-002",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Reduce fasteners",
+                "description": "Reduce fasteners; prefer self-retaining features where possible",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bom_items"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "ASM-003",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Standardize components",
+                "description": "Standardize components; reduce unique variants",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bom_items"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "ASM-004",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Minimize reorientation/flips in assembly sequence",
+                "description": "Minimize reorientation/flips in assembly sequence",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "assembly_model"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "ASM-007",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Clear symmetry/asymmetry for orientation (avoid ambiguous \u201clooks same\u201d)",
+                "description": "Clear symmetry/asymmetry for orientation (avoid ambiguous \u201clooks same\u201d)",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "geometry_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "FIX-001",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Ensure a stable 3-2-1 locating scheme is possible on real surfaces",
+                "description": "Ensure a stable 3-2-1 locating scheme is possible on real surfaces",
+                "refs": [
+                  "REF-FIX-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "datum_scheme"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "FIX-002",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Provide flat, accessible datum pads for locating",
+                "description": "Provide flat, accessible datum pads for locating; avoid raw/irregular datum surfaces",
+                "refs": [
+                  "REF-FIX-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "datum_scheme"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "FIX-003",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Clamp forces won\u2019t deform thin walls (flag clamp-sensitive areas)",
+                "description": "Clamp forces won\u2019t deform thin walls (flag clamp-sensitive areas)",
+                "refs": [
+                  "REF-FIX-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "wall_thickness_map"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "FIX-005",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Add sacrificial tabs or fixture bosses when no good clamping exists",
+                "description": "Add sacrificial tabs or fixture bosses when no good clamping exists.   Serviceability",
+                "refs": [
+                  "REF-FIX-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "geometry_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SRV-001",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Ensure tool access to fasteners (wrench clearance) in final assembly",
+                "description": "Ensure tool access to fasteners (wrench clearance) in final assembly",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "assembly_model"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SRV-002",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Minimize unique tool types (hex sizes, torx types)",
+                "description": "Minimize unique tool types (hex sizes, torx types)",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bom_items"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "MED-003",
+                "pack_id": "F_OVERLAY",
+                "severity": "critical",
+                "title": "Risk management process (ISO 14971): hazards \u2192 risk controls \u2192 residual risk monitoring",
+                "description": "Risk management process (ISO 14971): hazards \u2192 risk controls \u2192 residual risk monitoring",
+                "refs": [
+                  "REF-MED-RISK"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "risk_file"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "MED-005",
+                "pack_id": "F_OVERLAY",
+                "severity": "major",
+                "title": "Cleanability/bioburden-related design constraints treated as DFM risks when relevant",
+                "description": "Cleanability/bioburden-related design constraints treated as DFM risks when relevant.   F6 Test & measurement / lab equipment",
+                "refs": [
+                  "REF-MED-RISK",
+                  "REF-HYG-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "surface_finish_spec"
+                  ],
+                  "provided_inputs": [
+                    "material_spec"
+                  ]
+                }
+              }
+            ],
+            "standards_used_auto": [
+              {
+                "ref_id": "REF-AUTO-QMS",
+                "title": "IATF 16949 automotive QMS requirements",
+                "url": "https://www.iatfglobaloversight.org/iatf-16949/",
+                "type": "standard",
+                "notes": "Automotive quality system expectations linked to process discipline."
+              },
+              {
+                "ref_id": "REF-BLT-1",
+                "title": "ISO 898-1: Mechanical properties of bolts/screws/studs",
+                "url": "https://www.iso.org/standard/67643.html",
+                "type": "standard",
+                "notes": "Fastener property classes and test requirements."
+              },
+              {
+                "ref_id": "REF-DFA-1",
+                "title": "DFMA principles overview (Boothroyd Dewhurst)",
+                "url": "https://www.dfma.com/software/boothroyd-dewhurst/",
+                "type": "guide",
+                "notes": "Part-count reduction and assembly simplification principles."
+              },
+              {
+                "ref_id": "REF-FIX-1",
+                "title": "Carr Lane fixture design principles (3-2-1 locating)",
+                "url": "https://www.carrlane.com/engineering-resources/fixture-design-principles",
+                "type": "guide",
+                "notes": "Fixture location and repeatability fundamentals."
+              },
+              {
+                "ref_id": "REF-GM-CSR",
+                "title": "GM customer specific requirements context (IATF)",
+                "url": "https://www.iatfglobaloversight.org/oem-requirements/",
+                "type": "guide",
+                "notes": "Customer-specific quality/control plan expectations for suppliers."
+              },
+              {
+                "ref_id": "REF-GPS-1",
+                "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
+                "url": "https://www.iso.org/standard/76602.html",
+                "type": "standard",
+                "notes": "Core GPS interpretation principles including independency."
+              },
+              {
+                "ref_id": "REF-GPS-2",
+                "title": "ISO 1101: Geometrical tolerancing",
+                "url": "https://www.iso.org/standard/79211.html",
+                "type": "standard",
+                "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules."
+              },
+              {
+                "ref_id": "REF-GPS-3",
+                "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
+                "url": "https://www.iso.org/standard/26209.html",
+                "type": "standard",
+                "notes": "Default dimension tolerance classes when not individually specified."
+              },
+              {
+                "ref_id": "REF-GPS-4",
+                "title": "ISO 2768-2: General geometrical tolerances",
+                "url": "https://www.iso.org/standard/26210.html",
+                "type": "standard",
+                "notes": "Default geometrical tolerances for unspecified features."
+              },
+              {
+                "ref_id": "REF-GPS-5",
+                "title": "ISO 21920-1: Surface texture profile method",
+                "url": "https://www.iso.org/standard/74517.html",
+                "type": "standard",
+                "notes": "Surface texture specification framework used in modern GPS practice."
+              },
+              {
+                "ref_id": "REF-HYG-1",
+                "title": "EHEDG hygienic design guidance",
+                "url": "https://www.ehedg.org/guidelines",
+                "type": "guide",
+                "notes": "Practical hygienic design heuristics for geometry and finish."
+              },
+              {
+                "ref_id": "REF-MED-QMS",
+                "title": "ISO 13485: Medical devices QMS requirements",
+                "url": "https://www.iso.org/standard/59752.html",
+                "type": "standard",
+                "notes": "Quality-system requirements for medical device lifecycle control."
+              },
+              {
+                "ref_id": "REF-MED-RISK",
+                "title": "ISO 14971: Medical device risk management",
+                "url": "https://www.iso.org/standard/72704.html",
+                "type": "standard",
+                "notes": "Risk analysis, controls, and residual-risk evaluation process."
+              },
+              {
+                "ref_id": "REF-PED-EU",
+                "title": "Directive 2014/68/EU (Pressure Equipment Directive)",
+                "url": "https://eur-lex.europa.eu/eli/dir/2014/68/oj",
+                "type": "eu_reg",
+                "notes": "Pressure equipment safety requirements and conformity paths."
+              },
+              {
+                "ref_id": "REF-SM-1",
+                "title": "Protolabs sheet metal design guidelines",
+                "url": "https://www.protolabs.com/resources/design-tips/sheet-metal-design-guidelines/",
+                "type": "guide",
+                "notes": "Bend, flange, relief, and hole-placement rules."
+              },
+              {
+                "ref_id": "REF-TOR-1",
+                "title": "ISO 16047: Torque/clamp force testing for threaded fasteners",
+                "url": "https://www.iso.org/standard/63234.html",
+                "type": "standard",
+                "notes": "Method for torque-clamp behavior verification."
+              },
+              {
+                "ref_id": "REF-WLD-1",
+                "title": "ISO 2553: Weld symbol representation on drawings",
+                "url": "https://www.iso.org/standard/76349.html",
+                "type": "standard",
+                "notes": "Standardized weld-symbol notation and positioning."
+              },
+              {
+                "ref_id": "REF-WLD-2",
+                "title": "ISO 5817: Quality levels for weld imperfections",
+                "url": "https://www.iso.org/standard/54925.html",
+                "type": "standard",
+                "notes": "Imperfection quality classes for fusion welds."
+              }
+            ],
+            "report_skeleton": {
+              "template_sections": [
+                "header_metadata",
+                "dfm_summary",
+                "issues_table",
+                "manufacturability_risks",
+                "compliance_matrix",
+                "evidence_appendix",
+                "cost_summary",
+                "cost_drivers",
+                "cost_compare_routes",
+                "standards_references_auto"
+              ],
+              "suppressed_template_sections": [],
+              "role_formatting": {
+                "wording_style": "formal_audit",
+                "default_issue_sort": "by_severity"
+              },
+              "mismatch_context": {
+                "has_mismatch": false,
+                "route_source": "ai_recommendation",
+                "banner": null
+              },
+              "cost_summary": {
+                "currency": "USD",
+                "quantity": 1,
+                "unit_cost": 134.1382,
+                "total_cost": 134.1382,
+                "confidence": 0.23,
+                "confidence_level": "low",
+                "cost_range": {
+                  "unit_low": 83.1657,
+                  "unit_high": 185.1107,
+                  "total_low": 83.1657,
+                  "total_high": 185.1107
+                },
+                "assumptions": [
+                  "Body count defaulted to 1.",
+                  "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+                  "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+                  "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+                  "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+                  "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+                  "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+                  "Triangle count used to improve defaulted volume estimate.",
+                  "Supplier-specific process rates not provided; using default model rates.",
+                  "Material key inferred from component material profile."
+                ]
+              },
+              "cost_drivers": [
+                {
+                  "rule_id": "SM-005",
+                  "impact_type": "scrap",
+                  "delta_percent": 0.5,
+                  "notes": "Insufficient relief often increases forming failure and scrap risk."
+                },
+                {
+                  "rule_id": "ASM-004",
+                  "impact_type": "setup",
+                  "delta_percent": 0.25,
+                  "notes": "Assembly orientation complexity can add fixture/setup effort."
+                }
+              ],
+              "cost_compare_routes": null
+            },
+            "cost_estimate": {
+              "currency": "USD",
+              "quantity": 1,
+              "unit_cost": 134.1382,
+              "total_cost": 134.1382,
+              "cost_range": {
+                "unit_low": 83.1657,
+                "unit_high": 185.1107,
+                "total_low": 83.1657,
+                "total_high": 185.1107
+              },
+              "confidence": 0.23,
+              "confidence_level": "low",
+              "assumptions": [
+                "Body count defaulted to 1.",
+                "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+                "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+                "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+                "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+                "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+                "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+                "Triangle count used to improve defaulted volume estimate.",
+                "Supplier-specific process rates not provided; using default model rates.",
+                "Material key inferred from component material profile."
+              ],
+              "cost_drivers": [
+                {
+                  "rule_id": "SM-005",
+                  "impact_type": "scrap",
+                  "delta_percent": 0.5,
+                  "notes": "Insufficient relief often increases forming failure and scrap risk."
+                },
+                {
+                  "rule_id": "ASM-004",
+                  "impact_type": "setup",
+                  "delta_percent": 0.25,
+                  "notes": "Assembly orientation complexity can add fixture/setup effort."
+                }
+              ],
+              "breakdown": {
+                "material_cost": 1.6607,
+                "process_cost": 16.3296,
+                "setup_cost_per_unit": 80.196,
+                "inspection_cost": 21.58,
+                "overhead_cost": 14.372
+              },
+              "metrics_used": {
+                "body_count": 1.0,
+                "part_volume_mm3": 896000.0,
+                "surface_area_mm2": 24000.0,
+                "bbox_x_mm": 120.0,
+                "bbox_y_mm": 80.0,
+                "bbox_z_mm": 40.0,
+                "bbox_volume_mm3": 384000.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "run_both_planned_mismatch",
+      "component_context": {
+        "component_node_name": "component_1",
+        "component_display_name": "Part 1",
+        "profile": {
+          "material": "Aluminum",
+          "manufacturingProcess": "Sheet Metal",
+          "industry": "Medical"
+        },
+        "triangle_count": 2800
+      },
+      "request": {
+        "model_id": "model-golden-run-both",
+        "planning_inputs": {
+          "extracted_part_facts": {
+            "bends_present": true,
+            "constant_thickness": true,
+            "sheet_thickness": 2.0
+          },
+          "selected_process_override": "cnc_milling",
+          "selected_overlay": "medical",
+          "selected_role": "quality_engineer",
+          "selected_template": "medical_design_review",
+          "run_both_if_mismatch": true
+        },
+        "execution_plans": null,
+        "selected_execution_plan_id": null,
+        "screenshot_data_url": null,
+        "context_payload": {
+          "quantity": 1
+        }
+      },
+      "response": {
+        "model_id": "model-golden-run-both",
+        "component_context": {
+          "component_node_name": "component_1",
+          "component_display_name": "Part 1",
+          "profile": {
+            "material": "Aluminum",
+            "manufacturingProcess": "Sheet Metal",
+            "industry": "Medical"
+          },
+          "triangle_count": 2800
+        },
+        "ai_recommendation": {
+          "process_id": "sheet_metal",
+          "process_label": "Sheet Metal",
+          "confidence": 0.78,
+          "confidence_level": "medium",
+          "reasons": [
+            "bends detected",
+            "constant thickness profile"
+          ],
+          "candidate_scores": [
+            {
+              "process_id": "sheet_metal",
+              "process_label": "Sheet Metal",
+              "score": 0.78
+            },
+            {
+              "process_id": "additive",
+              "process_label": "Additive Manufacturing (Optional)",
+              "score": 0.5
+            },
+            {
+              "process_id": "cnc_milling",
+              "process_label": "CNC Milling",
+              "score": 0.5
+            },
+            {
+              "process_id": "cnc_turning",
+              "process_label": "CNC Turning",
+              "score": 0.5
+            },
+            {
+              "process_id": "plastics",
+              "process_label": "Plastics Process (Optional)",
+              "score": 0.5
+            },
+            {
+              "process_id": "weldment",
+              "process_label": "Weldment and Fabrication",
+              "score": 0.5
+            }
+          ]
+        },
+        "mismatch": {
+          "has_mismatch": true,
+          "user_selected_process": {
+            "process_id": "cnc_milling",
+            "process_label": "CNC Milling"
+          },
+          "ai_process": {
+            "process_id": "sheet_metal",
+            "process_label": "Sheet Metal"
+          },
+          "run_both_requested": true,
+          "policy_allows_run_both": true,
+          "run_both_executed": true,
+          "banner": "User selected CNC Milling, AI recommended Sheet Metal (0.78). Results include both."
+        },
+        "route_count": 2,
+        "finding_count_total": 90,
+        "standards_used_auto_union": [
+          {
+            "ref_id": "REF-AUTO-QMS",
+            "title": "IATF 16949 automotive QMS requirements",
+            "url": "https://www.iatfglobaloversight.org/iatf-16949/",
+            "type": "standard",
+            "notes": "Automotive quality system expectations linked to process discipline."
+          },
+          {
+            "ref_id": "REF-BLT-1",
+            "title": "ISO 898-1: Mechanical properties of bolts/screws/studs",
+            "url": "https://www.iso.org/standard/67643.html",
+            "type": "standard",
+            "notes": "Fastener property classes and test requirements."
+          },
+          {
+            "ref_id": "REF-CNC-1",
+            "title": "Hubs CNC machining design guide",
+            "url": "https://www.hubs.com/knowledge-base/cnc-machining-design-guide/",
+            "type": "guide",
+            "notes": "Practical hole, wall, and tool-access limits for CNC."
+          },
+          {
+            "ref_id": "REF-CNC-2",
+            "title": "Protolabs CNC milling design guidelines",
+            "url": "https://www.protolabs.com/resources/design-tips/cnc-machining-design-guidelines/",
+            "type": "guide",
+            "notes": "Recommendations for pockets, radii, and machinability."
+          },
+          {
+            "ref_id": "REF-CNC-3",
+            "title": "Protocase CNC machining design tips",
+            "url": "https://www.protocase.com/resources/design-tips/cnc-machining.php",
+            "type": "guide",
+            "notes": "Constraints related to depth, corner radii, and accessibility."
+          },
+          {
+            "ref_id": "REF-CNC-4",
+            "title": "Protolabs CNC turning design guidelines",
+            "url": "https://www.protolabs.com/resources/design-tips/cnc-turning-design-guidelines/",
+            "type": "guide",
+            "notes": "Turning-specific geometry and support constraints."
+          },
+          {
+            "ref_id": "REF-DFA-1",
+            "title": "DFMA principles overview (Boothroyd Dewhurst)",
+            "url": "https://www.dfma.com/software/boothroyd-dewhurst/",
+            "type": "guide",
+            "notes": "Part-count reduction and assembly simplification principles."
+          },
+          {
+            "ref_id": "REF-FIX-1",
+            "title": "Carr Lane fixture design principles (3-2-1 locating)",
+            "url": "https://www.carrlane.com/engineering-resources/fixture-design-principles",
+            "type": "guide",
+            "notes": "Fixture location and repeatability fundamentals."
+          },
+          {
+            "ref_id": "REF-GM-CSR",
+            "title": "GM customer specific requirements context (IATF)",
+            "url": "https://www.iatfglobaloversight.org/oem-requirements/",
+            "type": "guide",
+            "notes": "Customer-specific quality/control plan expectations for suppliers."
+          },
+          {
+            "ref_id": "REF-GPS-1",
+            "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
+            "url": "https://www.iso.org/standard/76602.html",
+            "type": "standard",
+            "notes": "Core GPS interpretation principles including independency."
+          },
+          {
+            "ref_id": "REF-GPS-2",
+            "title": "ISO 1101: Geometrical tolerancing",
+            "url": "https://www.iso.org/standard/79211.html",
+            "type": "standard",
+            "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules."
+          },
+          {
+            "ref_id": "REF-GPS-3",
+            "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
+            "url": "https://www.iso.org/standard/26209.html",
+            "type": "standard",
+            "notes": "Default dimension tolerance classes when not individually specified."
+          },
+          {
+            "ref_id": "REF-GPS-4",
+            "title": "ISO 2768-2: General geometrical tolerances",
+            "url": "https://www.iso.org/standard/26210.html",
+            "type": "standard",
+            "notes": "Default geometrical tolerances for unspecified features."
+          },
+          {
+            "ref_id": "REF-GPS-5",
+            "title": "ISO 21920-1: Surface texture profile method",
+            "url": "https://www.iso.org/standard/74517.html",
+            "type": "standard",
+            "notes": "Surface texture specification framework used in modern GPS practice."
+          },
+          {
+            "ref_id": "REF-HYG-1",
+            "title": "EHEDG hygienic design guidance",
+            "url": "https://www.ehedg.org/guidelines",
+            "type": "guide",
+            "notes": "Practical hygienic design heuristics for geometry and finish."
+          },
+          {
+            "ref_id": "REF-MED-QMS",
+            "title": "ISO 13485: Medical devices QMS requirements",
+            "url": "https://www.iso.org/standard/59752.html",
+            "type": "standard",
+            "notes": "Quality-system requirements for medical device lifecycle control."
+          },
+          {
+            "ref_id": "REF-MED-RISK",
+            "title": "ISO 14971: Medical device risk management",
+            "url": "https://www.iso.org/standard/72704.html",
+            "type": "standard",
+            "notes": "Risk analysis, controls, and residual-risk evaluation process."
+          },
+          {
+            "ref_id": "REF-PED-EU",
+            "title": "Directive 2014/68/EU (Pressure Equipment Directive)",
+            "url": "https://eur-lex.europa.eu/eli/dir/2014/68/oj",
+            "type": "eu_reg",
+            "notes": "Pressure equipment safety requirements and conformity paths."
+          },
+          {
+            "ref_id": "REF-SM-1",
+            "title": "Protolabs sheet metal design guidelines",
+            "url": "https://www.protolabs.com/resources/design-tips/sheet-metal-design-guidelines/",
+            "type": "guide",
+            "notes": "Bend, flange, relief, and hole-placement rules."
+          },
+          {
+            "ref_id": "REF-TOR-1",
+            "title": "ISO 16047: Torque/clamp force testing for threaded fasteners",
+            "url": "https://www.iso.org/standard/63234.html",
+            "type": "standard",
+            "notes": "Method for torque-clamp behavior verification."
+          },
+          {
+            "ref_id": "REF-WLD-1",
+            "title": "ISO 2553: Weld symbol representation on drawings",
+            "url": "https://www.iso.org/standard/76349.html",
+            "type": "standard",
+            "notes": "Standardized weld-symbol notation and positioning."
+          },
+          {
+            "ref_id": "REF-WLD-2",
+            "title": "ISO 5817: Quality levels for weld imperfections",
+            "url": "https://www.iso.org/standard/54925.html",
+            "type": "standard",
+            "notes": "Imperfection quality classes for fusion welds."
+          }
+        ],
+        "cost_estimate": {
+          "plan_id": "plan_1",
+          "route_source": "user_override",
+          "process_id": "cnc_milling",
+          "process_label": "CNC Milling",
+          "currency": "USD",
+          "quantity": 1,
+          "unit_cost": 206.8258,
+          "total_cost": 206.8258,
+          "cost_range": {
+            "unit_low": 128.232,
+            "unit_high": 285.4196,
+            "total_low": 128.232,
+            "total_high": 285.4196
+          },
+          "confidence": 0.13,
+          "confidence_level": "low",
+          "assumptions": [
+            "Body count defaulted to 1.",
+            "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+            "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+            "Triangle count used to improve defaulted volume estimate.",
+            "Supplier-specific process rates not provided; using default model rates.",
+            "Material key inferred from component material profile."
+          ],
+          "cost_drivers": [
+            {
+              "rule_id": "CNC-002",
+              "impact_type": "time",
+              "delta_percent": 0.78,
+              "notes": "Deep-hole condition usually increases cycle time and tooling complexity."
+            },
+            {
+              "rule_id": "ASM-004",
+              "impact_type": "setup",
+              "delta_percent": 0.25,
+              "notes": "Assembly orientation complexity can add fixture/setup effort."
+            }
+          ],
+          "breakdown": {
+            "material_cost": 1.9858,
+            "process_cost": 30.1163,
+            "setup_cost_per_unit": 120.294,
+            "inspection_cost": 22.88,
+            "overhead_cost": 31.5497
+          },
+          "metrics_used": {
+            "body_count": 1.0,
+            "part_volume_mm3": 896000.0,
+            "surface_area_mm2": 24000.0,
+            "bbox_x_mm": 120.0,
+            "bbox_y_mm": 80.0,
+            "bbox_z_mm": 40.0,
+            "bbox_volume_mm3": 384000.0
+          }
+        },
+        "cost_estimate_by_route": [
+          {
+            "plan_id": "plan_1",
+            "route_source": "user_override",
+            "process_id": "cnc_milling",
+            "process_label": "CNC Milling",
+            "currency": "USD",
+            "quantity": 1,
+            "unit_cost": 206.8258,
+            "total_cost": 206.8258,
+            "cost_range": {
+              "unit_low": 128.232,
+              "unit_high": 285.4196,
+              "total_low": 128.232,
+              "total_high": 285.4196
+            },
+            "confidence": 0.13,
+            "confidence_level": "low",
+            "assumptions": [
+              "Body count defaulted to 1.",
+              "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+              "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+              "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+              "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+              "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+              "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+              "Triangle count used to improve defaulted volume estimate.",
+              "Supplier-specific process rates not provided; using default model rates.",
+              "Material key inferred from component material profile."
+            ],
+            "cost_drivers": [
+              {
+                "rule_id": "CNC-002",
+                "impact_type": "time",
+                "delta_percent": 0.78,
+                "notes": "Deep-hole condition usually increases cycle time and tooling complexity."
+              },
+              {
+                "rule_id": "ASM-004",
+                "impact_type": "setup",
+                "delta_percent": 0.25,
+                "notes": "Assembly orientation complexity can add fixture/setup effort."
+              }
+            ],
+            "breakdown": {
+              "material_cost": 1.9858,
+              "process_cost": 30.1163,
+              "setup_cost_per_unit": 120.294,
+              "inspection_cost": 22.88,
+              "overhead_cost": 31.5497
+            },
+            "metrics_used": {
+              "body_count": 1.0,
+              "part_volume_mm3": 896000.0,
+              "surface_area_mm2": 24000.0,
+              "bbox_x_mm": 120.0,
+              "bbox_y_mm": 80.0,
+              "bbox_z_mm": 40.0,
+              "bbox_volume_mm3": 384000.0
+            }
+          },
+          {
+            "plan_id": "plan_2",
+            "route_source": "ai_recommendation",
+            "process_id": "sheet_metal",
+            "process_label": "Sheet Metal",
+            "currency": "USD",
+            "quantity": 1,
+            "unit_cost": 134.1382,
+            "total_cost": 134.1382,
+            "cost_range": {
+              "unit_low": 83.1657,
+              "unit_high": 185.1107,
+              "total_low": 83.1657,
+              "total_high": 185.1107
+            },
+            "confidence": 0.13,
+            "confidence_level": "low",
+            "assumptions": [
+              "Body count defaulted to 1.",
+              "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+              "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+              "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+              "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+              "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+              "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+              "Triangle count used to improve defaulted volume estimate.",
+              "Supplier-specific process rates not provided; using default model rates.",
+              "Material key inferred from component material profile."
+            ],
+            "cost_drivers": [
+              {
+                "rule_id": "SM-005",
+                "impact_type": "scrap",
+                "delta_percent": 0.5,
+                "notes": "Insufficient relief often increases forming failure and scrap risk."
+              },
+              {
+                "rule_id": "ASM-004",
+                "impact_type": "setup",
+                "delta_percent": 0.25,
+                "notes": "Assembly orientation complexity can add fixture/setup effort."
+              }
+            ],
+            "breakdown": {
+              "material_cost": 1.6607,
+              "process_cost": 16.3296,
+              "setup_cost_per_unit": 80.196,
+              "inspection_cost": 21.58,
+              "overhead_cost": 14.372
+            },
+            "metrics_used": {
+              "body_count": 1.0,
+              "part_volume_mm3": 896000.0,
+              "surface_area_mm2": 24000.0,
+              "bbox_x_mm": 120.0,
+              "bbox_y_mm": 80.0,
+              "bbox_z_mm": 40.0,
+              "bbox_volume_mm3": 384000.0
+            }
+          }
+        ],
+        "cost_compare_routes": {
+          "currency": "USD",
+          "baseline_plan_id": "plan_1",
+          "compare_plan_id": "plan_2",
+          "baseline_process_id": "cnc_milling",
+          "compare_process_id": "sheet_metal",
+          "baseline_unit_cost": 206.8258,
+          "compare_unit_cost": 134.1382,
+          "unit_cost_delta": -72.6876,
+          "unit_cost_delta_percent": -35.1444,
+          "baseline_total_cost": 206.8258,
+          "compare_total_cost": 134.1382,
+          "total_cost_delta": -72.6876,
+          "total_cost_delta_percent": -35.1444,
+          "cheaper_plan_id": "plan_2",
+          "cheaper_process_id": "sheet_metal"
+        },
+        "routes": [
+          {
+            "plan_id": "plan_1",
+            "route_source": "user_override",
+            "process_id": "cnc_milling",
+            "process_label": "CNC Milling",
+            "pack_ids": [
+              "A_DRAWING",
+              "B_CNC",
+              "E_ASSEMBLY",
+              "F_OVERLAY"
+            ],
+            "pack_labels": [
+              "Drawing and Specification Completeness",
+              "CNC Machining DFM",
+              "Assembly, Fixture, and Serviceability",
+              "Industry Overlay and Compliance"
+            ],
+            "overlay_id": "medical",
+            "overlay_label": "Medical Devices",
+            "role_id": "quality_engineer",
+            "role_label": "Quality Engineer",
+            "template_id": "medical_design_review",
+            "template_label": "Medical Design Review",
+            "finding_count": 47,
+            "findings": [
+              {
+                "rule_id": "SPEC-001",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "General tolerances declared (ISO 2768-1/-2 or equivalent)",
+                "description": "General tolerances declared (ISO 2768-1/-2 or equivalent)",
+                "refs": [
+                  "REF-GPS-3",
+                  "REF-GPS-4"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_title_block",
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-002",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "GPS fundamentals declared (defaults/interpretation consistent with ISO 8015 framework)",
+                "description": "GPS fundamentals declared (defaults/interpretation consistent with ISO 8015 framework)",
+                "refs": [
+                  "REF-GPS-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-003",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Units shown (mm/in) and consistent across drawing",
+                "description": "Units shown (mm/in) and consistent across drawing",
+                "refs": [
+                  "REF-GPS-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_title_block"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-004",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Projection method shown (1st/3rd angle) if multi-view drawing",
+                "description": "Projection method shown (1st/3rd angle) if multi-view drawing",
+                "refs": [
+                  "REF-GPS-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_title_block"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-005",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Material specified (grade + condition/heat treat if relevant)",
+                "description": "Material specified (grade + condition/heat treat if relevant)",
+                "refs": [
+                  "REF-GPS-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_title_block",
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-006",
+                "pack_id": "A_DRAWING",
+                "severity": "critical",
+                "title": "Surface texture requirement present where function-critical",
+                "description": "Surface texture requirement present where function-critical",
+                "refs": [
+                  "REF-GPS-5"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes",
+                    "surface_finish_spec"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-008",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "\u201cDeburr/break edges\u201d requirement present if sharp edges unacceptable",
+                "description": "\u201cDeburr/break edges\u201d requirement present if sharp edges unacceptable",
+                "refs": [
+                  "REF-GPS-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-014",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Fasteners in BOM include property class (e",
+                "description": "Fasteners in BOM include property class (e.g., 8.8/10.9)",
+                "refs": [
+                  "REF-BLT-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bom_items"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-015",
+                "pack_id": "A_DRAWING",
+                "severity": "critical",
+                "title": "Torque/clamp requirements specified when joint performance is critical",
+                "description": "Torque/clamp requirements specified when joint performance is critical",
+                "refs": [
+                  "REF-TOR-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes",
+                    "bom_items",
+                    "assembly_model"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-016",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Welds use ISO 2553 symbols (not ambiguous sketches)",
+                "description": "Welds use ISO 2553 symbols (not ambiguous sketches)",
+                "refs": [
+                  "REF-WLD-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "weld_symbols",
+                    "weld_data"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-017",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Weld symbol includes size (a/z) and length/intermittent pattern if applicable",
+                "description": "Weld symbol includes size (a/z) and length/intermittent pattern if applicable",
+                "refs": [
+                  "REF-WLD-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "weld_symbols",
+                    "weld_data"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-018",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Weld quality level specified when required (B/C/D)",
+                "description": "Weld quality level specified when required (B/C/D)",
+                "refs": [
+                  "REF-WLD-2"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes",
+                    "weld_notes",
+                    "weld_data"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-019",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Weld inspection/testing notes present when specified (NDT, pressure test etc",
+                "description": "Weld inspection/testing notes present when specified (NDT, pressure test etc.)",
+                "refs": [
+                  "REF-WLD-1",
+                  "REF-PED-EU"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-020",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Coating/finish type and thickness specified when functional (corrosion, hygiene)",
+                "description": "Coating/finish type and thickness specified when functional (corrosion, hygiene)",
+                "refs": [
+                  "REF-HYG-1",
+                  "REF-PED-EU"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-021",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Revision + change note present for released drawings",
+                "description": "Revision + change note present for released drawings",
+                "refs": [
+                  "REF-MED-QMS",
+                  "REF-AUTO-QMS"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_title_block"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-022",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "CTQs flagged (special characteristics) if auto/medical process requires it",
+                "description": "CTQs flagged (special characteristics) if auto/medical process requires it",
+                "refs": [
+                  "REF-GM-CSR",
+                  "REF-AUTO-QMS"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bom_items"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-023",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Inspection method expectation indicated for hard-to-measure GD&T",
+                "description": "Inspection method expectation indicated for hard-to-measure GD&T",
+                "refs": [
+                  "REF-GPS-2"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-025",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Assembly drawing includes BOM + callouts for joining method",
+                "description": "Assembly drawing includes BOM + callouts for joining method",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "assembly_model"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "CNC-001",
+                "pack_id": "B_CNC",
+                "severity": "major",
+                "title": "Min wall thickness check vs material class (thin walls \u2192 vibration/warp risk)",
+                "description": "Min wall thickness check vs material class (thin walls \u2192 vibration/warp risk)",
+                "refs": [
+                  "REF-CNC-1",
+                  "REF-CNC-2"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "wall_thickness_map"
+                  ],
+                  "provided_inputs": [
+                    "material_spec"
+                  ]
+                }
+              },
+              {
+                "rule_id": "CNC-002",
+                "pack_id": "B_CNC",
+                "severity": "major",
+                "title": "Deep holes: recommended depth ~4\u00d7D, hard max ~10\u00d7D (flag beyond)",
+                "description": "Deep holes: recommended depth ~4\u00d7D, hard max ~10\u00d7D (flag beyond)",
+                "refs": [
+                  "REF-CNC-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "hole_depth",
+                    "hole_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "CNC-003",
+                "pack_id": "B_CNC",
+                "severity": "major",
+                "title": "Prefer standard drill diameters (non-standard \u2192 milling/time)",
+                "description": "Prefer standard drill diameters (non-standard \u2192 milling/time)",
+                "refs": [
+                  "REF-CNC-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "hole_diameter",
+                    "hole_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "CNC-004",
+                "pack_id": "B_CNC",
+                "severity": "major",
+                "title": "Blind drilled holes: conical floor expected (flag if flat-bottom functional)",
+                "description": "Blind drilled holes: conical floor expected (flag if flat-bottom functional)",
+                "refs": [
+                  "REF-CNC-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "hole_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "CNC-005",
+                "pack_id": "B_CNC",
+                "severity": "major",
+                "title": "Pocket internal corners: small radius \u2192 small tool \u2192 depth limits/cost",
+                "description": "Pocket internal corners: small radius \u2192 small tool \u2192 depth limits/cost",
+                "refs": [
+                  "REF-CNC-2"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "pocket_depth",
+                    "pocket_corner_radius"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "CNC-006",
+                "pack_id": "B_CNC",
+                "severity": "major",
+                "title": "Prefer largest internal radii possible (cost + finish benefit",
+                "description": "Prefer largest internal radii possible (cost + finish benefit; depth vs radius trade)",
+                "refs": [
+                  "REF-CNC-3"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "pocket_depth",
+                    "radii_set"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "CNC-009",
+                "pack_id": "B_CNC",
+                "severity": "major",
+                "title": "Text/engraving: small cutters increase time",
+                "description": "Text/engraving: small cutters increase time; use radiused fonts",
+                "refs": [
+                  "REF-CNC-2"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "engraving_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "CNC-010",
+                "pack_id": "B_CNC",
+                "severity": "major",
+                "title": "Corner radius consistency across pockets (tool reuse reduces time)",
+                "description": "Corner radius consistency across pockets (tool reuse reduces time)",
+                "refs": [
+                  "REF-CNC-3",
+                  "REF-CNC-2"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "radii_set"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "CNC-013",
+                "pack_id": "B_CNC",
+                "severity": "major",
+                "title": "Placeholder: Feature accessibility check for long-reach tools in deep cavities",
+                "description": "Placeholder: Feature accessibility check for long-reach tools in deep cavities",
+                "refs": [
+                  "REF-CNC-2",
+                  "REF-CNC-3"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "pocket_depth"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "CNC-014",
+                "pack_id": "B_CNC",
+                "severity": "critical",
+                "title": "Placeholder: Multi-setup requirement warning when critical features are not reachable in one setup",
+                "description": "Placeholder: Multi-setup requirement warning when critical features are not reachable in one setup",
+                "refs": [
+                  "REF-CNC-2",
+                  "REF-FIX-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "datum_scheme"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "CNC-020",
+                "pack_id": "B_CNC",
+                "severity": "major",
+                "title": "Tight tolerance on thin wall features \u2192 likely scrap risk",
+                "description": "Tight tolerance on thin wall features \u2192 likely scrap risk; suggest redesign or add stock",
+                "refs": [
+                  "REF-CNC-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "wall_thickness_map"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "CNC-021",
+                "pack_id": "B_CNC",
+                "severity": "major",
+                "title": "Tight positional tolerances without datum strategy \u2192 inspection/machining risk",
+                "description": "Tight positional tolerances without datum strategy \u2192 inspection/machining risk",
+                "refs": [
+                  "REF-GPS-2"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "datum_scheme"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "CNC-023",
+                "pack_id": "B_CNC",
+                "severity": "major",
+                "title": "Threaded holes too close to edge \u2192 breakout risk",
+                "description": "Threaded holes too close to edge \u2192 breakout risk; suggest move/add boss",
+                "refs": [
+                  "REF-CNC-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "thread_callouts"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "CNC-025",
+                "pack_id": "B_CNC",
+                "severity": "major",
+                "title": "Part size exceeds typical machine envelope (flag for special setup/fixture)",
+                "description": "Part size exceeds typical machine envelope (flag for special setup/fixture)",
+                "refs": [
+                  "REF-CNC-4"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "part_bounding_box"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "TURN-001",
+                "pack_id": "B_CNC",
+                "severity": "major",
+                "title": "Turned walls thinner than guideline risk failure",
+                "description": "Turned walls thinner than guideline risk failure",
+                "refs": [
+                  "REF-CNC-4"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "wall_thickness_map"
+                  ],
+                  "provided_inputs": [
+                    "material_spec",
+                    "sheet_thickness"
+                  ]
+                }
+              },
+              {
+                "rule_id": "TURN-004",
+                "pack_id": "B_CNC",
+                "severity": "major",
+                "title": "Min hole sizes for turning (axial/radial) \u2014 flag below",
+                "description": "Min hole sizes for turning (axial/radial) \u2014 flag below",
+                "refs": [
+                  "REF-CNC-4"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "hole_diameter",
+                    "hole_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "ASM-001",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Reduce part count by combining parts where no \u201cminimum part criteria\u201d applies",
+                "description": "Reduce part count by combining parts where no \u201cminimum part criteria\u201d applies",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bom_items"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "ASM-002",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Reduce fasteners",
+                "description": "Reduce fasteners; prefer self-retaining features where possible",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bom_items"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "ASM-003",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Standardize components",
+                "description": "Standardize components; reduce unique variants",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bom_items"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "ASM-004",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Minimize reorientation/flips in assembly sequence",
+                "description": "Minimize reorientation/flips in assembly sequence",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "assembly_model"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "ASM-007",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Clear symmetry/asymmetry for orientation (avoid ambiguous \u201clooks same\u201d)",
+                "description": "Clear symmetry/asymmetry for orientation (avoid ambiguous \u201clooks same\u201d)",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "geometry_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "FIX-001",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Ensure a stable 3-2-1 locating scheme is possible on real surfaces",
+                "description": "Ensure a stable 3-2-1 locating scheme is possible on real surfaces",
+                "refs": [
+                  "REF-FIX-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "datum_scheme"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "FIX-002",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Provide flat, accessible datum pads for locating",
+                "description": "Provide flat, accessible datum pads for locating; avoid raw/irregular datum surfaces",
+                "refs": [
+                  "REF-FIX-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "datum_scheme"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "FIX-003",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Clamp forces won\u2019t deform thin walls (flag clamp-sensitive areas)",
+                "description": "Clamp forces won\u2019t deform thin walls (flag clamp-sensitive areas)",
+                "refs": [
+                  "REF-FIX-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "wall_thickness_map"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "FIX-005",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Add sacrificial tabs or fixture bosses when no good clamping exists",
+                "description": "Add sacrificial tabs or fixture bosses when no good clamping exists.   Serviceability",
+                "refs": [
+                  "REF-FIX-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "geometry_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SRV-001",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Ensure tool access to fasteners (wrench clearance) in final assembly",
+                "description": "Ensure tool access to fasteners (wrench clearance) in final assembly",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "assembly_model"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SRV-002",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Minimize unique tool types (hex sizes, torx types)",
+                "description": "Minimize unique tool types (hex sizes, torx types)",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bom_items"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "MED-003",
+                "pack_id": "F_OVERLAY",
+                "severity": "critical",
+                "title": "Risk management process (ISO 14971): hazards \u2192 risk controls \u2192 residual risk monitoring",
+                "description": "Risk management process (ISO 14971): hazards \u2192 risk controls \u2192 residual risk monitoring",
+                "refs": [
+                  "REF-MED-RISK"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "risk_file"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "MED-005",
+                "pack_id": "F_OVERLAY",
+                "severity": "major",
+                "title": "Cleanability/bioburden-related design constraints treated as DFM risks when relevant",
+                "description": "Cleanability/bioburden-related design constraints treated as DFM risks when relevant.   F6 Test & measurement / lab equipment",
+                "refs": [
+                  "REF-MED-RISK",
+                  "REF-HYG-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "surface_finish_spec"
+                  ],
+                  "provided_inputs": [
+                    "material_spec"
+                  ]
+                }
+              }
+            ],
+            "standards_used_auto": [
+              {
+                "ref_id": "REF-AUTO-QMS",
+                "title": "IATF 16949 automotive QMS requirements",
+                "url": "https://www.iatfglobaloversight.org/iatf-16949/",
+                "type": "standard",
+                "notes": "Automotive quality system expectations linked to process discipline."
+              },
+              {
+                "ref_id": "REF-BLT-1",
+                "title": "ISO 898-1: Mechanical properties of bolts/screws/studs",
+                "url": "https://www.iso.org/standard/67643.html",
+                "type": "standard",
+                "notes": "Fastener property classes and test requirements."
+              },
+              {
+                "ref_id": "REF-CNC-1",
+                "title": "Hubs CNC machining design guide",
+                "url": "https://www.hubs.com/knowledge-base/cnc-machining-design-guide/",
+                "type": "guide",
+                "notes": "Practical hole, wall, and tool-access limits for CNC."
+              },
+              {
+                "ref_id": "REF-CNC-2",
+                "title": "Protolabs CNC milling design guidelines",
+                "url": "https://www.protolabs.com/resources/design-tips/cnc-machining-design-guidelines/",
+                "type": "guide",
+                "notes": "Recommendations for pockets, radii, and machinability."
+              },
+              {
+                "ref_id": "REF-CNC-3",
+                "title": "Protocase CNC machining design tips",
+                "url": "https://www.protocase.com/resources/design-tips/cnc-machining.php",
+                "type": "guide",
+                "notes": "Constraints related to depth, corner radii, and accessibility."
+              },
+              {
+                "ref_id": "REF-CNC-4",
+                "title": "Protolabs CNC turning design guidelines",
+                "url": "https://www.protolabs.com/resources/design-tips/cnc-turning-design-guidelines/",
+                "type": "guide",
+                "notes": "Turning-specific geometry and support constraints."
+              },
+              {
+                "ref_id": "REF-DFA-1",
+                "title": "DFMA principles overview (Boothroyd Dewhurst)",
+                "url": "https://www.dfma.com/software/boothroyd-dewhurst/",
+                "type": "guide",
+                "notes": "Part-count reduction and assembly simplification principles."
+              },
+              {
+                "ref_id": "REF-FIX-1",
+                "title": "Carr Lane fixture design principles (3-2-1 locating)",
+                "url": "https://www.carrlane.com/engineering-resources/fixture-design-principles",
+                "type": "guide",
+                "notes": "Fixture location and repeatability fundamentals."
+              },
+              {
+                "ref_id": "REF-GM-CSR",
+                "title": "GM customer specific requirements context (IATF)",
+                "url": "https://www.iatfglobaloversight.org/oem-requirements/",
+                "type": "guide",
+                "notes": "Customer-specific quality/control plan expectations for suppliers."
+              },
+              {
+                "ref_id": "REF-GPS-1",
+                "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
+                "url": "https://www.iso.org/standard/76602.html",
+                "type": "standard",
+                "notes": "Core GPS interpretation principles including independency."
+              },
+              {
+                "ref_id": "REF-GPS-2",
+                "title": "ISO 1101: Geometrical tolerancing",
+                "url": "https://www.iso.org/standard/79211.html",
+                "type": "standard",
+                "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules."
+              },
+              {
+                "ref_id": "REF-GPS-3",
+                "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
+                "url": "https://www.iso.org/standard/26209.html",
+                "type": "standard",
+                "notes": "Default dimension tolerance classes when not individually specified."
+              },
+              {
+                "ref_id": "REF-GPS-4",
+                "title": "ISO 2768-2: General geometrical tolerances",
+                "url": "https://www.iso.org/standard/26210.html",
+                "type": "standard",
+                "notes": "Default geometrical tolerances for unspecified features."
+              },
+              {
+                "ref_id": "REF-GPS-5",
+                "title": "ISO 21920-1: Surface texture profile method",
+                "url": "https://www.iso.org/standard/74517.html",
+                "type": "standard",
+                "notes": "Surface texture specification framework used in modern GPS practice."
+              },
+              {
+                "ref_id": "REF-HYG-1",
+                "title": "EHEDG hygienic design guidance",
+                "url": "https://www.ehedg.org/guidelines",
+                "type": "guide",
+                "notes": "Practical hygienic design heuristics for geometry and finish."
+              },
+              {
+                "ref_id": "REF-MED-QMS",
+                "title": "ISO 13485: Medical devices QMS requirements",
+                "url": "https://www.iso.org/standard/59752.html",
+                "type": "standard",
+                "notes": "Quality-system requirements for medical device lifecycle control."
+              },
+              {
+                "ref_id": "REF-MED-RISK",
+                "title": "ISO 14971: Medical device risk management",
+                "url": "https://www.iso.org/standard/72704.html",
+                "type": "standard",
+                "notes": "Risk analysis, controls, and residual-risk evaluation process."
+              },
+              {
+                "ref_id": "REF-PED-EU",
+                "title": "Directive 2014/68/EU (Pressure Equipment Directive)",
+                "url": "https://eur-lex.europa.eu/eli/dir/2014/68/oj",
+                "type": "eu_reg",
+                "notes": "Pressure equipment safety requirements and conformity paths."
+              },
+              {
+                "ref_id": "REF-TOR-1",
+                "title": "ISO 16047: Torque/clamp force testing for threaded fasteners",
+                "url": "https://www.iso.org/standard/63234.html",
+                "type": "standard",
+                "notes": "Method for torque-clamp behavior verification."
+              },
+              {
+                "ref_id": "REF-WLD-1",
+                "title": "ISO 2553: Weld symbol representation on drawings",
+                "url": "https://www.iso.org/standard/76349.html",
+                "type": "standard",
+                "notes": "Standardized weld-symbol notation and positioning."
+              },
+              {
+                "ref_id": "REF-WLD-2",
+                "title": "ISO 5817: Quality levels for weld imperfections",
+                "url": "https://www.iso.org/standard/54925.html",
+                "type": "standard",
+                "notes": "Imperfection quality classes for fusion welds."
+              }
+            ],
+            "report_skeleton": {
+              "template_sections": [
+                "header_metadata",
+                "dfm_summary",
+                "issues_table",
+                "manufacturability_risks",
+                "compliance_matrix",
+                "evidence_appendix",
+                "cost_summary",
+                "cost_drivers",
+                "cost_compare_routes",
+                "standards_references_auto"
+              ],
+              "suppressed_template_sections": [],
+              "role_formatting": {
+                "wording_style": "formal_audit",
+                "default_issue_sort": "by_severity"
+              },
+              "mismatch_context": {
+                "has_mismatch": true,
+                "route_source": "user_override",
+                "banner": "User selected CNC Milling, AI recommended Sheet Metal (0.78). Results include both."
+              },
+              "cost_summary": {
+                "currency": "USD",
+                "quantity": 1,
+                "unit_cost": 206.8258,
+                "total_cost": 206.8258,
+                "confidence": 0.13,
+                "confidence_level": "low",
+                "cost_range": {
+                  "unit_low": 128.232,
+                  "unit_high": 285.4196,
+                  "total_low": 128.232,
+                  "total_high": 285.4196
+                },
+                "assumptions": [
+                  "Body count defaulted to 1.",
+                  "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+                  "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+                  "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+                  "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+                  "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+                  "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+                  "Triangle count used to improve defaulted volume estimate.",
+                  "Supplier-specific process rates not provided; using default model rates.",
+                  "Material key inferred from component material profile."
+                ]
+              },
+              "cost_drivers": [
+                {
+                  "rule_id": "CNC-002",
+                  "impact_type": "time",
+                  "delta_percent": 0.78,
+                  "notes": "Deep-hole condition usually increases cycle time and tooling complexity."
+                },
+                {
+                  "rule_id": "ASM-004",
+                  "impact_type": "setup",
+                  "delta_percent": 0.25,
+                  "notes": "Assembly orientation complexity can add fixture/setup effort."
+                }
+              ],
+              "cost_compare_routes": {
+                "currency": "USD",
+                "baseline_plan_id": "plan_1",
+                "compare_plan_id": "plan_2",
+                "baseline_process_id": "cnc_milling",
+                "compare_process_id": "sheet_metal",
+                "baseline_unit_cost": 206.8258,
+                "compare_unit_cost": 134.1382,
+                "unit_cost_delta": -72.6876,
+                "unit_cost_delta_percent": -35.1444,
+                "baseline_total_cost": 206.8258,
+                "compare_total_cost": 134.1382,
+                "total_cost_delta": -72.6876,
+                "total_cost_delta_percent": -35.1444,
+                "cheaper_plan_id": "plan_2",
+                "cheaper_process_id": "sheet_metal"
+              }
+            },
+            "cost_estimate": {
+              "currency": "USD",
+              "quantity": 1,
+              "unit_cost": 206.8258,
+              "total_cost": 206.8258,
+              "cost_range": {
+                "unit_low": 128.232,
+                "unit_high": 285.4196,
+                "total_low": 128.232,
+                "total_high": 285.4196
+              },
+              "confidence": 0.13,
+              "confidence_level": "low",
+              "assumptions": [
+                "Body count defaulted to 1.",
+                "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+                "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+                "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+                "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+                "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+                "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+                "Triangle count used to improve defaulted volume estimate.",
+                "Supplier-specific process rates not provided; using default model rates.",
+                "Material key inferred from component material profile."
+              ],
+              "cost_drivers": [
+                {
+                  "rule_id": "CNC-002",
+                  "impact_type": "time",
+                  "delta_percent": 0.78,
+                  "notes": "Deep-hole condition usually increases cycle time and tooling complexity."
+                },
+                {
+                  "rule_id": "ASM-004",
+                  "impact_type": "setup",
+                  "delta_percent": 0.25,
+                  "notes": "Assembly orientation complexity can add fixture/setup effort."
+                }
+              ],
+              "breakdown": {
+                "material_cost": 1.9858,
+                "process_cost": 30.1163,
+                "setup_cost_per_unit": 120.294,
+                "inspection_cost": 22.88,
+                "overhead_cost": 31.5497
+              },
+              "metrics_used": {
+                "body_count": 1.0,
+                "part_volume_mm3": 896000.0,
+                "surface_area_mm2": 24000.0,
+                "bbox_x_mm": 120.0,
+                "bbox_y_mm": 80.0,
+                "bbox_z_mm": 40.0,
+                "bbox_volume_mm3": 384000.0
+              }
+            }
+          },
+          {
+            "plan_id": "plan_2",
+            "route_source": "ai_recommendation",
+            "process_id": "sheet_metal",
+            "process_label": "Sheet Metal",
+            "pack_ids": [
+              "A_DRAWING",
+              "C_SHEET",
+              "E_ASSEMBLY",
+              "F_OVERLAY"
+            ],
+            "pack_labels": [
+              "Drawing and Specification Completeness",
+              "Sheet Metal DFM",
+              "Assembly, Fixture, and Serviceability",
+              "Industry Overlay and Compliance"
+            ],
+            "overlay_id": "medical",
+            "overlay_label": "Medical Devices",
+            "role_id": "quality_engineer",
+            "role_label": "Quality Engineer",
+            "template_id": "medical_design_review",
+            "template_label": "Medical Design Review",
+            "finding_count": 43,
+            "findings": [
+              {
+                "rule_id": "SPEC-001",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "General tolerances declared (ISO 2768-1/-2 or equivalent)",
+                "description": "General tolerances declared (ISO 2768-1/-2 or equivalent)",
+                "refs": [
+                  "REF-GPS-3",
+                  "REF-GPS-4"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_title_block",
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-002",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "GPS fundamentals declared (defaults/interpretation consistent with ISO 8015 framework)",
+                "description": "GPS fundamentals declared (defaults/interpretation consistent with ISO 8015 framework)",
+                "refs": [
+                  "REF-GPS-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-003",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Units shown (mm/in) and consistent across drawing",
+                "description": "Units shown (mm/in) and consistent across drawing",
+                "refs": [
+                  "REF-GPS-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_title_block"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-004",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Projection method shown (1st/3rd angle) if multi-view drawing",
+                "description": "Projection method shown (1st/3rd angle) if multi-view drawing",
+                "refs": [
+                  "REF-GPS-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_title_block"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-005",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Material specified (grade + condition/heat treat if relevant)",
+                "description": "Material specified (grade + condition/heat treat if relevant)",
+                "refs": [
+                  "REF-GPS-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_title_block",
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-006",
+                "pack_id": "A_DRAWING",
+                "severity": "critical",
+                "title": "Surface texture requirement present where function-critical",
+                "description": "Surface texture requirement present where function-critical",
+                "refs": [
+                  "REF-GPS-5"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes",
+                    "surface_finish_spec"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-008",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "\u201cDeburr/break edges\u201d requirement present if sharp edges unacceptable",
+                "description": "\u201cDeburr/break edges\u201d requirement present if sharp edges unacceptable",
+                "refs": [
+                  "REF-GPS-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-014",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Fasteners in BOM include property class (e",
+                "description": "Fasteners in BOM include property class (e.g., 8.8/10.9)",
+                "refs": [
+                  "REF-BLT-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bom_items"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-015",
+                "pack_id": "A_DRAWING",
+                "severity": "critical",
+                "title": "Torque/clamp requirements specified when joint performance is critical",
+                "description": "Torque/clamp requirements specified when joint performance is critical",
+                "refs": [
+                  "REF-TOR-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes",
+                    "bom_items",
+                    "assembly_model"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-016",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Welds use ISO 2553 symbols (not ambiguous sketches)",
+                "description": "Welds use ISO 2553 symbols (not ambiguous sketches)",
+                "refs": [
+                  "REF-WLD-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "weld_symbols",
+                    "weld_data"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-017",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Weld symbol includes size (a/z) and length/intermittent pattern if applicable",
+                "description": "Weld symbol includes size (a/z) and length/intermittent pattern if applicable",
+                "refs": [
+                  "REF-WLD-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "weld_symbols",
+                    "weld_data"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-018",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Weld quality level specified when required (B/C/D)",
+                "description": "Weld quality level specified when required (B/C/D)",
+                "refs": [
+                  "REF-WLD-2"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes",
+                    "weld_notes",
+                    "weld_data"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-019",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Weld inspection/testing notes present when specified (NDT, pressure test etc",
+                "description": "Weld inspection/testing notes present when specified (NDT, pressure test etc.)",
+                "refs": [
+                  "REF-WLD-1",
+                  "REF-PED-EU"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-020",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Coating/finish type and thickness specified when functional (corrosion, hygiene)",
+                "description": "Coating/finish type and thickness specified when functional (corrosion, hygiene)",
+                "refs": [
+                  "REF-HYG-1",
+                  "REF-PED-EU"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-021",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Revision + change note present for released drawings",
+                "description": "Revision + change note present for released drawings",
+                "refs": [
+                  "REF-MED-QMS",
+                  "REF-AUTO-QMS"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_title_block"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-022",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "CTQs flagged (special characteristics) if auto/medical process requires it",
+                "description": "CTQs flagged (special characteristics) if auto/medical process requires it",
+                "refs": [
+                  "REF-GM-CSR",
+                  "REF-AUTO-QMS"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bom_items"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-023",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Inspection method expectation indicated for hard-to-measure GD&T",
+                "description": "Inspection method expectation indicated for hard-to-measure GD&T",
+                "refs": [
+                  "REF-GPS-2"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SPEC-025",
+                "pack_id": "A_DRAWING",
+                "severity": "major",
+                "title": "Assembly drawing includes BOM + callouts for joining method",
+                "description": "Assembly drawing includes BOM + callouts for joining method",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "assembly_model"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-001",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Min flange length \u2265 4\u00d7 thickness",
+                "description": "Min flange length \u2265 4\u00d7 thickness",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "flange_length"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-002",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Prefer consistent bend radii across bends (tooling reuse)",
+                "description": "Prefer consistent bend radii across bends (tooling reuse)",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "radii_set",
+                    "bend_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-003",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Hole/slot diameter \u2265 material thickness",
+                "description": "Hole/slot diameter \u2265 material thickness",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "hole_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-005",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Hole-to-bend proximity: flag distortion-prone features",
+                "description": "Hole-to-bend proximity: flag distortion-prone features",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bend_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-006",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Tabs: width \u2265 2\u00d7t (or \u2265 3",
+                "description": "Tabs: width \u2265 2\u00d7t (or \u2265 3.2 mm) and length \u2264 5\u00d7 width",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "geometry_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-007",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Notches: width \u2265 t (or \u2265 1",
+                "description": "Notches: width \u2265 t (or \u2265 1.016 mm), length \u2264 5\u00d7 width",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "geometry_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-010",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Bend angle tolerance expectation \u00b11\u00b0",
+                "description": "Bend angle tolerance expectation \u00b11\u00b0; flag if drawing demands tighter without process note",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bend_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-011",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Multi-bend stack-up: flag tight across-bend tolerances",
+                "description": "Multi-bend stack-up: flag tight across-bend tolerances",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bend_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-012",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Hem design: check minimum inside diameter and return length vs thickness",
+                "description": "Hem design: check minimum inside diameter and return length vs thickness",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "geometry_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-015",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Edge burr control note present (deburr, edge break)",
+                "description": "Edge burr control note present (deburr, edge break)",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "drawing_notes"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-019",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Very long bends near max envelope: flag handling/deflection risk",
+                "description": "Very long bends near max envelope: flag handling/deflection risk",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bend_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SM-020",
+                "pack_id": "C_SHEET",
+                "severity": "major",
+                "title": "Prefer symmetric bend layout to reduce twist/warp",
+                "description": "Prefer symmetric bend layout to reduce twist/warp",
+                "refs": [
+                  "REF-SM-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bend_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "ASM-001",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Reduce part count by combining parts where no \u201cminimum part criteria\u201d applies",
+                "description": "Reduce part count by combining parts where no \u201cminimum part criteria\u201d applies",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bom_items"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "ASM-002",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Reduce fasteners",
+                "description": "Reduce fasteners; prefer self-retaining features where possible",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bom_items"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "ASM-003",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Standardize components",
+                "description": "Standardize components; reduce unique variants",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bom_items"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "ASM-004",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Minimize reorientation/flips in assembly sequence",
+                "description": "Minimize reorientation/flips in assembly sequence",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "assembly_model"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "ASM-007",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Clear symmetry/asymmetry for orientation (avoid ambiguous \u201clooks same\u201d)",
+                "description": "Clear symmetry/asymmetry for orientation (avoid ambiguous \u201clooks same\u201d)",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "geometry_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "FIX-001",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Ensure a stable 3-2-1 locating scheme is possible on real surfaces",
+                "description": "Ensure a stable 3-2-1 locating scheme is possible on real surfaces",
+                "refs": [
+                  "REF-FIX-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "datum_scheme"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "FIX-002",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Provide flat, accessible datum pads for locating",
+                "description": "Provide flat, accessible datum pads for locating; avoid raw/irregular datum surfaces",
+                "refs": [
+                  "REF-FIX-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "datum_scheme"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "FIX-003",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Clamp forces won\u2019t deform thin walls (flag clamp-sensitive areas)",
+                "description": "Clamp forces won\u2019t deform thin walls (flag clamp-sensitive areas)",
+                "refs": [
+                  "REF-FIX-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "wall_thickness_map"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "FIX-005",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Add sacrificial tabs or fixture bosses when no good clamping exists",
+                "description": "Add sacrificial tabs or fixture bosses when no good clamping exists.   Serviceability",
+                "refs": [
+                  "REF-FIX-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "geometry_features"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SRV-001",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Ensure tool access to fasteners (wrench clearance) in final assembly",
+                "description": "Ensure tool access to fasteners (wrench clearance) in final assembly",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "assembly_model"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "SRV-002",
+                "pack_id": "E_ASSEMBLY",
+                "severity": "minor",
+                "title": "Minimize unique tool types (hex sizes, torx types)",
+                "description": "Minimize unique tool types (hex sizes, torx types)",
+                "refs": [
+                  "REF-DFA-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "bom_items"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "MED-003",
+                "pack_id": "F_OVERLAY",
+                "severity": "critical",
+                "title": "Risk management process (ISO 14971): hazards \u2192 risk controls \u2192 residual risk monitoring",
+                "description": "Risk management process (ISO 14971): hazards \u2192 risk controls \u2192 residual risk monitoring",
+                "refs": [
+                  "REF-MED-RISK"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "risk_file"
+                  ],
+                  "provided_inputs": []
+                }
+              },
+              {
+                "rule_id": "MED-005",
+                "pack_id": "F_OVERLAY",
+                "severity": "major",
+                "title": "Cleanability/bioburden-related design constraints treated as DFM risks when relevant",
+                "description": "Cleanability/bioburden-related design constraints treated as DFM risks when relevant.   F6 Test & measurement / lab equipment",
+                "refs": [
+                  "REF-MED-RISK",
+                  "REF-HYG-1"
+                ],
+                "evidence": {
+                  "missing_inputs": [
+                    "surface_finish_spec"
+                  ],
+                  "provided_inputs": [
+                    "material_spec"
+                  ]
+                }
+              }
+            ],
+            "standards_used_auto": [
+              {
+                "ref_id": "REF-AUTO-QMS",
+                "title": "IATF 16949 automotive QMS requirements",
+                "url": "https://www.iatfglobaloversight.org/iatf-16949/",
+                "type": "standard",
+                "notes": "Automotive quality system expectations linked to process discipline."
+              },
+              {
+                "ref_id": "REF-BLT-1",
+                "title": "ISO 898-1: Mechanical properties of bolts/screws/studs",
+                "url": "https://www.iso.org/standard/67643.html",
+                "type": "standard",
+                "notes": "Fastener property classes and test requirements."
+              },
+              {
+                "ref_id": "REF-DFA-1",
+                "title": "DFMA principles overview (Boothroyd Dewhurst)",
+                "url": "https://www.dfma.com/software/boothroyd-dewhurst/",
+                "type": "guide",
+                "notes": "Part-count reduction and assembly simplification principles."
+              },
+              {
+                "ref_id": "REF-FIX-1",
+                "title": "Carr Lane fixture design principles (3-2-1 locating)",
+                "url": "https://www.carrlane.com/engineering-resources/fixture-design-principles",
+                "type": "guide",
+                "notes": "Fixture location and repeatability fundamentals."
+              },
+              {
+                "ref_id": "REF-GM-CSR",
+                "title": "GM customer specific requirements context (IATF)",
+                "url": "https://www.iatfglobaloversight.org/oem-requirements/",
+                "type": "guide",
+                "notes": "Customer-specific quality/control plan expectations for suppliers."
+              },
+              {
+                "ref_id": "REF-GPS-1",
+                "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
+                "url": "https://www.iso.org/standard/76602.html",
+                "type": "standard",
+                "notes": "Core GPS interpretation principles including independency."
+              },
+              {
+                "ref_id": "REF-GPS-2",
+                "title": "ISO 1101: Geometrical tolerancing",
+                "url": "https://www.iso.org/standard/79211.html",
+                "type": "standard",
+                "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules."
+              },
+              {
+                "ref_id": "REF-GPS-3",
+                "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
+                "url": "https://www.iso.org/standard/26209.html",
+                "type": "standard",
+                "notes": "Default dimension tolerance classes when not individually specified."
+              },
+              {
+                "ref_id": "REF-GPS-4",
+                "title": "ISO 2768-2: General geometrical tolerances",
+                "url": "https://www.iso.org/standard/26210.html",
+                "type": "standard",
+                "notes": "Default geometrical tolerances for unspecified features."
+              },
+              {
+                "ref_id": "REF-GPS-5",
+                "title": "ISO 21920-1: Surface texture profile method",
+                "url": "https://www.iso.org/standard/74517.html",
+                "type": "standard",
+                "notes": "Surface texture specification framework used in modern GPS practice."
+              },
+              {
+                "ref_id": "REF-HYG-1",
+                "title": "EHEDG hygienic design guidance",
+                "url": "https://www.ehedg.org/guidelines",
+                "type": "guide",
+                "notes": "Practical hygienic design heuristics for geometry and finish."
+              },
+              {
+                "ref_id": "REF-MED-QMS",
+                "title": "ISO 13485: Medical devices QMS requirements",
+                "url": "https://www.iso.org/standard/59752.html",
+                "type": "standard",
+                "notes": "Quality-system requirements for medical device lifecycle control."
+              },
+              {
+                "ref_id": "REF-MED-RISK",
+                "title": "ISO 14971: Medical device risk management",
+                "url": "https://www.iso.org/standard/72704.html",
+                "type": "standard",
+                "notes": "Risk analysis, controls, and residual-risk evaluation process."
+              },
+              {
+                "ref_id": "REF-PED-EU",
+                "title": "Directive 2014/68/EU (Pressure Equipment Directive)",
+                "url": "https://eur-lex.europa.eu/eli/dir/2014/68/oj",
+                "type": "eu_reg",
+                "notes": "Pressure equipment safety requirements and conformity paths."
+              },
+              {
+                "ref_id": "REF-SM-1",
+                "title": "Protolabs sheet metal design guidelines",
+                "url": "https://www.protolabs.com/resources/design-tips/sheet-metal-design-guidelines/",
+                "type": "guide",
+                "notes": "Bend, flange, relief, and hole-placement rules."
+              },
+              {
+                "ref_id": "REF-TOR-1",
+                "title": "ISO 16047: Torque/clamp force testing for threaded fasteners",
+                "url": "https://www.iso.org/standard/63234.html",
+                "type": "standard",
+                "notes": "Method for torque-clamp behavior verification."
+              },
+              {
+                "ref_id": "REF-WLD-1",
+                "title": "ISO 2553: Weld symbol representation on drawings",
+                "url": "https://www.iso.org/standard/76349.html",
+                "type": "standard",
+                "notes": "Standardized weld-symbol notation and positioning."
+              },
+              {
+                "ref_id": "REF-WLD-2",
+                "title": "ISO 5817: Quality levels for weld imperfections",
+                "url": "https://www.iso.org/standard/54925.html",
+                "type": "standard",
+                "notes": "Imperfection quality classes for fusion welds."
+              }
+            ],
+            "report_skeleton": {
+              "template_sections": [
+                "header_metadata",
+                "dfm_summary",
+                "issues_table",
+                "manufacturability_risks",
+                "compliance_matrix",
+                "evidence_appendix",
+                "cost_summary",
+                "cost_drivers",
+                "cost_compare_routes",
+                "standards_references_auto"
+              ],
+              "suppressed_template_sections": [],
+              "role_formatting": {
+                "wording_style": "formal_audit",
+                "default_issue_sort": "by_severity"
+              },
+              "mismatch_context": {
+                "has_mismatch": true,
+                "route_source": "ai_recommendation",
+                "banner": "User selected CNC Milling, AI recommended Sheet Metal (0.78). Results include both."
+              },
+              "cost_summary": {
+                "currency": "USD",
+                "quantity": 1,
+                "unit_cost": 134.1382,
+                "total_cost": 134.1382,
+                "confidence": 0.13,
+                "confidence_level": "low",
+                "cost_range": {
+                  "unit_low": 83.1657,
+                  "unit_high": 185.1107,
+                  "total_low": 83.1657,
+                  "total_high": 185.1107
+                },
+                "assumptions": [
+                  "Body count defaulted to 1.",
+                  "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+                  "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+                  "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+                  "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+                  "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+                  "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+                  "Triangle count used to improve defaulted volume estimate.",
+                  "Supplier-specific process rates not provided; using default model rates.",
+                  "Material key inferred from component material profile."
+                ]
+              },
+              "cost_drivers": [
+                {
+                  "rule_id": "SM-005",
+                  "impact_type": "scrap",
+                  "delta_percent": 0.5,
+                  "notes": "Insufficient relief often increases forming failure and scrap risk."
+                },
+                {
+                  "rule_id": "ASM-004",
+                  "impact_type": "setup",
+                  "delta_percent": 0.25,
+                  "notes": "Assembly orientation complexity can add fixture/setup effort."
+                }
+              ],
+              "cost_compare_routes": {
+                "currency": "USD",
+                "baseline_plan_id": "plan_1",
+                "compare_plan_id": "plan_2",
+                "baseline_process_id": "cnc_milling",
+                "compare_process_id": "sheet_metal",
+                "baseline_unit_cost": 206.8258,
+                "compare_unit_cost": 134.1382,
+                "unit_cost_delta": -72.6876,
+                "unit_cost_delta_percent": -35.1444,
+                "baseline_total_cost": 206.8258,
+                "compare_total_cost": 134.1382,
+                "total_cost_delta": -72.6876,
+                "total_cost_delta_percent": -35.1444,
+                "cheaper_plan_id": "plan_2",
+                "cheaper_process_id": "sheet_metal"
+              }
+            },
+            "cost_estimate": {
+              "currency": "USD",
+              "quantity": 1,
+              "unit_cost": 134.1382,
+              "total_cost": 134.1382,
+              "cost_range": {
+                "unit_low": 83.1657,
+                "unit_high": 185.1107,
+                "total_low": 83.1657,
+                "total_high": 185.1107
+              },
+              "confidence": 0.13,
+              "confidence_level": "low",
+              "assumptions": [
+                "Body count defaulted to 1.",
+                "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+                "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+                "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+                "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+                "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+                "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+                "Triangle count used to improve defaulted volume estimate.",
+                "Supplier-specific process rates not provided; using default model rates.",
+                "Material key inferred from component material profile."
+              ],
+              "cost_drivers": [
+                {
+                  "rule_id": "SM-005",
+                  "impact_type": "scrap",
+                  "delta_percent": 0.5,
+                  "notes": "Insufficient relief often increases forming failure and scrap risk."
+                },
+                {
+                  "rule_id": "ASM-004",
+                  "impact_type": "setup",
+                  "delta_percent": 0.25,
+                  "notes": "Assembly orientation complexity can add fixture/setup effort."
+                }
+              ],
+              "breakdown": {
+                "material_cost": 1.6607,
+                "process_cost": 16.3296,
+                "setup_cost_per_unit": 80.196,
+                "inspection_cost": 21.58,
+                "overhead_cost": 14.372
+              },
+              "metrics_used": {
+                "body_count": 1.0,
+                "part_volume_mm3": 896000.0,
+                "surface_area_mm2": 24000.0,
+                "bbox_x_mm": 120.0,
+                "bbox_y_mm": 80.0,
+                "bbox_z_mm": 40.0,
+                "bbox_volume_mm3": 384000.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "empty_findings_selected_plan",
+      "component_context": {
+        "component_node_name": "component_1",
+        "component_display_name": "Part 1",
+        "profile": {
+          "material": "Aluminum",
+          "manufacturingProcess": "Sheet Metal",
+          "industry": "Medical"
+        },
+        "triangle_count": 2800
+      },
+      "request": {
+        "model_id": "model-golden-empty",
+        "planning_inputs": null,
+        "execution_plans": [
+          {
+            "plan_id": "plan_1",
+            "route_source": "selected",
+            "process_id": "cnc_milling",
+            "pack_ids": [
+              "A_DRAWING"
+            ],
+            "overlay_id": null,
+            "role_id": "general_dfm",
+            "template_id": "executive_1page"
+          }
+        ],
+        "selected_execution_plan_id": null,
+        "screenshot_data_url": null,
+        "context_payload": {
+          "drawing_title_block": true,
+          "drawing_notes": true,
+          "surface_finish_spec": true,
+          "manual_context": true,
+          "bom_items": true,
+          "assembly_model": true,
+          "weld_symbols": true,
+          "weld_data": true,
+          "weld_notes": true
+        }
+      },
+      "response": {
+        "model_id": "model-golden-empty",
+        "component_context": {
+          "component_node_name": "component_1",
+          "component_display_name": "Part 1",
+          "profile": {
+            "material": "Aluminum",
+            "manufacturingProcess": "Sheet Metal",
+            "industry": "Medical"
+          },
+          "triangle_count": 2800
+        },
+        "ai_recommendation": null,
+        "mismatch": {
+          "has_mismatch": false,
+          "run_both_requested": false,
+          "policy_allows_run_both": false,
+          "run_both_executed": false,
+          "banner": null
+        },
+        "route_count": 1,
+        "finding_count_total": 0,
+        "standards_used_auto_union": [],
+        "cost_estimate": {
+          "plan_id": "plan_1",
+          "route_source": "selected",
+          "process_id": "cnc_milling",
+          "process_label": "CNC Milling",
+          "currency": "USD",
+          "quantity": 1,
+          "unit_cost": 185.3414,
+          "total_cost": 185.3414,
+          "cost_range": {
+            "unit_low": 114.9117,
+            "unit_high": 255.7712,
+            "total_low": 114.9117,
+            "total_high": 255.7712
+          },
+          "confidence": 0.23,
+          "confidence_level": "low",
+          "assumptions": [
+            "Body count defaulted to 1.",
+            "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+            "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+            "Triangle count used to improve defaulted volume estimate.",
+            "Supplier-specific process rates not provided; using default model rates.",
+            "Material key inferred from component material profile."
+          ],
+          "cost_drivers": [
+            {
+              "driver": "setup_allocation",
+              "estimated_cost": 120.0
+            },
+            {
+              "driver": "process_time",
+              "estimated_cost": 29.8832
+            },
+            {
+              "driver": "inspection_effort",
+              "estimated_cost": 5.2
+            }
+          ],
+          "breakdown": {
+            "material_cost": 1.9858,
+            "process_cost": 29.8832,
+            "setup_cost_per_unit": 120.0,
+            "inspection_cost": 5.2,
+            "overhead_cost": 28.2724
+          },
+          "metrics_used": {
+            "body_count": 1.0,
+            "part_volume_mm3": 896000.0,
+            "surface_area_mm2": 24000.0,
+            "bbox_x_mm": 120.0,
+            "bbox_y_mm": 80.0,
+            "bbox_z_mm": 40.0,
+            "bbox_volume_mm3": 384000.0
+          }
+        },
+        "cost_estimate_by_route": [
+          {
+            "plan_id": "plan_1",
+            "route_source": "selected",
+            "process_id": "cnc_milling",
+            "process_label": "CNC Milling",
+            "currency": "USD",
+            "quantity": 1,
+            "unit_cost": 185.3414,
+            "total_cost": 185.3414,
+            "cost_range": {
+              "unit_low": 114.9117,
+              "unit_high": 255.7712,
+              "total_low": 114.9117,
+              "total_high": 255.7712
+            },
+            "confidence": 0.23,
+            "confidence_level": "low",
+            "assumptions": [
+              "Body count defaulted to 1.",
+              "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+              "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+              "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+              "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+              "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+              "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+              "Triangle count used to improve defaulted volume estimate.",
+              "Supplier-specific process rates not provided; using default model rates.",
+              "Material key inferred from component material profile."
+            ],
+            "cost_drivers": [
+              {
+                "driver": "setup_allocation",
+                "estimated_cost": 120.0
+              },
+              {
+                "driver": "process_time",
+                "estimated_cost": 29.8832
+              },
+              {
+                "driver": "inspection_effort",
+                "estimated_cost": 5.2
+              }
+            ],
+            "breakdown": {
+              "material_cost": 1.9858,
+              "process_cost": 29.8832,
+              "setup_cost_per_unit": 120.0,
+              "inspection_cost": 5.2,
+              "overhead_cost": 28.2724
+            },
+            "metrics_used": {
+              "body_count": 1.0,
+              "part_volume_mm3": 896000.0,
+              "surface_area_mm2": 24000.0,
+              "bbox_x_mm": 120.0,
+              "bbox_y_mm": 80.0,
+              "bbox_z_mm": 40.0,
+              "bbox_volume_mm3": 384000.0
+            }
+          }
+        ],
+        "cost_compare_routes": null,
+        "routes": [
+          {
+            "plan_id": "plan_1",
+            "route_source": "selected",
+            "process_id": "cnc_milling",
+            "process_label": "CNC Milling",
+            "pack_ids": [
+              "A_DRAWING"
+            ],
+            "pack_labels": [
+              "Drawing and Specification Completeness"
+            ],
+            "overlay_id": null,
+            "overlay_label": null,
+            "role_id": "general_dfm",
+            "role_label": "General DFM",
+            "template_id": "executive_1page",
+            "template_label": "1-page Executive Summary",
+            "finding_count": 0,
+            "findings": [],
+            "standards_used_auto": [],
+            "report_skeleton": {
+              "template_sections": [
+                "header_metadata",
+                "dfm_summary",
+                "issues_table",
+                "manufacturability_risks",
+                "cost_summary",
+                "cost_drivers",
+                "cost_compare_routes",
+                "standards_references_auto"
+              ],
+              "suppressed_template_sections": [],
+              "role_formatting": {
+                "wording_style": "executive",
+                "default_issue_sort": "by_severity"
+              },
+              "mismatch_context": {
+                "has_mismatch": false,
+                "route_source": "selected",
+                "banner": null
+              },
+              "cost_summary": {
+                "currency": "USD",
+                "quantity": 1,
+                "unit_cost": 185.3414,
+                "total_cost": 185.3414,
+                "confidence": 0.23,
+                "confidence_level": "low",
+                "cost_range": {
+                  "unit_low": 114.9117,
+                  "unit_high": 255.7712,
+                  "total_low": 114.9117,
+                  "total_high": 255.7712
+                },
+                "assumptions": [
+                  "Body count defaulted to 1.",
+                  "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+                  "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+                  "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+                  "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+                  "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+                  "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+                  "Triangle count used to improve defaulted volume estimate.",
+                  "Supplier-specific process rates not provided; using default model rates.",
+                  "Material key inferred from component material profile."
+                ]
+              },
+              "cost_drivers": [
+                {
+                  "driver": "setup_allocation",
+                  "estimated_cost": 120.0
+                },
+                {
+                  "driver": "process_time",
+                  "estimated_cost": 29.8832
+                },
+                {
+                  "driver": "inspection_effort",
+                  "estimated_cost": 5.2
+                }
+              ],
+              "cost_compare_routes": null
+            },
+            "cost_estimate": {
+              "currency": "USD",
+              "quantity": 1,
+              "unit_cost": 185.3414,
+              "total_cost": 185.3414,
+              "cost_range": {
+                "unit_low": 114.9117,
+                "unit_high": 255.7712,
+                "total_low": 114.9117,
+                "total_high": 255.7712
+              },
+              "confidence": 0.23,
+              "confidence_level": "low",
+              "assumptions": [
+                "Body count defaulted to 1.",
+                "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+                "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+                "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+                "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+                "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+                "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+                "Triangle count used to improve defaulted volume estimate.",
+                "Supplier-specific process rates not provided; using default model rates.",
+                "Material key inferred from component material profile."
+              ],
+              "cost_drivers": [
+                {
+                  "driver": "setup_allocation",
+                  "estimated_cost": 120.0
+                },
+                {
+                  "driver": "process_time",
+                  "estimated_cost": 29.8832
+                },
+                {
+                  "driver": "inspection_effort",
+                  "estimated_cost": 5.2
+                }
+              ],
+              "breakdown": {
+                "material_cost": 1.9858,
+                "process_cost": 29.8832,
+                "setup_cost_per_unit": 120.0,
+                "inspection_cost": 5.2,
+                "overhead_cost": 28.2724
+              },
+              "metrics_used": {
+                "body_count": 1.0,
+                "part_volume_mm3": 896000.0,
+                "surface_area_mm2": 24000.0,
+                "bbox_x_mm": 120.0,
+                "bbox_y_mm": 80.0,
+                "bbox_z_mm": 40.0,
+                "bbox_volume_mm3": 384000.0
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

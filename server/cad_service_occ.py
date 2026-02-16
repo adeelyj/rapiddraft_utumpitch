@@ -17,6 +17,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 
+from .freecad_setup import ensure_freecad_in_path
+
+ensure_freecad_in_path()
+
 from OCC.Core.STEPControl import STEPControl_Reader
 from OCC.Core.IFSelect import IFSelect_RetDone
 from OCC.Core.HLRBRep import HLRBRep_Algo, HLRBRep_HLRToShape

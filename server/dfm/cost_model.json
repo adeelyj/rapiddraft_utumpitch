@@ -1,0 +1,197 @@
+{
+  "version": "1.0.0",
+  "model_id": "quick_should_cost_v1",
+  "currency": "USD",
+  "confidence_policy": {
+    "base_confidence": 0.78,
+    "penalties": {
+      "missing_material_density": 0.15,
+      "missing_supplier_rates": 0.2,
+      "non_solid_geometry": 0.35,
+      "route_ambiguity": 0.1,
+      "missing_process_features": 0.1
+    },
+    "bands": {
+      "high": {
+        "gte": 0.8
+      },
+      "medium": {
+        "gte": 0.65,
+        "lt": 0.8
+      },
+      "low": {
+        "lt": 0.65
+      }
+    }
+  },
+  "required_metrics": [
+    "part_volume_mm3",
+    "surface_area_mm2",
+    "bbox_x_mm",
+    "bbox_y_mm",
+    "bbox_z_mm",
+    "bbox_volume_mm3",
+    "body_count"
+  ],
+  "global_defaults": {
+    "quantity_default": 1,
+    "overhead_factor": 1.15,
+    "scrap_factor_default": 0.05,
+    "setup_cost_default": 95.0,
+    "inspection_hourly_rate": 65.0,
+    "material_density_kg_per_mm3_by_key": {
+      "steel_generic": 7.85e-06,
+      "stainless_304": 8.0e-06,
+      "aluminum_6061": 2.7e-06
+    },
+    "material_rate_per_kg_by_key": {
+      "steel_generic": 2.2,
+      "stainless_304": 4.8,
+      "aluminum_6061": 5.2
+    }
+  },
+  "process_models": {
+    "cnc_milling": {
+      "enabled": true,
+      "setup_cost": 120.0,
+      "hourly_rate": 95.0,
+      "scrap_factor": 0.04,
+      "overhead_factor": 1.18,
+      "throughput_model": {
+        "type": "feature_weighted",
+        "coefficients": {
+          "base_machine_hours": 0.28,
+          "bbox_volume_factor": 4.0e-08,
+          "hole_count_factor": 0.012,
+          "pocket_count_factor": 0.03,
+          "surface_area_factor": 8.0e-07
+        }
+      },
+      "material_utilization_model": {
+        "type": "stock_to_part_ratio",
+        "defaults": {
+          "ratio": 1.6,
+          "min_stock_allowance_mm": 2.0
+        }
+      }
+    },
+    "cnc_turning": {
+      "enabled": true,
+      "setup_cost": 105.0,
+      "hourly_rate": 90.0,
+      "scrap_factor": 0.035,
+      "overhead_factor": 1.16,
+      "throughput_model": {
+        "type": "feature_weighted",
+        "coefficients": {
+          "base_machine_hours": 0.22,
+          "bbox_volume_factor": 3.4e-08,
+          "hole_count_factor": 0.01,
+          "surface_area_factor": 7.0e-07
+        }
+      },
+      "material_utilization_model": {
+        "type": "stock_to_part_ratio",
+        "defaults": {
+          "ratio": 1.4,
+          "min_stock_allowance_mm": 1.5
+        }
+      }
+    },
+    "sheet_metal": {
+      "enabled": true,
+      "setup_cost": 80.0,
+      "hourly_rate": 72.0,
+      "scrap_factor": 0.08,
+      "overhead_factor": 1.12,
+      "throughput_model": {
+        "type": "feature_weighted",
+        "coefficients": {
+          "base_machine_hours": 0.18,
+          "surface_area_factor": 1.2e-06,
+          "bend_count_factor": 0.018,
+          "hole_count_factor": 0.007
+        }
+      },
+      "material_utilization_model": {
+        "type": "sheet_nesting_factor",
+        "defaults": {
+          "utilization": 0.78
+        }
+      }
+    },
+    "weldment": {
+      "enabled": true,
+      "setup_cost": 140.0,
+      "hourly_rate": 88.0,
+      "scrap_factor": 0.06,
+      "overhead_factor": 1.17,
+      "throughput_model": {
+        "type": "feature_weighted",
+        "coefficients": {
+          "base_machine_hours": 0.35,
+          "weld_length_mm_factor": 0.00042,
+          "body_count_factor": 0.025
+        }
+      },
+      "material_utilization_model": {
+        "type": "cut_length_factor",
+        "defaults": {
+          "utilization": 0.84
+        }
+      }
+    }
+  },
+  "finding_cost_impacts": [
+    {
+      "rule_id": "CNC-002",
+      "impact_type": "time",
+      "impact_weight": 0.12,
+      "delta_percent_range": {
+        "min": 3.0,
+        "max": 10.0
+      },
+      "notes": "Deep-hole condition usually increases cycle time and tooling complexity."
+    },
+    {
+      "rule_id": "CNC-024",
+      "impact_type": "time",
+      "impact_weight": 0.14,
+      "delta_percent_range": {
+        "min": 4.0,
+        "max": 14.0
+      },
+      "notes": "Deep pockets with tight radii are common machining cost drivers."
+    },
+    {
+      "rule_id": "SM-005",
+      "impact_type": "scrap",
+      "impact_weight": 0.1,
+      "delta_percent_range": {
+        "min": 2.0,
+        "max": 8.0
+      },
+      "notes": "Insufficient relief often increases forming failure and scrap risk."
+    },
+    {
+      "rule_id": "WLD-011",
+      "impact_type": "material",
+      "impact_weight": 0.09,
+      "delta_percent_range": {
+        "min": 2.0,
+        "max": 9.0
+      },
+      "notes": "Overwelding increases filler, heat input, and rework likelihood."
+    },
+    {
+      "rule_id": "ASM-004",
+      "impact_type": "setup",
+      "impact_weight": 0.07,
+      "delta_percent_range": {
+        "min": 1.0,
+        "max": 6.0
+      },
+      "notes": "Assembly orientation complexity can add fixture/setup effort."
+    }
+  ]
+}

@@ -1,0 +1,514 @@
+{
+  "single_route_cost": {
+    "request": {
+      "model_id": "model-cost-contract-single",
+      "planning_inputs": {
+        "extracted_part_facts": {
+          "bends_present": true,
+          "constant_thickness": true,
+          "sheet_thickness": 2.0
+        },
+        "selected_process_override": null,
+        "selected_overlay": "medical",
+        "selected_role": "quality_engineer",
+        "selected_template": "medical_design_review",
+        "run_both_if_mismatch": true
+      },
+      "context_payload": {
+        "quantity": 5
+      }
+    },
+    "response": {
+      "route_count": 1,
+      "cost_estimate": {
+        "plan_id": "plan_1",
+        "route_source": "ai_recommendation",
+        "process_id": "sheet_metal",
+        "process_label": "Sheet Metal",
+        "currency": "USD",
+        "quantity": 5,
+        "unit_cost": 62.2826,
+        "total_cost": 311.413,
+        "cost_range": {
+          "unit_low": 38.6152,
+          "unit_high": 85.95,
+          "total_low": 193.0761,
+          "total_high": 429.7499
+        },
+        "confidence": 0.23,
+        "confidence_level": "low",
+        "assumptions": [
+          "Body count defaulted to 1.",
+          "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+          "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+          "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+          "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+          "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+          "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+          "Triangle count used to improve defaulted volume estimate.",
+          "Supplier-specific process rates not provided; using default model rates.",
+          "Material key inferred from component material profile."
+        ],
+        "cost_drivers": [
+          {
+            "rule_id": "SM-005",
+            "impact_type": "scrap",
+            "delta_percent": 0.5,
+            "notes": "Insufficient relief often increases forming failure and scrap risk."
+          },
+          {
+            "rule_id": "ASM-004",
+            "impact_type": "setup",
+            "delta_percent": 0.25,
+            "notes": "Assembly orientation complexity can add fixture/setup effort."
+          }
+        ],
+        "breakdown": {
+          "material_cost": 1.6607,
+          "process_cost": 16.3296,
+          "setup_cost_per_unit": 16.0392,
+          "inspection_cost": 21.58,
+          "overhead_cost": 6.6731
+        },
+        "metrics_used": {
+          "body_count": 1.0,
+          "part_volume_mm3": 896000.0,
+          "surface_area_mm2": 24000.0,
+          "bbox_x_mm": 120.0,
+          "bbox_y_mm": 80.0,
+          "bbox_z_mm": 40.0,
+          "bbox_volume_mm3": 384000.0
+        }
+      },
+      "cost_estimate_by_route": [
+        {
+          "plan_id": "plan_1",
+          "route_source": "ai_recommendation",
+          "process_id": "sheet_metal",
+          "process_label": "Sheet Metal",
+          "currency": "USD",
+          "quantity": 5,
+          "unit_cost": 62.2826,
+          "total_cost": 311.413,
+          "cost_range": {
+            "unit_low": 38.6152,
+            "unit_high": 85.95,
+            "total_low": 193.0761,
+            "total_high": 429.7499
+          },
+          "confidence": 0.23,
+          "confidence_level": "low",
+          "assumptions": [
+            "Body count defaulted to 1.",
+            "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+            "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+            "Triangle count used to improve defaulted volume estimate.",
+            "Supplier-specific process rates not provided; using default model rates.",
+            "Material key inferred from component material profile."
+          ],
+          "cost_drivers": [
+            {
+              "rule_id": "SM-005",
+              "impact_type": "scrap",
+              "delta_percent": 0.5,
+              "notes": "Insufficient relief often increases forming failure and scrap risk."
+            },
+            {
+              "rule_id": "ASM-004",
+              "impact_type": "setup",
+              "delta_percent": 0.25,
+              "notes": "Assembly orientation complexity can add fixture/setup effort."
+            }
+          ],
+          "breakdown": {
+            "material_cost": 1.6607,
+            "process_cost": 16.3296,
+            "setup_cost_per_unit": 16.0392,
+            "inspection_cost": 21.58,
+            "overhead_cost": 6.6731
+          },
+          "metrics_used": {
+            "body_count": 1.0,
+            "part_volume_mm3": 896000.0,
+            "surface_area_mm2": 24000.0,
+            "bbox_x_mm": 120.0,
+            "bbox_y_mm": 80.0,
+            "bbox_z_mm": 40.0,
+            "bbox_volume_mm3": 384000.0
+          }
+        }
+      ],
+      "cost_compare_routes": null
+    }
+  },
+  "run_both_cost_compare": {
+    "request": {
+      "model_id": "model-cost-contract-run-both",
+      "planning_inputs": {
+        "extracted_part_facts": {
+          "bends_present": true,
+          "constant_thickness": true,
+          "sheet_thickness": 2.0
+        },
+        "selected_process_override": "cnc_milling",
+        "selected_overlay": "medical",
+        "selected_role": "quality_engineer",
+        "selected_template": "medical_design_review",
+        "run_both_if_mismatch": true
+      },
+      "context_payload": {
+        "quantity": 3
+      }
+    },
+    "response": {
+      "route_count": 2,
+      "cost_estimate": {
+        "plan_id": "plan_1",
+        "route_source": "user_override",
+        "process_id": "cnc_milling",
+        "process_label": "CNC Milling",
+        "currency": "USD",
+        "quantity": 3,
+        "unit_cost": 112.1945,
+        "total_cost": 336.5836,
+        "cost_range": {
+          "unit_low": 69.5606,
+          "unit_high": 154.8284,
+          "total_low": 208.6818,
+          "total_high": 464.4853
+        },
+        "confidence": 0.13,
+        "confidence_level": "low",
+        "assumptions": [
+          "Body count defaulted to 1.",
+          "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+          "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+          "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+          "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+          "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+          "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+          "Triangle count used to improve defaulted volume estimate.",
+          "Supplier-specific process rates not provided; using default model rates.",
+          "Material key inferred from component material profile."
+        ],
+        "cost_drivers": [
+          {
+            "rule_id": "CNC-002",
+            "impact_type": "time",
+            "delta_percent": 0.78,
+            "notes": "Deep-hole condition usually increases cycle time and tooling complexity."
+          },
+          {
+            "rule_id": "ASM-004",
+            "impact_type": "setup",
+            "delta_percent": 0.25,
+            "notes": "Assembly orientation complexity can add fixture/setup effort."
+          }
+        ],
+        "breakdown": {
+          "material_cost": 1.9858,
+          "process_cost": 30.1163,
+          "setup_cost_per_unit": 40.098,
+          "inspection_cost": 22.88,
+          "overhead_cost": 17.1144
+        },
+        "metrics_used": {
+          "body_count": 1.0,
+          "part_volume_mm3": 896000.0,
+          "surface_area_mm2": 24000.0,
+          "bbox_x_mm": 120.0,
+          "bbox_y_mm": 80.0,
+          "bbox_z_mm": 40.0,
+          "bbox_volume_mm3": 384000.0
+        }
+      },
+      "cost_estimate_by_route": [
+        {
+          "plan_id": "plan_1",
+          "route_source": "user_override",
+          "process_id": "cnc_milling",
+          "process_label": "CNC Milling",
+          "currency": "USD",
+          "quantity": 3,
+          "unit_cost": 112.1945,
+          "total_cost": 336.5836,
+          "cost_range": {
+            "unit_low": 69.5606,
+            "unit_high": 154.8284,
+            "total_low": 208.6818,
+            "total_high": 464.4853
+          },
+          "confidence": 0.13,
+          "confidence_level": "low",
+          "assumptions": [
+            "Body count defaulted to 1.",
+            "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+            "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+            "Triangle count used to improve defaulted volume estimate.",
+            "Supplier-specific process rates not provided; using default model rates.",
+            "Material key inferred from component material profile."
+          ],
+          "cost_drivers": [
+            {
+              "rule_id": "CNC-002",
+              "impact_type": "time",
+              "delta_percent": 0.78,
+              "notes": "Deep-hole condition usually increases cycle time and tooling complexity."
+            },
+            {
+              "rule_id": "ASM-004",
+              "impact_type": "setup",
+              "delta_percent": 0.25,
+              "notes": "Assembly orientation complexity can add fixture/setup effort."
+            }
+          ],
+          "breakdown": {
+            "material_cost": 1.9858,
+            "process_cost": 30.1163,
+            "setup_cost_per_unit": 40.098,
+            "inspection_cost": 22.88,
+            "overhead_cost": 17.1144
+          },
+          "metrics_used": {
+            "body_count": 1.0,
+            "part_volume_mm3": 896000.0,
+            "surface_area_mm2": 24000.0,
+            "bbox_x_mm": 120.0,
+            "bbox_y_mm": 80.0,
+            "bbox_z_mm": 40.0,
+            "bbox_volume_mm3": 384000.0
+          }
+        },
+        {
+          "plan_id": "plan_2",
+          "route_source": "ai_recommendation",
+          "process_id": "sheet_metal",
+          "process_label": "Sheet Metal",
+          "currency": "USD",
+          "quantity": 3,
+          "unit_cost": 74.2585,
+          "total_cost": 222.7756,
+          "cost_range": {
+            "unit_low": 46.0403,
+            "unit_high": 102.4768,
+            "total_low": 138.1209,
+            "total_high": 307.4303
+          },
+          "confidence": 0.13,
+          "confidence_level": "low",
+          "assumptions": [
+            "Body count defaulted to 1.",
+            "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+            "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+            "Triangle count used to improve defaulted volume estimate.",
+            "Supplier-specific process rates not provided; using default model rates.",
+            "Material key inferred from component material profile."
+          ],
+          "cost_drivers": [
+            {
+              "rule_id": "SM-005",
+              "impact_type": "scrap",
+              "delta_percent": 0.5,
+              "notes": "Insufficient relief often increases forming failure and scrap risk."
+            },
+            {
+              "rule_id": "ASM-004",
+              "impact_type": "setup",
+              "delta_percent": 0.25,
+              "notes": "Assembly orientation complexity can add fixture/setup effort."
+            }
+          ],
+          "breakdown": {
+            "material_cost": 1.6607,
+            "process_cost": 16.3296,
+            "setup_cost_per_unit": 26.732,
+            "inspection_cost": 21.58,
+            "overhead_cost": 7.9563
+          },
+          "metrics_used": {
+            "body_count": 1.0,
+            "part_volume_mm3": 896000.0,
+            "surface_area_mm2": 24000.0,
+            "bbox_x_mm": 120.0,
+            "bbox_y_mm": 80.0,
+            "bbox_z_mm": 40.0,
+            "bbox_volume_mm3": 384000.0
+          }
+        }
+      ],
+      "cost_compare_routes": {
+        "currency": "USD",
+        "baseline_plan_id": "plan_1",
+        "compare_plan_id": "plan_2",
+        "baseline_process_id": "cnc_milling",
+        "compare_process_id": "sheet_metal",
+        "baseline_unit_cost": 112.1945,
+        "compare_unit_cost": 74.2585,
+        "unit_cost_delta": -37.936,
+        "unit_cost_delta_percent": -33.8127,
+        "baseline_total_cost": 336.5836,
+        "compare_total_cost": 222.7756,
+        "total_cost_delta": -113.808,
+        "total_cost_delta_percent": -33.8127,
+        "cheaper_plan_id": "plan_2",
+        "cheaper_process_id": "sheet_metal"
+      }
+    }
+  },
+  "degraded_inputs_cost": {
+    "request": {
+      "model_id": "model-cost-contract-degraded",
+      "execution_plans": [
+        {
+          "plan_id": "plan_1",
+          "route_source": "selected",
+          "process_id": "cnc_milling",
+          "pack_ids": [
+            "A_DRAWING",
+            "B_CNC"
+          ],
+          "overlay_id": null,
+          "role_id": "general_dfm",
+          "template_id": "executive_1page"
+        }
+      ],
+      "context_payload": {}
+    },
+    "response": {
+      "route_count": 1,
+      "cost_estimate": {
+        "plan_id": "plan_1",
+        "route_source": "selected",
+        "process_id": "cnc_milling",
+        "process_label": "CNC Milling",
+        "currency": "USD",
+        "quantity": 1,
+        "unit_cost": 208.4572,
+        "total_cost": 208.4572,
+        "cost_range": {
+          "unit_low": 129.2435,
+          "unit_high": 287.6709,
+          "total_low": 129.2435,
+          "total_high": 287.6709
+        },
+        "confidence": 0.23,
+        "confidence_level": "low",
+        "assumptions": [
+          "Body count defaulted to 1.",
+          "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+          "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+          "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+          "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+          "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+          "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+          "Supplier-specific process rates not provided; using default model rates.",
+          "Material key inferred from component material profile."
+        ],
+        "cost_drivers": [
+          {
+            "rule_id": "CNC-002",
+            "impact_type": "time",
+            "delta_percent": 0.78,
+            "notes": "Deep-hole condition usually increases cycle time and tooling complexity."
+          },
+          {
+            "rule_id": "CNC-024",
+            "impact_type": "time",
+            "delta_percent": 1.26,
+            "notes": "Deep pockets with tight radii are common machining cost drivers."
+          }
+        ],
+        "breakdown": {
+          "material_cost": 1.9858,
+          "process_cost": 30.4928,
+          "setup_cost_per_unit": 120.0,
+          "inspection_cost": 24.18,
+          "overhead_cost": 31.7986
+        },
+        "metrics_used": {
+          "body_count": 1.0,
+          "part_volume_mm3": 85000.0,
+          "surface_area_mm2": 24000.0,
+          "bbox_x_mm": 120.0,
+          "bbox_y_mm": 80.0,
+          "bbox_z_mm": 40.0,
+          "bbox_volume_mm3": 384000.0
+        }
+      },
+      "cost_estimate_by_route": [
+        {
+          "plan_id": "plan_1",
+          "route_source": "selected",
+          "process_id": "cnc_milling",
+          "process_label": "CNC Milling",
+          "currency": "USD",
+          "quantity": 1,
+          "unit_cost": 208.4572,
+          "total_cost": 208.4572,
+          "cost_range": {
+            "unit_low": 129.2435,
+            "unit_high": 287.6709,
+            "total_low": 129.2435,
+            "total_high": 287.6709
+          },
+          "confidence": 0.23,
+          "confidence_level": "low",
+          "assumptions": [
+            "Body count defaulted to 1.",
+            "Geometry metric 'part_volume_mm3' defaulted for quick should-cost.",
+            "Geometry metric 'surface_area_mm2' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_x_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_y_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_z_mm' defaulted for quick should-cost.",
+            "Geometry metric 'bbox_volume_mm3' defaulted for quick should-cost.",
+            "Supplier-specific process rates not provided; using default model rates.",
+            "Material key inferred from component material profile."
+          ],
+          "cost_drivers": [
+            {
+              "rule_id": "CNC-002",
+              "impact_type": "time",
+              "delta_percent": 0.78,
+              "notes": "Deep-hole condition usually increases cycle time and tooling complexity."
+            },
+            {
+              "rule_id": "CNC-024",
+              "impact_type": "time",
+              "delta_percent": 1.26,
+              "notes": "Deep pockets with tight radii are common machining cost drivers."
+            }
+          ],
+          "breakdown": {
+            "material_cost": 1.9858,
+            "process_cost": 30.4928,
+            "setup_cost_per_unit": 120.0,
+            "inspection_cost": 24.18,
+            "overhead_cost": 31.7986
+          },
+          "metrics_used": {
+            "body_count": 1.0,
+            "part_volume_mm3": 85000.0,
+            "surface_area_mm2": 24000.0,
+            "bbox_x_mm": 120.0,
+            "bbox_y_mm": 80.0,
+            "bbox_z_mm": 40.0,
+            "bbox_volume_mm3": 384000.0
+          }
+        }
+      ],
+      "cost_compare_routes": null
+    }
+  }
+}

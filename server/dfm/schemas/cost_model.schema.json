@@ -1,0 +1,325 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rapiddraft/schemas/cost_model.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "model_id",
+    "currency",
+    "confidence_policy",
+    "required_metrics",
+    "global_defaults",
+    "process_models",
+    "finding_cost_impacts"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "model_id": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "confidence_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "base_confidence",
+        "penalties",
+        "bands"
+      ],
+      "properties": {
+        "base_confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "penalties": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0
+          }
+        },
+        "bands": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "high",
+            "medium",
+            "low"
+          ],
+          "properties": {
+            "high": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "gte"
+              ],
+              "properties": {
+                "gte": {
+                  "type": "number"
+                }
+              }
+            },
+            "medium": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "gte",
+                "lt"
+              ],
+              "properties": {
+                "gte": {
+                  "type": "number"
+                },
+                "lt": {
+                  "type": "number"
+                }
+              }
+            },
+            "low": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "lt"
+              ],
+              "properties": {
+                "lt": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "required_metrics": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "global_defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "quantity_default",
+        "overhead_factor",
+        "scrap_factor_default",
+        "setup_cost_default",
+        "inspection_hourly_rate",
+        "material_density_kg_per_mm3_by_key",
+        "material_rate_per_kg_by_key"
+      ],
+      "properties": {
+        "quantity_default": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "overhead_factor": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "scrap_factor_default": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "setup_cost_default": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "inspection_hourly_rate": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "material_density_kg_per_mm3_by_key": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0.0
+          }
+        },
+        "material_rate_per_kg_by_key": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0.0
+          }
+        }
+      }
+    },
+    "process_models": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cnc_milling",
+        "cnc_turning",
+        "sheet_metal",
+        "weldment"
+      ],
+      "properties": {
+        "cnc_milling": {
+          "$ref": "#/$defs/processModel"
+        },
+        "cnc_turning": {
+          "$ref": "#/$defs/processModel"
+        },
+        "sheet_metal": {
+          "$ref": "#/$defs/processModel"
+        },
+        "weldment": {
+          "$ref": "#/$defs/processModel"
+        }
+      }
+    },
+    "finding_cost_impacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/findingImpact"
+      }
+    }
+  },
+  "$defs": {
+    "processModel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "setup_cost",
+        "hourly_rate",
+        "scrap_factor",
+        "overhead_factor",
+        "throughput_model",
+        "material_utilization_model"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "setup_cost": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "hourly_rate": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "scrap_factor": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "overhead_factor": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "throughput_model": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "coefficients"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "feature_weighted",
+                "envelope_weighted"
+              ]
+            },
+            "coefficients": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "material_utilization_model": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "defaults"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "stock_to_part_ratio",
+                "sheet_nesting_factor",
+                "cut_length_factor"
+              ]
+            },
+            "defaults": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
+    },
+    "findingImpact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule_id",
+        "impact_type",
+        "impact_weight",
+        "delta_percent_range"
+      ],
+      "properties": {
+        "rule_id": {
+          "type": "string",
+          "pattern": "^[A-Z]{2,6}-[0-9]{3}$"
+        },
+        "impact_type": {
+          "type": "string",
+          "enum": [
+            "time",
+            "setup",
+            "material",
+            "scrap",
+            "inspection"
+          ]
+        },
+        "impact_weight": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "delta_percent_range": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "min",
+            "max"
+          ],
+          "properties": {
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            }
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

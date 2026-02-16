@@ -1,0 +1,38 @@
+{
+  "version": "1.0.1",
+  "generated_at": "2026-02-16T18:20:00+00:00",
+  "files": [
+    "server/dfm/README.md",
+    "server/dfm/manifest.json",
+    "server/dfm/references.json",
+    "server/dfm/rule_library.json",
+    "server/dfm/process_classifier.json",
+    "server/dfm/overlays.json",
+    "server/dfm/roles.json",
+    "server/dfm/report_templates.json",
+    "server/dfm/ui_bindings.json",
+    "server/dfm/accounts_pilot_targets.json",
+    "server/dfm/supplier_profile_template.json",
+    "server/dfm/cost_model.json",
+    "server/dfm/schemas/rule_library.schema.json",
+    "server/dfm/schemas/roles.schema.json",
+    "server/dfm/schemas/overlays.schema.json",
+    "server/dfm/schemas/report_templates.schema.json",
+    "server/dfm/schemas/ui_bindings.schema.json",
+    "server/dfm/schemas/accounts_pilot_targets.schema.json",
+    "server/dfm/schemas/cost_model.schema.json",
+    "server/dfm/schemas/supplier_profile_template.schema.json"
+  ],
+  "expected_rule_count": 130,
+  "pack_counts": {
+    "A_DRAWING": 25,
+    "B_CNC": 25,
+    "C_SHEET": 20,
+    "D_WELD": 15,
+    "E_ASSEMBLY": 15,
+    "F_OVERLAY": 30
+  },
+  "reference_count": 34,
+  "roles_count": 5,
+  "templates_count": 5
+}

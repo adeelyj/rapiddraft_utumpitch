@@ -54,6 +54,9 @@
                     "assembly_risks",
                     "fixture_plan",
                     "compliance_matrix",
+                    "cost_summary",
+                    "cost_drivers",
+                    "cost_compare_routes",
                     "standards_references_auto"
                   ]
                 },

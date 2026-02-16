@@ -1,0 +1,206 @@
+{
+  "REF-GPS-1": {
+    "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
+    "url": "https://www.iso.org/standard/76602.html",
+    "type": "standard",
+    "notes": "Core GPS interpretation principles including independency."
+  },
+  "REF-GPS-2": {
+    "title": "ISO 1101: Geometrical tolerancing",
+    "url": "https://www.iso.org/standard/79211.html",
+    "type": "standard",
+    "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules."
+  },
+  "REF-GPS-3": {
+    "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
+    "url": "https://www.iso.org/standard/26209.html",
+    "type": "standard",
+    "notes": "Default dimension tolerance classes when not individually specified."
+  },
+  "REF-GPS-4": {
+    "title": "ISO 2768-2: General geometrical tolerances",
+    "url": "https://www.iso.org/standard/26210.html",
+    "type": "standard",
+    "notes": "Default geometrical tolerances for unspecified features."
+  },
+  "REF-GPS-5": {
+    "title": "ISO 21920-1: Surface texture profile method",
+    "url": "https://www.iso.org/standard/74517.html",
+    "type": "standard",
+    "notes": "Surface texture specification framework used in modern GPS practice."
+  },
+  "REF-GPS": {
+    "title": "GPS Alias Mapping",
+    "url": "https://www.iso.org/ics/17.040/x/",
+    "type": "internal",
+    "notes": "Alias-safe entry mapping legacy REF-GPS references to GPS core standards."
+  },
+  "REF-THR-1": {
+    "title": "ISO 965-1: Metric screw thread tolerances",
+    "url": "https://www.iso.org/standard/58999.html",
+    "type": "standard",
+    "notes": "Tolerance positions and grades for metric threads."
+  },
+  "REF-BLT-1": {
+    "title": "ISO 898-1: Mechanical properties of bolts/screws/studs",
+    "url": "https://www.iso.org/standard/67643.html",
+    "type": "standard",
+    "notes": "Fastener property classes and test requirements."
+  },
+  "REF-TOR-1": {
+    "title": "ISO 16047: Torque/clamp force testing for threaded fasteners",
+    "url": "https://www.iso.org/standard/63234.html",
+    "type": "standard",
+    "notes": "Method for torque-clamp behavior verification."
+  },
+  "REF-WLD-1": {
+    "title": "ISO 2553: Weld symbol representation on drawings",
+    "url": "https://www.iso.org/standard/76349.html",
+    "type": "standard",
+    "notes": "Standardized weld-symbol notation and positioning."
+  },
+  "REF-WLD-2": {
+    "title": "ISO 5817: Quality levels for weld imperfections",
+    "url": "https://www.iso.org/standard/54925.html",
+    "type": "standard",
+    "notes": "Imperfection quality classes for fusion welds."
+  },
+  "REF-WLD-3": {
+    "title": "TWI guidance: design to minimize weld distortion",
+    "url": "https://www.twi-global.com/technical-knowledge/job-knowledge/design-to-minimise-distortion",
+    "type": "guide",
+    "notes": "Practical weld sizing, balance, and sequencing guidance."
+  },
+  "REF-WLD": {
+    "title": "Weld Alias Mapping",
+    "url": "https://www.iso.org/committee/54920/x/catalogue/",
+    "type": "internal",
+    "notes": "Alias-safe entry mapping legacy REF-WLD references to weld standards."
+  },
+  "REF-CNC-1": {
+    "title": "Hubs CNC machining design guide",
+    "url": "https://www.hubs.com/knowledge-base/cnc-machining-design-guide/",
+    "type": "guide",
+    "notes": "Practical hole, wall, and tool-access limits for CNC."
+  },
+  "REF-CNC-2": {
+    "title": "Protolabs CNC milling design guidelines",
+    "url": "https://www.protolabs.com/resources/design-tips/cnc-machining-design-guidelines/",
+    "type": "guide",
+    "notes": "Recommendations for pockets, radii, and machinability."
+  },
+  "REF-CNC-3": {
+    "title": "Protocase CNC machining design tips",
+    "url": "https://www.protocase.com/resources/design-tips/cnc-machining.php",
+    "type": "guide",
+    "notes": "Constraints related to depth, corner radii, and accessibility."
+  },
+  "REF-CNC-4": {
+    "title": "Protolabs CNC turning design guidelines",
+    "url": "https://www.protolabs.com/resources/design-tips/cnc-turning-design-guidelines/",
+    "type": "guide",
+    "notes": "Turning-specific geometry and support constraints."
+  },
+  "REF-SM-1": {
+    "title": "Protolabs sheet metal design guidelines",
+    "url": "https://www.protolabs.com/resources/design-tips/sheet-metal-design-guidelines/",
+    "type": "guide",
+    "notes": "Bend, flange, relief, and hole-placement rules."
+  },
+  "REF-DFA-1": {
+    "title": "DFMA principles overview (Boothroyd Dewhurst)",
+    "url": "https://www.dfma.com/software/boothroyd-dewhurst/",
+    "type": "guide",
+    "notes": "Part-count reduction and assembly simplification principles."
+  },
+  "REF-FIX-1": {
+    "title": "Carr Lane fixture design principles (3-2-1 locating)",
+    "url": "https://www.carrlane.com/engineering-resources/fixture-design-principles",
+    "type": "guide",
+    "notes": "Fixture location and repeatability fundamentals."
+  },
+  "REF-MACH-REG": {
+    "title": "Regulation (EU) 2023/1230 on machinery",
+    "url": "https://eur-lex.europa.eu/eli/reg/2023/1230/oj",
+    "type": "eu_reg",
+    "notes": "Essential health and safety obligations for machinery."
+  },
+  "REF-MACH-ISO": {
+    "title": "ISO 12100: Safety of machinery risk assessment/reduction",
+    "url": "https://www.iso.org/standard/51528.html",
+    "type": "standard",
+    "notes": "Methodology for hazard identification and risk reduction."
+  },
+  "REF-FOOD-EN": {
+    "title": "EN 1672-2: Hygiene requirements for food machinery",
+    "url": "https://standards.iteh.ai/catalog/standards/cen/6ff4d7c4-7cab-4f8f-8f43-3c235a491091/en-1672-2-2020",
+    "type": "standard",
+    "notes": "Cleanability and hygienic design obligations in food equipment."
+  },
+  "REF-FOOD-ISO": {
+    "title": "ISO 14159: Hygiene requirements in machinery design",
+    "url": "https://www.iso.org/standard/71044.html",
+    "type": "standard",
+    "notes": "Selection and verification guidance for hygienic measures."
+  },
+  "REF-HYG-1": {
+    "title": "EHEDG hygienic design guidance",
+    "url": "https://www.ehedg.org/guidelines",
+    "type": "guide",
+    "notes": "Practical hygienic design heuristics for geometry and finish."
+  },
+  "REF-PED-EU": {
+    "title": "Directive 2014/68/EU (Pressure Equipment Directive)",
+    "url": "https://eur-lex.europa.eu/eli/dir/2014/68/oj",
+    "type": "eu_reg",
+    "notes": "Pressure equipment safety requirements and conformity paths."
+  },
+  "REF-HVAC-EN": {
+    "title": "EN 378: Refrigeration system safety/environment requirements",
+    "url": "https://area-eur.be/standards/en-378/",
+    "type": "standard",
+    "notes": "Design, testing, marking, and documentation for refrigeration systems."
+  },
+  "REF-MDR-EU": {
+    "title": "Regulation (EU) 2017/745 on medical devices (MDR)",
+    "url": "https://eur-lex.europa.eu/eli/reg/2017/745/oj",
+    "type": "eu_reg",
+    "notes": "EU lifecycle and market-placement requirements for medical devices."
+  },
+  "REF-MED-QMS": {
+    "title": "ISO 13485: Medical devices QMS requirements",
+    "url": "https://www.iso.org/standard/59752.html",
+    "type": "standard",
+    "notes": "Quality-system requirements for medical device lifecycle control."
+  },
+  "REF-MED-RISK": {
+    "title": "ISO 14971: Medical device risk management",
+    "url": "https://www.iso.org/standard/72704.html",
+    "type": "standard",
+    "notes": "Risk analysis, controls, and residual-risk evaluation process."
+  },
+  "REF-LAB-IEC": {
+    "title": "IEC 61010-1: Safety requirements for measurement/control/lab equipment",
+    "url": "https://webstore.iec.ch/publication/2612",
+    "type": "standard",
+    "notes": "Equipment safety requirements impacting enclosure and hazard controls."
+  },
+  "REF-AUTO-QMS": {
+    "title": "IATF 16949 automotive QMS requirements",
+    "url": "https://www.iatfglobaloversight.org/iatf-16949/",
+    "type": "standard",
+    "notes": "Automotive quality system expectations linked to process discipline."
+  },
+  "REF-VDA-6-3": {
+    "title": "VDA 6.3 process audit overview",
+    "url": "https://vda-qmc.de/en/automotive-core-tools/vda-6-3-process-audit/",
+    "type": "standard",
+    "notes": "Process audit model for readiness and capability evidence."
+  },
+  "REF-GM-CSR": {
+    "title": "GM customer specific requirements context (IATF)",
+    "url": "https://www.iatfglobaloversight.org/oem-requirements/",
+    "type": "guide",
+    "notes": "Customer-specific quality/control plan expectations for suppliers."
+  }
+}

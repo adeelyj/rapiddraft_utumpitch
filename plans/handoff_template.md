@@ -1,10 +1,10 @@
 # RapidDraft Phase Handoff Template
 
 Use this template at the end of each implementation phase (Phase 0/1/2/3).  
-Save filled versions in `docs/` using the phase name, for example:
-- `docs/dfm_phase1_handoff.md`
-- `docs/dfm_phase2_handoff.md`
-- `docs/dfm_phase3_handoff.md`
+Save filled versions in `plans/` using the phase name, for example:
+- `plans/dfm_phase1_handoff.md`
+- `plans/dfm_phase2_handoff.md`
+- `plans/dfm_phase3_handoff.md`
 
 ## 1) Phase Metadata
 - Phase name:

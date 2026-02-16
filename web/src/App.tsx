@@ -116,7 +116,11 @@ const normalizeComponentProfiles = (raw: unknown): Record<string, ComponentProfi
 
 const normalizeProfileOptions = (raw: unknown): DfmProfileOptions | null => {
   if (!raw || typeof raw !== "object") return null;
-  const payload = raw as Record<string, unknown>;
+  const rootPayload = raw as Record<string, unknown>;
+  const payload =
+    rootPayload.profile_options && typeof rootPayload.profile_options === "object"
+      ? (rootPayload.profile_options as Record<string, unknown>)
+      : rootPayload;
   const normalizeOptions = (source: unknown): DfmProfileOption[] => {
     if (!Array.isArray(source)) return [];
     return source.flatMap((entry) => {
@@ -343,9 +347,9 @@ const App = () => {
 
   const fetchProfileOptions = async () => {
     try {
-      const response = await fetch(`${apiBase}/api/dfm/profile-options`);
+      const response = await fetch(`${apiBase}/api/dfm/config`);
       if (!response.ok) {
-        const detail = await readErrorDetail(response, "Failed to fetch DFM profile options");
+        const detail = await readErrorDetail(response, "Failed to fetch DFM config");
         throw new Error(detail);
       }
       const payload = normalizeProfileOptions(await response.json());

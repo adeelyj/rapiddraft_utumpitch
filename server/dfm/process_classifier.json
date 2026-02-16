@@ -1,0 +1,180 @@
+{
+  "version": "1.0.0",
+  "label": "RapidDraft Process Classifier",
+  "process_families": [
+    {
+      "process_id": "cnc_milling",
+      "label": "CNC Milling",
+      "default_packs": [
+        "A_DRAWING",
+        "B_CNC",
+        "E_ASSEMBLY"
+      ]
+    },
+    {
+      "process_id": "cnc_turning",
+      "label": "CNC Turning",
+      "default_packs": [
+        "A_DRAWING",
+        "B_CNC",
+        "E_ASSEMBLY"
+      ]
+    },
+    {
+      "process_id": "sheet_metal",
+      "label": "Sheet Metal",
+      "default_packs": [
+        "A_DRAWING",
+        "C_SHEET",
+        "E_ASSEMBLY"
+      ]
+    },
+    {
+      "process_id": "weldment",
+      "label": "Weldment and Fabrication",
+      "default_packs": [
+        "A_DRAWING",
+        "D_WELD",
+        "E_ASSEMBLY"
+      ]
+    },
+    {
+      "process_id": "additive",
+      "label": "Additive Manufacturing (Optional)",
+      "default_packs": [
+        "A_DRAWING",
+        "E_ASSEMBLY"
+      ]
+    },
+    {
+      "process_id": "plastics",
+      "label": "Plastics Process (Optional)",
+      "default_packs": [
+        "A_DRAWING",
+        "E_ASSEMBLY"
+      ]
+    }
+  ],
+  "input_facts": [
+    "bends_present",
+    "constant_thickness",
+    "pockets_present",
+    "rotational_symmetry",
+    "turned_faces_present",
+    "weld_symbols_detected",
+    "multi_part_joined",
+    "threaded_holes_count",
+    "surface_finish_density",
+    "min_wall_thickness",
+    "sheet_thickness",
+    "bbox_dimensions",
+    "feature_complexity_score"
+  ],
+  "heuristics": [
+    {
+      "process_id": "sheet_metal",
+      "conditions_all": [
+        "bends_present",
+        "constant_thickness"
+      ],
+      "conditions_any": [
+        "sheet_thickness",
+        "bend_lines_detected"
+      ],
+      "confidence_boost": 0.28,
+      "reasons": [
+        "bends detected",
+        "constant thickness profile"
+      ]
+    },
+    {
+      "process_id": "cnc_turning",
+      "conditions_all": [
+        "rotational_symmetry"
+      ],
+      "conditions_any": [
+        "turned_faces_present"
+      ],
+      "confidence_boost": 0.24,
+      "reasons": [
+        "rotational geometry suggests lathe workflow"
+      ]
+    },
+    {
+      "process_id": "cnc_milling",
+      "conditions_any": [
+        "pockets_present",
+        "threaded_holes_count",
+        "feature_complexity_score"
+      ],
+      "conditions_not": [
+        "constant_thickness and bends_present"
+      ],
+      "confidence_boost": 0.22,
+      "reasons": [
+        "3D pocketing and hole patterns favor milling"
+      ]
+    },
+    {
+      "process_id": "weldment",
+      "conditions_any": [
+        "weld_symbols_detected",
+        "multi_part_joined"
+      ],
+      "confidence_boost": 0.26,
+      "reasons": [
+        "weld indicators and joined components detected"
+      ]
+    },
+    {
+      "process_id": "additive",
+      "conditions_any": [
+        "feature_complexity_score"
+      ],
+      "conditions_not": [
+        "tight machining-only constraints"
+      ],
+      "confidence_boost": 0.08,
+      "reasons": [
+        "complex geometry with low subtractive fit"
+      ]
+    },
+    {
+      "process_id": "plastics",
+      "conditions_any": [
+        "constant_wall_regions",
+        "draft_like_faces"
+      ],
+      "confidence_boost": 0.08,
+      "reasons": [
+        "wall/draft patterns align with molded plastics"
+      ]
+    }
+  ],
+  "confidence_thresholds": {
+    "high": {
+      "gte": 0.8
+    },
+    "medium": {
+      "gte": 0.65,
+      "lt": 0.8
+    },
+    "low": {
+      "lt": 0.65
+    }
+  },
+  "tie_break_logic": {
+    "close_margin": 0.1,
+    "if_close_or_low_confidence": {
+      "select_multiple_processes": true,
+      "select_union_of_packs": true,
+      "needs_user_confirm": true,
+      "ui_message": "Process is ambiguous. Multiple packs selected; confirm before generate."
+    },
+    "mismatch_policy": {
+      "run_both_if_user_override": true,
+      "record_mismatch_banner": true,
+      "banner_template": "User selected {user_process}, AI recommended {ai_process} ({ai_confidence}). Results include both."
+    }
+  }
+}

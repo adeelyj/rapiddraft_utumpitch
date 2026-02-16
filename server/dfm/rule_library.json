@@ -1,0 +1,2733 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-02-16T14:55:32.982853+00:00",
+  "packs": [
+    {
+      "pack_id": "A_DRAWING",
+      "label": "Drawing and Specification Completeness",
+      "description": "Drawing communication, GPS/GD&T, callouts, and spec integrity checks.",
+      "expected_rule_count": 25,
+      "trigger_type": "always_base"
+    },
+    {
+      "pack_id": "B_CNC",
+      "label": "CNC Machining DFM",
+      "description": "Milling and turning manufacturability checks from CAD and linked specs.",
+      "expected_rule_count": 25,
+      "trigger_type": "process_primary"
+    },
+    {
+      "pack_id": "C_SHEET",
+      "label": "Sheet Metal DFM",
+      "description": "Bend, flange, relief, and flat-pattern manufacturability checks.",
+      "expected_rule_count": 20,
+      "trigger_type": "process_primary"
+    },
+    {
+      "pack_id": "D_WELD",
+      "label": "Weldment and Fabrication DFM",
+      "description": "Weld specification completeness plus weldability and distortion risk checks.",
+      "expected_rule_count": 15,
+      "trigger_type": "process_primary"
+    },
+    {
+      "pack_id": "E_ASSEMBLY",
+      "label": "Assembly, Fixture, and Serviceability",
+      "description": "DFA, fixture repeatability, and service access checks.",
+      "expected_rule_count": 15,
+      "trigger_type": "cross_process"
+    },
+    {
+      "pack_id": "F_OVERLAY",
+      "label": "Industry Overlay and Compliance",
+      "description": "Domain overlays that add compliance/risk documentation constraints.",
+      "expected_rule_count": 30,
+      "trigger_type": "overlay_selected"
+    }
+  ],
+  "rules": [
+    {
+      "rule_id": "SPEC-001",
+      "pack_id": "A_DRAWING",
+      "title": "General tolerances declared (ISO 2768-1/-2 or equivalent)",
+      "description": "General tolerances declared (ISO 2768-1/-2 or equivalent)",
+      "applies_to": [
+        "drawing"
+      ],
+      "inputs_required": [
+        "drawing_title_block",
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-GPS-3",
+        "REF-GPS-4"
+      ]
+    },
+    {
+      "rule_id": "SPEC-002",
+      "pack_id": "A_DRAWING",
+      "title": "GPS fundamentals declared (defaults/interpretation consistent with ISO 8015 framework)",
+      "description": "GPS fundamentals declared (defaults/interpretation consistent with ISO 8015 framework)",
+      "applies_to": [
+        "drawing"
+      ],
+      "inputs_required": [
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-GPS-1"
+      ]
+    },
+    {
+      "rule_id": "SPEC-003",
+      "pack_id": "A_DRAWING",
+      "title": "Units shown (mm/in) and consistent across drawing",
+      "description": "Units shown (mm/in) and consistent across drawing",
+      "applies_to": [
+        "drawing"
+      ],
+      "inputs_required": [
+        "drawing_title_block"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-GPS-1"
+      ]
+    },
+    {
+      "rule_id": "SPEC-004",
+      "pack_id": "A_DRAWING",
+      "title": "Projection method shown (1st/3rd angle) if multi-view drawing",
+      "description": "Projection method shown (1st/3rd angle) if multi-view drawing",
+      "applies_to": [
+        "drawing"
+      ],
+      "inputs_required": [
+        "drawing_title_block"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-GPS-1"
+      ]
+    },
+    {
+      "rule_id": "SPEC-005",
+      "pack_id": "A_DRAWING",
+      "title": "Material specified (grade + condition/heat treat if relevant)",
+      "description": "Material specified (grade + condition/heat treat if relevant)",
+      "applies_to": [
+        "drawing"
+      ],
+      "inputs_required": [
+        "drawing_title_block",
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-GPS-1"
+      ]
+    },
+    {
+      "rule_id": "SPEC-006",
+      "pack_id": "A_DRAWING",
+      "title": "Surface texture requirement present where function-critical",
+      "description": "Surface texture requirement present where function-critical",
+      "applies_to": [
+        "drawing"
+      ],
+      "inputs_required": [
+        "drawing_notes",
+        "surface_finish_spec"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "critical",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-GPS-5"
+      ]
+    },
+    {
+      "rule_id": "SPEC-007",
+      "pack_id": "A_DRAWING",
+      "title": "Surface texture symbol includes parameter value (e",
+      "description": "Surface texture symbol includes parameter value (e.g., Ra) when used",
+      "applies_to": [
+        "drawing"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-GPS-5"
+      ]
+    },
+    {
+      "rule_id": "SPEC-008",
+      "pack_id": "A_DRAWING",
+      "title": "“Deburr/break edges” requirement present if sharp edges unacceptable",
+      "description": "“Deburr/break edges” requirement present if sharp edges unacceptable",
+      "applies_to": [
+        "drawing"
+      ],
+      "inputs_required": [
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-GPS-1"
+      ]
+    },
+    {
+      "rule_id": "SPEC-009",
+      "pack_id": "A_DRAWING",
+      "title": "Critical features have explicit tolerances (don’t rely only on general tolerances)",
+      "description": "Critical features have explicit tolerances (don’t rely only on general tolerances)",
+      "applies_to": [
+        "drawing"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "critical",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-GPS-3"
+      ]
+    },
+    {
+      "rule_id": "SPEC-010",
+      "pack_id": "A_DRAWING",
+      "title": "GD&T frames use valid symbols and datums",
+      "description": "GD&T frames use valid symbols and datums",
+      "applies_to": [
+        "drawing"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-GPS-1"
+      ]
+    },
+    {
+      "rule_id": "SPEC-011",
+      "pack_id": "A_DRAWING",
+      "title": "Datum references exist on actual features (not “floating” letters)",
+      "description": "Datum references exist on actual features (not “floating” letters)",
+      "applies_to": [
+        "drawing"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-GPS-2"
+      ]
+    },
+    {
+      "rule_id": "SPEC-012",
+      "pack_id": "A_DRAWING",
+      "title": "Thread callouts include tolerance class (e",
+      "description": "Thread callouts include tolerance class (e.g., 6H/6g system)",
+      "applies_to": [
+        "drawing",
+        "drawing_thread_callout"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-THR-1"
+      ]
+    },
+    {
+      "rule_id": "SPEC-013",
+      "pack_id": "A_DRAWING",
+      "title": "Thread callouts include pitch (if not coarse default) and length/depth",
+      "description": "Thread callouts include pitch (if not coarse default) and length/depth",
+      "applies_to": [
+        "drawing",
+        "drawing_thread_callout"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-THR-1"
+      ]
+    },
+    {
+      "rule_id": "SPEC-014",
+      "pack_id": "A_DRAWING",
+      "title": "Fasteners in BOM include property class (e",
+      "description": "Fasteners in BOM include property class (e.g., 8.8/10.9)",
+      "applies_to": [
+        "drawing",
+        "bom"
+      ],
+      "inputs_required": [
+        "bom_items"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-BLT-1"
+      ]
+    },
+    {
+      "rule_id": "SPEC-015",
+      "pack_id": "A_DRAWING",
+      "title": "Torque/clamp requirements specified when joint performance is critical",
+      "description": "Torque/clamp requirements specified when joint performance is critical",
+      "applies_to": [
+        "drawing"
+      ],
+      "inputs_required": [
+        "drawing_notes",
+        "bom_items",
+        "assembly_model"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "critical",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-TOR-1"
+      ]
+    },
+    {
+      "rule_id": "SPEC-016",
+      "pack_id": "A_DRAWING",
+      "title": "Welds use ISO 2553 symbols (not ambiguous sketches)",
+      "description": "Welds use ISO 2553 symbols (not ambiguous sketches)",
+      "applies_to": [
+        "drawing",
+        "drawing_weld_callout"
+      ],
+      "inputs_required": [
+        "weld_symbols",
+        "weld_data"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-WLD-1"
+      ]
+    },
+    {
+      "rule_id": "SPEC-017",
+      "pack_id": "A_DRAWING",
+      "title": "Weld symbol includes size (a/z) and length/intermittent pattern if applicable",
+      "description": "Weld symbol includes size (a/z) and length/intermittent pattern if applicable",
+      "applies_to": [
+        "drawing",
+        "drawing_weld_callout"
+      ],
+      "inputs_required": [
+        "weld_symbols",
+        "weld_data"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-WLD-1"
+      ]
+    },
+    {
+      "rule_id": "SPEC-018",
+      "pack_id": "A_DRAWING",
+      "title": "Weld quality level specified when required (B/C/D)",
+      "description": "Weld quality level specified when required (B/C/D)",
+      "applies_to": [
+        "drawing",
+        "drawing_weld_callout"
+      ],
+      "inputs_required": [
+        "drawing_notes",
+        "weld_notes",
+        "weld_data"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-WLD-2"
+      ]
+    },
+    {
+      "rule_id": "SPEC-019",
+      "pack_id": "A_DRAWING",
+      "title": "Weld inspection/testing notes present when specified (NDT, pressure test etc",
+      "description": "Weld inspection/testing notes present when specified (NDT, pressure test etc.)",
+      "applies_to": [
+        "drawing",
+        "drawing_weld_callout"
+      ],
+      "inputs_required": [
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-WLD-1",
+        "REF-PED-EU"
+      ]
+    },
+    {
+      "rule_id": "SPEC-020",
+      "pack_id": "A_DRAWING",
+      "title": "Coating/finish type and thickness specified when functional (corrosion, hygiene)",
+      "description": "Coating/finish type and thickness specified when functional (corrosion, hygiene)",
+      "applies_to": [
+        "drawing"
+      ],
+      "inputs_required": [
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-HYG-1",
+        "REF-PED-EU"
+      ]
+    },
+    {
+      "rule_id": "SPEC-021",
+      "pack_id": "A_DRAWING",
+      "title": "Revision + change note present for released drawings",
+      "description": "Revision + change note present for released drawings",
+      "applies_to": [
+        "drawing"
+      ],
+      "inputs_required": [
+        "drawing_title_block"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-MED-QMS",
+        "REF-AUTO-QMS"
+      ]
+    },
+    {
+      "rule_id": "SPEC-022",
+      "pack_id": "A_DRAWING",
+      "title": "CTQs flagged (special characteristics) if auto/medical process requires it",
+      "description": "CTQs flagged (special characteristics) if auto/medical process requires it",
+      "applies_to": [
+        "drawing"
+      ],
+      "inputs_required": [
+        "bom_items"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-GM-CSR",
+        "REF-AUTO-QMS"
+      ]
+    },
+    {
+      "rule_id": "SPEC-023",
+      "pack_id": "A_DRAWING",
+      "title": "Inspection method expectation indicated for hard-to-measure GD&T",
+      "description": "Inspection method expectation indicated for hard-to-measure GD&T",
+      "applies_to": [
+        "drawing"
+      ],
+      "inputs_required": [
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-GPS-2"
+      ]
+    },
+    {
+      "rule_id": "SPEC-024",
+      "pack_id": "A_DRAWING",
+      "title": "Surface finish + tolerance not contradictory (e",
+      "description": "Surface finish + tolerance not contradictory (e.g., extreme Ra + wide tol without note)",
+      "applies_to": [
+        "drawing"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-GPS-5"
+      ]
+    },
+    {
+      "rule_id": "SPEC-025",
+      "pack_id": "A_DRAWING",
+      "title": "Assembly drawing includes BOM + callouts for joining method",
+      "description": "Assembly drawing includes BOM + callouts for joining method",
+      "applies_to": [
+        "drawing",
+        "bom",
+        "assembly"
+      ],
+      "inputs_required": [
+        "assembly_model"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add or correct drawing specification for explicit, measurable intent.",
+      "refs": [
+        "REF-DFA-1"
+      ]
+    },
+    {
+      "rule_id": "CNC-001",
+      "pack_id": "B_CNC",
+      "title": "Min wall thickness check vs material class (thin walls → vibration/warp risk)",
+      "description": "Min wall thickness check vs material class (thin walls → vibration/warp risk)",
+      "applies_to": [
+        "cad_part",
+        "cad_feature_wall"
+      ],
+      "inputs_required": [
+        "wall_thickness_map",
+        "material_spec"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-1",
+        "REF-CNC-2"
+      ]
+    },
+    {
+      "rule_id": "CNC-002",
+      "pack_id": "B_CNC",
+      "title": "Deep holes: recommended depth ~4×D, hard max ~10×D (flag beyond)",
+      "description": "Deep holes: recommended depth ~4×D, hard max ~10×D (flag beyond)",
+      "applies_to": [
+        "cad_part",
+        "cad_feature_hole"
+      ],
+      "inputs_required": [
+        "hole_depth",
+        "hole_features"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-1"
+      ]
+    },
+    {
+      "rule_id": "CNC-003",
+      "pack_id": "B_CNC",
+      "title": "Prefer standard drill diameters (non-standard → milling/time)",
+      "description": "Prefer standard drill diameters (non-standard → milling/time)",
+      "applies_to": [
+        "cad_part"
+      ],
+      "inputs_required": [
+        "hole_diameter",
+        "hole_features"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-1"
+      ]
+    },
+    {
+      "rule_id": "CNC-004",
+      "pack_id": "B_CNC",
+      "title": "Blind drilled holes: conical floor expected (flag if flat-bottom functional)",
+      "description": "Blind drilled holes: conical floor expected (flag if flat-bottom functional)",
+      "applies_to": [
+        "cad_part",
+        "cad_feature_hole"
+      ],
+      "inputs_required": [
+        "hole_features"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-1"
+      ]
+    },
+    {
+      "rule_id": "CNC-005",
+      "pack_id": "B_CNC",
+      "title": "Pocket internal corners: small radius → small tool → depth limits/cost",
+      "description": "Pocket internal corners: small radius → small tool → depth limits/cost",
+      "applies_to": [
+        "cad_part",
+        "cad_feature_pocket"
+      ],
+      "inputs_required": [
+        "pocket_depth",
+        "pocket_corner_radius"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-2"
+      ]
+    },
+    {
+      "rule_id": "CNC-006",
+      "pack_id": "B_CNC",
+      "title": "Prefer largest internal radii possible (cost + finish benefit",
+      "description": "Prefer largest internal radii possible (cost + finish benefit; depth vs radius trade)",
+      "applies_to": [
+        "cad_part"
+      ],
+      "inputs_required": [
+        "pocket_depth",
+        "radii_set"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-3"
+      ]
+    },
+    {
+      "rule_id": "CNC-007",
+      "pack_id": "B_CNC",
+      "title": "Avoid “raised islands/bosses” if they require removing whole face volume (cost driver)",
+      "description": "Avoid “raised islands/bosses” if they require removing whole face volume (cost driver)",
+      "applies_to": [
+        "cad_part",
+        "cad_feature_hole"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-2"
+      ]
+    },
+    {
+      "rule_id": "CNC-008",
+      "pack_id": "B_CNC",
+      "title": "Suggest inserts (studs/dowels) vs raised machined features when feasible",
+      "description": "Suggest inserts (studs/dowels) vs raised machined features when feasible",
+      "applies_to": [
+        "cad_part"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-2"
+      ]
+    },
+    {
+      "rule_id": "CNC-009",
+      "pack_id": "B_CNC",
+      "title": "Text/engraving: small cutters increase time",
+      "description": "Text/engraving: small cutters increase time; use radiused fonts",
+      "applies_to": [
+        "cad_part"
+      ],
+      "inputs_required": [
+        "engraving_features"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-2"
+      ]
+    },
+    {
+      "rule_id": "CNC-010",
+      "pack_id": "B_CNC",
+      "title": "Corner radius consistency across pockets (tool reuse reduces time)",
+      "description": "Corner radius consistency across pockets (tool reuse reduces time)",
+      "applies_to": [
+        "cad_part",
+        "cad_feature_pocket"
+      ],
+      "inputs_required": [
+        "radii_set"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-3",
+        "REF-CNC-2"
+      ]
+    },
+    {
+      "rule_id": "CNC-011",
+      "pack_id": "B_CNC",
+      "title": "Tool access: internal corner smaller than tool radius → redesign (relief/teardrop)",
+      "description": "Tool access: internal corner smaller than tool radius → redesign (relief/teardrop)",
+      "applies_to": [
+        "cad_part"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-2"
+      ]
+    },
+    {
+      "rule_id": "CNC-012",
+      "pack_id": "B_CNC",
+      "title": "Thin ribs/bosses: flag for deflection (recommend thicker or support)",
+      "description": "Thin ribs/bosses: flag for deflection (recommend thicker or support).   Turning-specific",
+      "applies_to": [
+        "cad_part"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-2",
+        "REF-CNC-1"
+      ]
+    },
+    {
+      "rule_id": "CNC-013",
+      "pack_id": "B_CNC",
+      "title": "Placeholder: Feature accessibility check for long-reach tools in deep cavities",
+      "description": "Placeholder: Feature accessibility check for long-reach tools in deep cavities",
+      "applies_to": [
+        "cad_part"
+      ],
+      "inputs_required": [
+        "pocket_depth"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-2",
+        "REF-CNC-3"
+      ]
+    },
+    {
+      "rule_id": "CNC-014",
+      "pack_id": "B_CNC",
+      "title": "Placeholder: Multi-setup requirement warning when critical features are not reachable in one setup",
+      "description": "Placeholder: Multi-setup requirement warning when critical features are not reachable in one setup",
+      "applies_to": [
+        "cad_part"
+      ],
+      "inputs_required": [
+        "datum_scheme"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "critical",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-2",
+        "REF-FIX-1"
+      ]
+    },
+    {
+      "rule_id": "CNC-020",
+      "pack_id": "B_CNC",
+      "title": "Tight tolerance on thin wall features → likely scrap risk",
+      "description": "Tight tolerance on thin wall features → likely scrap risk; suggest redesign or add stock",
+      "applies_to": [
+        "cad_part",
+        "cad_feature_wall"
+      ],
+      "inputs_required": [
+        "wall_thickness_map"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-1"
+      ]
+    },
+    {
+      "rule_id": "CNC-021",
+      "pack_id": "B_CNC",
+      "title": "Tight positional tolerances without datum strategy → inspection/machining risk",
+      "description": "Tight positional tolerances without datum strategy → inspection/machining risk",
+      "applies_to": [
+        "cad_part"
+      ],
+      "inputs_required": [
+        "datum_scheme"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-GPS-2"
+      ]
+    },
+    {
+      "rule_id": "CNC-022",
+      "pack_id": "B_CNC",
+      "title": "Surface finish Ra very low on large area → time/cost",
+      "description": "Surface finish Ra very low on large area → time/cost; suggest selective finishing",
+      "applies_to": [
+        "cad_part"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-GPS-5",
+        "REF-CNC-2"
+      ]
+    },
+    {
+      "rule_id": "CNC-023",
+      "pack_id": "B_CNC",
+      "title": "Threaded holes too close to edge → breakout risk",
+      "description": "Threaded holes too close to edge → breakout risk; suggest move/add boss",
+      "applies_to": [
+        "cad_part",
+        "cad_feature_hole",
+        "cad_feature_thread"
+      ],
+      "inputs_required": [
+        "thread_callouts"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-1"
+      ]
+    },
+    {
+      "rule_id": "CNC-024",
+      "pack_id": "B_CNC",
+      "title": "Deep pocket with small corner radius → cost driver",
+      "description": "Deep pocket with small corner radius → cost driver; suggest larger radius or split part",
+      "applies_to": [
+        "cad_part",
+        "cad_feature_pocket"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-2",
+        "REF-CNC-3"
+      ]
+    },
+    {
+      "rule_id": "CNC-025",
+      "pack_id": "B_CNC",
+      "title": "Part size exceeds typical machine envelope (flag for special setup/fixture)",
+      "description": "Part size exceeds typical machine envelope (flag for special setup/fixture)",
+      "applies_to": [
+        "cad_part"
+      ],
+      "inputs_required": [
+        "part_bounding_box"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-4"
+      ]
+    },
+    {
+      "rule_id": "TURN-001",
+      "pack_id": "B_CNC",
+      "title": "Turned walls thinner than guideline risk failure",
+      "description": "Turned walls thinner than guideline risk failure",
+      "applies_to": [
+        "cad_part",
+        "cad_feature_wall"
+      ],
+      "inputs_required": [
+        "wall_thickness_map",
+        "material_spec",
+        "sheet_thickness"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-4"
+      ]
+    },
+    {
+      "rule_id": "TURN-002",
+      "pack_id": "B_CNC",
+      "title": "Sharp inside corners become radiused naturally",
+      "description": "Sharp inside corners become radiused naturally; flag if sharp is function-critical",
+      "applies_to": [
+        "cad_part"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "critical",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-4"
+      ]
+    },
+    {
+      "rule_id": "TURN-003",
+      "pack_id": "B_CNC",
+      "title": "Turned outside corners usually chamfered",
+      "description": "Turned outside corners usually chamfered; flag if sharp is required",
+      "applies_to": [
+        "cad_part"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-4"
+      ]
+    },
+    {
+      "rule_id": "TURN-004",
+      "pack_id": "B_CNC",
+      "title": "Min hole sizes for turning (axial/radial) — flag below",
+      "description": "Min hole sizes for turning (axial/radial) — flag below",
+      "applies_to": [
+        "cad_part",
+        "cad_feature_hole"
+      ],
+      "inputs_required": [
+        "hole_diameter",
+        "hole_features"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-4"
+      ]
+    },
+    {
+      "rule_id": "TURN-005",
+      "pack_id": "B_CNC",
+      "title": "Long slender turned sections: flag chatter risk",
+      "description": "Long slender turned sections: flag chatter risk; recommend support/geometry change.   GD&T ↔ machining feasibility bridge",
+      "applies_to": [
+        "cad_part"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Adjust geometry/process for machine capability and setup risk.",
+      "refs": [
+        "REF-CNC-4"
+      ]
+    },
+    {
+      "rule_id": "SM-001",
+      "pack_id": "C_SHEET",
+      "title": "Min flange length ≥ 4× thickness",
+      "description": "Min flange length ≥ 4× thickness",
+      "applies_to": [
+        "cad_sheet_metal"
+      ],
+      "inputs_required": [
+        "flange_length"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-002",
+      "pack_id": "C_SHEET",
+      "title": "Prefer consistent bend radii across bends (tooling reuse)",
+      "description": "Prefer consistent bend radii across bends (tooling reuse)",
+      "applies_to": [
+        "cad_sheet_metal",
+        "cad_feature_bend"
+      ],
+      "inputs_required": [
+        "radii_set",
+        "bend_features"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-003",
+      "pack_id": "C_SHEET",
+      "title": "Hole/slot diameter ≥ material thickness",
+      "description": "Hole/slot diameter ≥ material thickness",
+      "applies_to": [
+        "cad_sheet_metal",
+        "cad_feature_hole"
+      ],
+      "inputs_required": [
+        "hole_features"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-004",
+      "pack_id": "C_SHEET",
+      "title": "Hole-to-edge distance: enforce guideline thresholds (distortion risk)",
+      "description": "Hole-to-edge distance: enforce guideline thresholds (distortion risk)",
+      "applies_to": [
+        "cad_sheet_metal",
+        "cad_feature_hole"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-005",
+      "pack_id": "C_SHEET",
+      "title": "Hole-to-bend proximity: flag distortion-prone features",
+      "description": "Hole-to-bend proximity: flag distortion-prone features",
+      "applies_to": [
+        "cad_sheet_metal",
+        "cad_feature_bend",
+        "cad_feature_hole"
+      ],
+      "inputs_required": [
+        "bend_features"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-006",
+      "pack_id": "C_SHEET",
+      "title": "Tabs: width ≥ 2×t (or ≥ 3",
+      "description": "Tabs: width ≥ 2×t (or ≥ 3.2 mm) and length ≤ 5× width",
+      "applies_to": [
+        "cad_sheet_metal"
+      ],
+      "inputs_required": [
+        "geometry_features"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-007",
+      "pack_id": "C_SHEET",
+      "title": "Notches: width ≥ t (or ≥ 1",
+      "description": "Notches: width ≥ t (or ≥ 1.016 mm), length ≤ 5× width",
+      "applies_to": [
+        "cad_sheet_metal"
+      ],
+      "inputs_required": [
+        "geometry_features"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-008",
+      "pack_id": "C_SHEET",
+      "title": "Countersink angles limited to standard angles",
+      "description": "Countersink angles limited to standard angles; flag odd angles",
+      "applies_to": [
+        "cad_sheet_metal"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-009",
+      "pack_id": "C_SHEET",
+      "title": "Formed countersink tolerances looser",
+      "description": "Formed countersink tolerances looser; flag if tight tol demanded on formed CSK",
+      "applies_to": [
+        "cad_sheet_metal"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-010",
+      "pack_id": "C_SHEET",
+      "title": "Bend angle tolerance expectation ±1°",
+      "description": "Bend angle tolerance expectation ±1°; flag if drawing demands tighter without process note",
+      "applies_to": [
+        "cad_sheet_metal",
+        "cad_feature_bend"
+      ],
+      "inputs_required": [
+        "bend_features"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-011",
+      "pack_id": "C_SHEET",
+      "title": "Multi-bend stack-up: flag tight across-bend tolerances",
+      "description": "Multi-bend stack-up: flag tight across-bend tolerances",
+      "applies_to": [
+        "cad_sheet_metal",
+        "cad_feature_bend"
+      ],
+      "inputs_required": [
+        "bend_features"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-012",
+      "pack_id": "C_SHEET",
+      "title": "Hem design: check minimum inside diameter and return length vs thickness",
+      "description": "Hem design: check minimum inside diameter and return length vs thickness",
+      "applies_to": [
+        "cad_sheet_metal"
+      ],
+      "inputs_required": [
+        "geometry_features"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-013",
+      "pack_id": "C_SHEET",
+      "title": "Offset features: flag very small offsets likely to be inconsistent",
+      "description": "Offset features: flag very small offsets likely to be inconsistent",
+      "applies_to": [
+        "cad_sheet_metal"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-014",
+      "pack_id": "C_SHEET",
+      "title": "Hardware inserts spacing: enforce manufacturer spec placeholder requirement",
+      "description": "Hardware inserts spacing: enforce manufacturer spec placeholder requirement",
+      "applies_to": [
+        "cad_sheet_metal"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-015",
+      "pack_id": "C_SHEET",
+      "title": "Edge burr control note present (deburr, edge break)",
+      "description": "Edge burr control note present (deburr, edge break)",
+      "applies_to": [
+        "cad_sheet_metal"
+      ],
+      "inputs_required": [
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-016",
+      "pack_id": "C_SHEET",
+      "title": "Consistent thickness per part",
+      "description": "Consistent thickness per part; flag mixed thickness in one flat pattern",
+      "applies_to": [
+        "cad_sheet_metal"
+      ],
+      "inputs_required": [
+        "sheet_thickness"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-017",
+      "pack_id": "C_SHEET",
+      "title": "Laser cut internal corners: suggest radii to reduce crack initiation",
+      "description": "Laser cut internal corners: suggest radii to reduce crack initiation",
+      "applies_to": [
+        "cad_sheet_metal"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-018",
+      "pack_id": "C_SHEET",
+      "title": "Small formed part sizes below guideline risk handling issues",
+      "description": "Small formed part sizes below guideline risk handling issues",
+      "applies_to": [
+        "cad_sheet_metal"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-019",
+      "pack_id": "C_SHEET",
+      "title": "Very long bends near max envelope: flag handling/deflection risk",
+      "description": "Very long bends near max envelope: flag handling/deflection risk",
+      "applies_to": [
+        "cad_sheet_metal",
+        "cad_feature_bend"
+      ],
+      "inputs_required": [
+        "bend_features"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "SM-020",
+      "pack_id": "C_SHEET",
+      "title": "Prefer symmetric bend layout to reduce twist/warp",
+      "description": "Prefer symmetric bend layout to reduce twist/warp",
+      "applies_to": [
+        "cad_sheet_metal",
+        "cad_feature_bend"
+      ],
+      "inputs_required": [
+        "bend_features"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise sheet-metal geometry or bend strategy to match fabrication limits.",
+      "refs": [
+        "REF-SM-1"
+      ]
+    },
+    {
+      "rule_id": "WLD-001",
+      "pack_id": "D_WELD",
+      "title": "Welds specified using ISO 2553 symbols",
+      "description": "Welds specified using ISO 2553 symbols",
+      "applies_to": [
+        "weldment",
+        "drawing_weld_callout"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Clarify weld callouts and update weld design to reduce distortion and quality risk.",
+      "refs": [
+        "REF-WLD-1"
+      ]
+    },
+    {
+      "rule_id": "WLD-002",
+      "pack_id": "D_WELD",
+      "title": "Weld size and length/intermittency specified",
+      "description": "Weld size and length/intermittency specified",
+      "applies_to": [
+        "weldment"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Clarify weld callouts and update weld design to reduce distortion and quality risk.",
+      "refs": [
+        "REF-WLD-1"
+      ]
+    },
+    {
+      "rule_id": "WLD-003",
+      "pack_id": "D_WELD",
+      "title": "Weld quality level B/C/D specified where relevant",
+      "description": "Weld quality level B/C/D specified where relevant.   Distortion & cost control rules (process reality)",
+      "applies_to": [
+        "weldment"
+      ],
+      "inputs_required": [
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Clarify weld callouts and update weld design to reduce distortion and quality risk.",
+      "refs": [
+        "REF-WLD-2"
+      ]
+    },
+    {
+      "rule_id": "WLD-004",
+      "pack_id": "D_WELD",
+      "title": "Placeholder: Weld process type and filler compatibility shall be declared for critical joints",
+      "description": "Placeholder: Weld process type and filler compatibility shall be declared for critical joints",
+      "applies_to": [
+        "weldment"
+      ],
+      "inputs_required": [
+        "drawing_notes",
+        "weld_notes",
+        "weld_data",
+        "material_spec"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "critical",
+      "fix_template": "Clarify weld callouts and update weld design to reduce distortion and quality risk.",
+      "refs": [
+        "REF-WLD-1",
+        "REF-WLD-2"
+      ]
+    },
+    {
+      "rule_id": "WLD-010",
+      "pack_id": "D_WELD",
+      "title": "Minimize weld metal volume (flag oversized fillet legs vs requirement)",
+      "description": "Minimize weld metal volume (flag oversized fillet legs vs requirement)",
+      "applies_to": [
+        "weldment"
+      ],
+      "inputs_required": [
+        "weld_data"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Clarify weld callouts and update weld design to reduce distortion and quality risk.",
+      "refs": [
+        "REF-WLD-3"
+      ]
+    },
+    {
+      "rule_id": "WLD-011",
+      "pack_id": "D_WELD",
+      "title": "Avoid overwelding (cost + distortion)",
+      "description": "Avoid overwelding (cost + distortion)",
+      "applies_to": [
+        "weldment"
+      ],
+      "inputs_required": [
+        "weld_data"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Clarify weld callouts and update weld design to reduce distortion and quality risk.",
+      "refs": [
+        "REF-WLD-3"
+      ]
+    },
+    {
+      "rule_id": "WLD-012",
+      "pack_id": "D_WELD",
+      "title": "Prefer intermittent welds where continuous not required",
+      "description": "Prefer intermittent welds where continuous not required",
+      "applies_to": [
+        "weldment"
+      ],
+      "inputs_required": [
+        "joint_type"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Clarify weld callouts and update weld design to reduce distortion and quality risk.",
+      "refs": [
+        "REF-WLD-3"
+      ]
+    },
+    {
+      "rule_id": "WLD-013",
+      "pack_id": "D_WELD",
+      "title": "Place welds near neutral axis / balanced about joint to reduce distortion",
+      "description": "Place welds near neutral axis / balanced about joint to reduce distortion",
+      "applies_to": [
+        "weldment"
+      ],
+      "inputs_required": [
+        "weld_data"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Clarify weld callouts and update weld design to reduce distortion and quality risk.",
+      "refs": [
+        "REF-WLD-3"
+      ]
+    },
+    {
+      "rule_id": "WLD-014",
+      "pack_id": "D_WELD",
+      "title": "Prefer double-V over single-V when appropriate to balance shrinkage",
+      "description": "Prefer double-V over single-V when appropriate to balance shrinkage",
+      "applies_to": [
+        "weldment"
+      ],
+      "inputs_required": [
+        "weld_data"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Clarify weld callouts and update weld design to reduce distortion and quality risk.",
+      "refs": [
+        "REF-WLD-3"
+      ]
+    },
+    {
+      "rule_id": "WLD-015",
+      "pack_id": "D_WELD",
+      "title": "Eliminate welding by forming/rolled sections where possible",
+      "description": "Eliminate welding by forming/rolled sections where possible.   Manufacturability checks",
+      "applies_to": [
+        "weldment"
+      ],
+      "inputs_required": [
+        "geometry_features"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Clarify weld callouts and update weld design to reduce distortion and quality risk.",
+      "refs": [
+        "REF-WLD-3"
+      ]
+    },
+    {
+      "rule_id": "WLD-020",
+      "pack_id": "D_WELD",
+      "title": "Access for welding torch/robot (flag obstructed joints)",
+      "description": "Access for welding torch/robot (flag obstructed joints)",
+      "applies_to": [
+        "weldment"
+      ],
+      "inputs_required": [
+        "assembly_model"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Clarify weld callouts and update weld design to reduce distortion and quality risk.",
+      "refs": [
+        "REF-WLD-3"
+      ]
+    },
+    {
+      "rule_id": "WLD-021",
+      "pack_id": "D_WELD",
+      "title": "Post-weld machining allowance noted if precision faces present",
+      "description": "Post-weld machining allowance noted if precision faces present",
+      "applies_to": [
+        "weldment"
+      ],
+      "inputs_required": [
+        "weld_data"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Clarify weld callouts and update weld design to reduce distortion and quality risk.",
+      "refs": [
+        "REF-WLD-3"
+      ]
+    },
+    {
+      "rule_id": "WLD-022",
+      "pack_id": "D_WELD",
+      "title": "Distortion-sensitive thin plates: flag and suggest sequencing/fixtures",
+      "description": "Distortion-sensitive thin plates: flag and suggest sequencing/fixtures",
+      "applies_to": [
+        "weldment"
+      ],
+      "inputs_required": [
+        "weld_data",
+        "sheet_thickness"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Clarify weld callouts and update weld design to reduce distortion and quality risk.",
+      "refs": [
+        "REF-WLD-3"
+      ]
+    },
+    {
+      "rule_id": "WLD-023",
+      "pack_id": "D_WELD",
+      "title": "Weld + corrosion protection compatibility check (paint/coat access)",
+      "description": "Weld + corrosion protection compatibility check (paint/coat access)",
+      "applies_to": [
+        "weldment"
+      ],
+      "inputs_required": [
+        "coating_spec",
+        "geometry_features"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Clarify weld callouts and update weld design to reduce distortion and quality risk.",
+      "refs": [
+        "REF-WLD-3"
+      ]
+    },
+    {
+      "rule_id": "WLD-024",
+      "pack_id": "D_WELD",
+      "title": "Weld inspection/testing callouts present if required by project class",
+      "description": "Weld inspection/testing callouts present if required by project class",
+      "applies_to": [
+        "weldment"
+      ],
+      "inputs_required": [
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Clarify weld callouts and update weld design to reduce distortion and quality risk.",
+      "refs": [
+        "REF-WLD-1",
+        "REF-PED-EU"
+      ]
+    },
+    {
+      "rule_id": "ASM-001",
+      "pack_id": "E_ASSEMBLY",
+      "title": "Reduce part count by combining parts where no “minimum part criteria” applies",
+      "description": "Reduce part count by combining parts where no “minimum part criteria” applies",
+      "applies_to": [
+        "assembly"
+      ],
+      "inputs_required": [
+        "bom_items"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "minor",
+      "fix_template": "Refine assembly approach to lower error risk and improve access.",
+      "refs": [
+        "REF-DFA-1"
+      ]
+    },
+    {
+      "rule_id": "ASM-002",
+      "pack_id": "E_ASSEMBLY",
+      "title": "Reduce fasteners",
+      "description": "Reduce fasteners; prefer self-retaining features where possible",
+      "applies_to": [
+        "assembly"
+      ],
+      "inputs_required": [
+        "bom_items"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "minor",
+      "fix_template": "Refine assembly approach to lower error risk and improve access.",
+      "refs": [
+        "REF-DFA-1"
+      ]
+    },
+    {
+      "rule_id": "ASM-003",
+      "pack_id": "E_ASSEMBLY",
+      "title": "Standardize components",
+      "description": "Standardize components; reduce unique variants",
+      "applies_to": [
+        "assembly"
+      ],
+      "inputs_required": [
+        "bom_items"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "minor",
+      "fix_template": "Refine assembly approach to lower error risk and improve access.",
+      "refs": [
+        "REF-DFA-1"
+      ]
+    },
+    {
+      "rule_id": "ASM-004",
+      "pack_id": "E_ASSEMBLY",
+      "title": "Minimize reorientation/flips in assembly sequence",
+      "description": "Minimize reorientation/flips in assembly sequence",
+      "applies_to": [
+        "assembly"
+      ],
+      "inputs_required": [
+        "assembly_model"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "minor",
+      "fix_template": "Refine assembly approach to lower error risk and improve access.",
+      "refs": [
+        "REF-DFA-1"
+      ]
+    },
+    {
+      "rule_id": "ASM-005",
+      "pack_id": "E_ASSEMBLY",
+      "title": "Add poka-yoke features to prevent wrong orientation",
+      "description": "Add poka-yoke features to prevent wrong orientation",
+      "applies_to": [
+        "assembly"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "minor",
+      "fix_template": "Refine assembly approach to lower error risk and improve access.",
+      "refs": [
+        "REF-DFA-1"
+      ]
+    },
+    {
+      "rule_id": "ASM-006",
+      "pack_id": "E_ASSEMBLY",
+      "title": "Easy handling: avoid tiny/flexible/slippery parts without handling features",
+      "description": "Easy handling: avoid tiny/flexible/slippery parts without handling features",
+      "applies_to": [
+        "assembly"
+      ],
+      "inputs_required": [
+        "material_spec"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "minor",
+      "fix_template": "Refine assembly approach to lower error risk and improve access.",
+      "refs": [
+        "REF-DFA-1"
+      ]
+    },
+    {
+      "rule_id": "ASM-007",
+      "pack_id": "E_ASSEMBLY",
+      "title": "Clear symmetry/asymmetry for orientation (avoid ambiguous “looks same”)",
+      "description": "Clear symmetry/asymmetry for orientation (avoid ambiguous “looks same”)",
+      "applies_to": [
+        "assembly"
+      ],
+      "inputs_required": [
+        "geometry_features"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "minor",
+      "fix_template": "Refine assembly approach to lower error risk and improve access.",
+      "refs": [
+        "REF-DFA-1"
+      ]
+    },
+    {
+      "rule_id": "ASM-008",
+      "pack_id": "E_ASSEMBLY",
+      "title": "Minimize secondary operations & inspection steps (flag deburr-only parts, hand rework)",
+      "description": "Minimize secondary operations & inspection steps (flag deburr-only parts, hand rework).   Fixture/workholding feasibility (critical for machining and inspection)",
+      "applies_to": [
+        "assembly"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "critical",
+      "fix_template": "Refine assembly approach to lower error risk and improve access.",
+      "refs": [
+        "REF-DFA-1"
+      ]
+    },
+    {
+      "rule_id": "FIX-001",
+      "pack_id": "E_ASSEMBLY",
+      "title": "Ensure a stable 3-2-1 locating scheme is possible on real surfaces",
+      "description": "Ensure a stable 3-2-1 locating scheme is possible on real surfaces",
+      "applies_to": [
+        "assembly",
+        "fixture_plan"
+      ],
+      "inputs_required": [
+        "datum_scheme"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "minor",
+      "fix_template": "Refine fixture strategy for repeatability and inspection access.",
+      "refs": [
+        "REF-FIX-1"
+      ]
+    },
+    {
+      "rule_id": "FIX-002",
+      "pack_id": "E_ASSEMBLY",
+      "title": "Provide flat, accessible datum pads for locating",
+      "description": "Provide flat, accessible datum pads for locating; avoid raw/irregular datum surfaces",
+      "applies_to": [
+        "assembly",
+        "fixture_plan"
+      ],
+      "inputs_required": [
+        "datum_scheme"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "minor",
+      "fix_template": "Refine fixture strategy for repeatability and inspection access.",
+      "refs": [
+        "REF-FIX-1"
+      ]
+    },
+    {
+      "rule_id": "FIX-003",
+      "pack_id": "E_ASSEMBLY",
+      "title": "Clamp forces won’t deform thin walls (flag clamp-sensitive areas)",
+      "description": "Clamp forces won’t deform thin walls (flag clamp-sensitive areas)",
+      "applies_to": [
+        "assembly",
+        "fixture_plan"
+      ],
+      "inputs_required": [
+        "wall_thickness_map"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "minor",
+      "fix_template": "Refine fixture strategy for repeatability and inspection access.",
+      "refs": [
+        "REF-FIX-1"
+      ]
+    },
+    {
+      "rule_id": "FIX-004",
+      "pack_id": "E_ASSEMBLY",
+      "title": "Tool access near locators",
+      "description": "Tool access near locators; avoid long overhang setups",
+      "applies_to": [
+        "assembly",
+        "fixture_plan"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "minor",
+      "fix_template": "Refine fixture strategy for repeatability and inspection access.",
+      "refs": [
+        "REF-FIX-1"
+      ]
+    },
+    {
+      "rule_id": "FIX-005",
+      "pack_id": "E_ASSEMBLY",
+      "title": "Add sacrificial tabs or fixture bosses when no good clamping exists",
+      "description": "Add sacrificial tabs or fixture bosses when no good clamping exists.   Serviceability",
+      "applies_to": [
+        "assembly",
+        "fixture_plan"
+      ],
+      "inputs_required": [
+        "geometry_features"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "minor",
+      "fix_template": "Refine fixture strategy for repeatability and inspection access.",
+      "refs": [
+        "REF-FIX-1"
+      ]
+    },
+    {
+      "rule_id": "SRV-001",
+      "pack_id": "E_ASSEMBLY",
+      "title": "Ensure tool access to fasteners (wrench clearance) in final assembly",
+      "description": "Ensure tool access to fasteners (wrench clearance) in final assembly",
+      "applies_to": [
+        "assembly",
+        "serviceability"
+      ],
+      "inputs_required": [
+        "assembly_model"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "minor",
+      "fix_template": "Improve service access and maintainability constraints.",
+      "refs": [
+        "REF-DFA-1"
+      ]
+    },
+    {
+      "rule_id": "SRV-002",
+      "pack_id": "E_ASSEMBLY",
+      "title": "Minimize unique tool types (hex sizes, torx types)",
+      "description": "Minimize unique tool types (hex sizes, torx types)",
+      "applies_to": [
+        "assembly",
+        "serviceability"
+      ],
+      "inputs_required": [
+        "bom_items"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "minor",
+      "fix_template": "Improve service access and maintainability constraints.",
+      "refs": [
+        "REF-DFA-1"
+      ]
+    },
+    {
+      "rule_id": "AUTO-001",
+      "pack_id": "F_OVERLAY",
+      "title": "Automotive QMS requirements (IATF 16949 aligned with ISO 9001) drive design control discipline",
+      "description": "Automotive QMS requirements (IATF 16949 aligned with ISO 9001) drive design control discipline",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-AUTO-QMS"
+      ]
+    },
+    {
+      "rule_id": "AUTO-002",
+      "pack_id": "F_OVERLAY",
+      "title": "VDA 6",
+      "description": "VDA 6.3 process audit readiness: ensure evidence for process capability & controls",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-VDA-6-3"
+      ]
+    },
+    {
+      "rule_id": "AUTO-003",
+      "pack_id": "F_OVERLAY",
+      "title": "Control plan linkage expected in CSR examples",
+      "description": "Control plan linkage expected in CSR examples",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "control_plan"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-GM-CSR"
+      ]
+    },
+    {
+      "rule_id": "AUTO-004",
+      "pack_id": "F_OVERLAY",
+      "title": "Layout inspection expectation (example: dimensional requirements on ≥5 parts)",
+      "description": "Layout inspection expectation (example: dimensional requirements on ≥5 parts)",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "inspection_plan"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-GM-CSR"
+      ]
+    },
+    {
+      "rule_id": "AUTO-005",
+      "pack_id": "F_OVERLAY",
+      "title": "Special characteristics tagging supported (CTQ/CC/SC)",
+      "description": "Special characteristics tagging supported (CTQ/CC/SC).   F5 Medical devices (mechanical content)",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-GM-CSR",
+        "REF-VDA-6-3"
+      ]
+    },
+    {
+      "rule_id": "FOOD-001",
+      "pack_id": "F_OVERLAY",
+      "title": "Hygienic design: machine must be cleanable",
+      "description": "Hygienic design: machine must be cleanable; hygiene hazards identified and reduced",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "surface_finish_spec"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "critical",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-FOOD-EN"
+      ]
+    },
+    {
+      "rule_id": "FOOD-002",
+      "pack_id": "F_OVERLAY",
+      "title": "Avoid crevices/gaps/steps",
+      "description": "Avoid crevices/gaps/steps; avoid exposed threads in product areas",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "geometry_features"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-HYG-1"
+      ]
+    },
+    {
+      "rule_id": "FOOD-003",
+      "pack_id": "F_OVERLAY",
+      "title": "Prefer self-draining geometry",
+      "description": "Prefer self-draining geometry; avoid horizontal ledges",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-HYG-1"
+      ]
+    },
+    {
+      "rule_id": "FOOD-004",
+      "pack_id": "F_OVERLAY",
+      "title": "Food-contact surfaces target smoothness (Ra guidance), and generous internal radii",
+      "description": "Food-contact surfaces target smoothness (Ra guidance), and generous internal radii",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "radii_set"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-HYG-1"
+      ]
+    },
+    {
+      "rule_id": "FOOD-005",
+      "pack_id": "F_OVERLAY",
+      "title": "Hygiene requirements + intended use info provided by manufacturer",
+      "description": "Hygiene requirements + intended use info provided by manufacturer.   F3 Pressure equipment / HVAC / refrigeration",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-FOOD-ISO"
+      ]
+    },
+    {
+      "rule_id": "HVAC-001",
+      "pack_id": "F_OVERLAY",
+      "title": "EN 378 expects design/construction/testing/marking/documentation coverage for systems",
+      "description": "EN 378 expects design/construction/testing/marking/documentation coverage for systems",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "bom_items"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-HVAC-EN"
+      ]
+    },
+    {
+      "rule_id": "HVAC-002",
+      "pack_id": "F_OVERLAY",
+      "title": "Refrigerant/system changes require reassessment of conformity to EN 378 parts",
+      "description": "Refrigerant/system changes require reassessment of conformity to EN 378 parts.   F4 Automotive Tier suppliers",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "refrigerant_type"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "critical",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-HVAC-EN"
+      ]
+    },
+    {
+      "rule_id": "LAB-001",
+      "pack_id": "F_OVERLAY",
+      "title": "Safety requirements for lab/measurement equipment apply (product category match)",
+      "description": "Safety requirements for lab/measurement equipment apply (product category match)",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "critical",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-LAB-IEC"
+      ]
+    },
+    {
+      "rule_id": "LAB-002",
+      "pack_id": "F_OVERLAY",
+      "title": "Mechanical hazards + protection measures considered (covers more than drawings)",
+      "description": "Mechanical hazards + protection measures considered (covers more than drawings)",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "hazard_analysis"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "critical",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-LAB-IEC"
+      ]
+    },
+    {
+      "rule_id": "LAB-003",
+      "pack_id": "F_OVERLAY",
+      "title": "Labeling/documentation expectations captured in template",
+      "description": "Labeling/documentation expectations captured in template",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-LAB-IEC"
+      ]
+    },
+    {
+      "rule_id": "LAB-004",
+      "pack_id": "F_OVERLAY",
+      "title": "Reasonably foreseeable misuse considered (design & documentation)",
+      "description": "Reasonably foreseeable misuse considered (design & documentation)",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-LAB-IEC"
+      ]
+    },
+    {
+      "rule_id": "LAB-005",
+      "pack_id": "F_OVERLAY",
+      "title": "Electrical safety constraints impact enclosure/clearances (tie to enclosure CAD checks)",
+      "description": "Electrical safety constraints impact enclosure/clearances (tie to enclosure CAD checks).   How to “use this” with a vision model (without pretending screenshots give real 3D DFM) You can reliably do two kinds of checks with vision: 1. Drawing/spec compliance (",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "geometry_features",
+        "enclosure_geometry"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "critical",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-LAB-IEC"
+      ]
+    },
+    {
+      "rule_id": "MACH-001",
+      "pack_id": "F_OVERLAY",
+      "title": "Risk assessment required",
+      "description": "Risk assessment required; hazards identified across lifecycle",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "critical",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-MACH-ISO"
+      ]
+    },
+    {
+      "rule_id": "MACH-002",
+      "pack_id": "F_OVERLAY",
+      "title": "Risk reduction measures documented (design + safeguarding)",
+      "description": "Risk reduction measures documented (design + safeguarding)",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-MACH-ISO"
+      ]
+    },
+    {
+      "rule_id": "MACH-003",
+      "pack_id": "F_OVERLAY",
+      "title": "Machine design must meet EU machinery health/safety requirements",
+      "description": "Machine design must meet EU machinery health/safety requirements",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "critical",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-MACH-REG"
+      ]
+    },
+    {
+      "rule_id": "MACH-004",
+      "pack_id": "F_OVERLAY",
+      "title": "Maintenance access considered (guards, pinch points, access panels)",
+      "description": "Maintenance access considered (guards, pinch points, access panels)",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "assembly_model",
+        "geometry_features"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-MACH-ISO"
+      ]
+    },
+    {
+      "rule_id": "MACH-005",
+      "pack_id": "F_OVERLAY",
+      "title": "Safety-related control functions require structured design approach",
+      "description": "Safety-related control functions require structured design approach.   F2 Food machinery / Hygienic design (very “DFM-ish”)",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "critical",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-MACH-ISO",
+        "REF-MACH-REG"
+      ]
+    },
+    {
+      "rule_id": "MED-001",
+      "pack_id": "F_OVERLAY",
+      "title": "Must meet EU MDR requirements for placing devices on market + safety/performance",
+      "description": "Must meet EU MDR requirements for placing devices on market + safety/performance",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "critical",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-MDR-EU"
+      ]
+    },
+    {
+      "rule_id": "MED-002",
+      "pack_id": "F_OVERLAY",
+      "title": "QMS (ISO 13485) design/production controls: traceability + validated processes expectation",
+      "description": "QMS (ISO 13485) design/production controls: traceability + validated processes expectation",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-MED-QMS"
+      ]
+    },
+    {
+      "rule_id": "MED-003",
+      "pack_id": "F_OVERLAY",
+      "title": "Risk management process (ISO 14971): hazards → risk controls → residual risk monitoring",
+      "description": "Risk management process (ISO 14971): hazards → risk controls → residual risk monitoring",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "risk_file"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "critical",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-MED-RISK"
+      ]
+    },
+    {
+      "rule_id": "MED-004",
+      "pack_id": "F_OVERLAY",
+      "title": "Design changes: controlled, reviewed, documented",
+      "description": "Design changes: controlled, reviewed, documented",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-MED-QMS"
+      ]
+    },
+    {
+      "rule_id": "MED-005",
+      "pack_id": "F_OVERLAY",
+      "title": "Cleanability/bioburden-related design constraints treated as DFM risks when relevant",
+      "description": "Cleanability/bioburden-related design constraints treated as DFM risks when relevant.   F6 Test & measurement / lab equipment",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "surface_finish_spec",
+        "material_spec"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-MED-RISK",
+        "REF-HYG-1"
+      ]
+    },
+    {
+      "rule_id": "PRES-001",
+      "pack_id": "F_OVERLAY",
+      "title": "Pressure equipment must meet essential safety requirements",
+      "description": "Pressure equipment must meet essential safety requirements; hazards analysed",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "critical",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-PED-EU"
+      ]
+    },
+    {
+      "rule_id": "PRES-002",
+      "pack_id": "F_OVERLAY",
+      "title": "Pressure boundary joints: welding/testing documentation required where applicable",
+      "description": "Pressure boundary joints: welding/testing documentation required where applicable",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "weld_data",
+        "joint_type"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-PED-EU",
+        "REF-WLD-1"
+      ]
+    },
+    {
+      "rule_id": "PRES-003",
+      "pack_id": "F_OVERLAY",
+      "title": "Correct classification/category influences conformity assessment",
+      "description": "Correct classification/category influences conformity assessment; flag missing PS/TS data",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "nameplate_parameters"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "critical",
+      "fix_template": "Add required compliance evidence and overlay-specific controls.",
+      "refs": [
+        "REF-PED-EU"
+      ]
+    }
+  ]
+}

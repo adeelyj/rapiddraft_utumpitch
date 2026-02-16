@@ -1,0 +1,93 @@
+{
+  "version": "1.0.0",
+  "roles": [
+    {
+      "role_id": "cnc_engineer",
+      "label": "CNC Engineer",
+      "emphasize_packs": [
+        "B_CNC",
+        "E_ASSEMBLY",
+        "A_DRAWING"
+      ],
+      "severity_weights": {
+        "critical": 1.0,
+        "major": 1.0,
+        "minor": 0.7,
+        "info": 0.4
+      },
+      "wording_style": "technical_shop_floor",
+      "default_issue_sort": "by_manufacturability_risk"
+    },
+    {
+      "role_id": "sheet_metal_engineer",
+      "label": "Sheet Metal Engineer",
+      "emphasize_packs": [
+        "C_SHEET",
+        "E_ASSEMBLY",
+        "A_DRAWING"
+      ],
+      "severity_weights": {
+        "critical": 1.0,
+        "major": 1.0,
+        "minor": 0.75,
+        "info": 0.4
+      },
+      "wording_style": "technical_shop_floor",
+      "default_issue_sort": "by_cost"
+    },
+    {
+      "role_id": "manufacturing_engineer",
+      "label": "Manufacturing Engineer",
+      "emphasize_packs": [
+        "B_CNC",
+        "C_SHEET",
+        "D_WELD",
+        "E_ASSEMBLY"
+      ],
+      "severity_weights": {
+        "critical": 1.0,
+        "major": 0.95,
+        "minor": 0.75,
+        "info": 0.5
+      },
+      "wording_style": "technical_shop_floor",
+      "default_issue_sort": "by_manufacturability_risk"
+    },
+    {
+      "role_id": "quality_engineer",
+      "label": "Quality Engineer",
+      "emphasize_packs": [
+        "A_DRAWING",
+        "F_OVERLAY",
+        "E_ASSEMBLY"
+      ],
+      "severity_weights": {
+        "critical": 1.0,
+        "major": 1.0,
+        "minor": 0.85,
+        "info": 0.6
+      },
+      "wording_style": "formal_audit",
+      "default_issue_sort": "by_severity"
+    },
+    {
+      "role_id": "general_dfm",
+      "label": "General DFM",
+      "emphasize_packs": [
+        "A_DRAWING",
+        "B_CNC",
+        "C_SHEET",
+        "D_WELD",
+        "E_ASSEMBLY"
+      ],
+      "severity_weights": {
+        "critical": 1.0,
+        "major": 0.9,
+        "minor": 0.7,
+        "info": 0.5
+      },
+      "wording_style": "executive",
+      "default_issue_sort": "by_severity"
+    }
+  ]
+}

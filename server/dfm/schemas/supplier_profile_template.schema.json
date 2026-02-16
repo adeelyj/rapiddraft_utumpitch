@@ -1,0 +1,281 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rapiddraft/schemas/supplier_profile_template.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "template_id",
+    "description",
+    "supported_processes",
+    "machine_envelopes",
+    "min_wall",
+    "hole_depth_ratios",
+    "bend_constraints",
+    "weld_capabilities",
+    "inspection_capabilities"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "template_id": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "supported_processes": {
+      "type": "object",
+      "required": [
+        "value",
+        "notes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "machine_envelopes": {
+      "type": "object",
+      "required": [
+        "cnc_milling_xyz_mm",
+        "cnc_turning_max_diameter_mm",
+        "cnc_turning_max_length_mm",
+        "sheet_metal_max_sheet_mm",
+        "notes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "cnc_milling_xyz_mm": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "cnc_turning_max_diameter_mm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "cnc_turning_max_length_mm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "sheet_metal_max_sheet_mm": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "min_wall": {
+      "type": "object",
+      "required": [
+        "cnc_milling_mm",
+        "cnc_turning_mm",
+        "sheet_metal_mm",
+        "notes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "cnc_milling_mm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "cnc_turning_mm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "sheet_metal_mm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "hole_depth_ratios": {
+      "type": "object",
+      "required": [
+        "drilled_recommended_max_depth_by_diameter",
+        "drilled_hard_max_depth_by_diameter",
+        "notes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "drilled_recommended_max_depth_by_diameter": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "drilled_hard_max_depth_by_diameter": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "bend_constraints": {
+      "type": "object",
+      "required": [
+        "min_inside_radius_by_material",
+        "min_flange_length_multiple_of_thickness",
+        "min_hole_to_bend_distance_multiple_of_thickness",
+        "notes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "min_inside_radius_by_material": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "min_flange_length_multiple_of_thickness": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "min_hole_to_bend_distance_multiple_of_thickness": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "weld_capabilities": {
+      "type": "object",
+      "required": [
+        "supported_processes",
+        "min_max_thickness_mm",
+        "qualified_joint_types",
+        "inspection_methods",
+        "notes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "supported_processes": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "min_max_thickness_mm": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "qualified_joint_types": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "inspection_methods": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "inspection_capabilities": {
+      "type": "object",
+      "required": [
+        "cmm",
+        "surface_roughness_tester",
+        "thread_gauging",
+        "ndt_methods",
+        "notes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "cmm": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "surface_roughness_tester": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "thread_gauging": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "ndt_methods": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "cost_profile": {
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  }
+}
