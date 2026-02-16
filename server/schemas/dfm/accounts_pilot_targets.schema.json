@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rapiddraft/schemas/accounts_pilot_targets.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "accounts"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "accounts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "company_id",
+          "name",
+          "city",
+          "distance_km",
+          "employee_range",
+          "what_they_make",
+          "why_fit",
+          "cad_plm_signals",
+          "roles_to_contact",
+          "sources",
+          "pilot_priority"
+        ],
+        "properties": {
+          "company_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]+$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "city": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "distance_km": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "employee_range": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "what_they_make": {
+            "type": "string"
+          },
+          "why_fit": {
+            "type": "string"
+          },
+          "cad_plm_signals": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "roles_to_contact": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "pilot_priority": {
+            "type": "string",
+            "enum": [
+              "tier_1",
+              "tier_2",
+              "tier_3"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

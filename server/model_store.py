@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 
@@ -23,6 +23,8 @@ class ModelMetadata:
     isometric_shape2d_metadata: Dict[str, Path] = field(default_factory=dict)
     isometric_matplotlib: Dict[str, Path] = field(default_factory=dict)
     isometric_matplotlib_metadata: Dict[str, Path] = field(default_factory=dict)
+    components: List[Dict[str, Any]] = field(default_factory=list)
+    component_profiles: Dict[str, Dict[str, Any]] = field(default_factory=dict)
 
     def to_dict(self) -> Dict:
         return {
@@ -40,6 +42,8 @@ class ModelMetadata:
             "isometricShape2dMetadata": {name: str(path) for name, path in self.isometric_shape2d_metadata.items()},
             "isometricMatplotlib": {name: str(path) for name, path in self.isometric_matplotlib.items()},
             "isometricMatplotlibMetadata": {name: str(path) for name, path in self.isometric_matplotlib_metadata.items()},
+            "components": self.components,
+            "componentProfiles": self.component_profiles,
         }
 
     @classmethod
@@ -59,6 +63,8 @@ class ModelMetadata:
             isometric_shape2d_metadata={name: Path(path) for name, path in payload.get("isometricShape2dMetadata", {}).items()},
             isometric_matplotlib={name: Path(path) for name, path in payload.get("isometricMatplotlib", {}).items()},
             isometric_matplotlib_metadata={name: Path(path) for name, path in payload.get("isometricMatplotlibMetadata", {}).items()},
+            components=list(payload.get("components", [])),
+            component_profiles=dict(payload.get("componentProfiles", {})),
         )
 
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import json
 import shutil
 import zipfile
 from pathlib import Path
@@ -13,6 +14,7 @@ from pydantic import BaseModel
 
 from .cad_service import CADProcessingError, CADService
 from .cad_service_occ import CADServiceOCC
+from .dfm_review import generate_dfm_report_markdown, list_rule_sets, resolve_roles
 from .model_store import ModelStore
 from .review_store import ReviewStore
 
@@ -21,6 +23,7 @@ DATA_DIR = BASE_DIR / "data"
 MODELS_DIR = DATA_DIR / "models"
 PROCESS_DIR = DATA_DIR / "processing"
 WEB_DIST_DIR = BASE_DIR.parent / "web" / "dist"
+DFM_PROFILE_OPTIONS_PATH = DATA_DIR / "dfm_profile_options.json"
 
 # Drawing template lives at the repo root under /template.
 TEMPLATE_PNG = BASE_DIR.parent / "template" / "a4_iso_minimal.png"
@@ -85,6 +88,53 @@ class UpdateChecklistItemBody(BaseModel):
     status: str | None = None
     note: str | None = None
 
+
+class DfmReviewBody(BaseModel):
+    technology: str
+    material: str
+    rule_set_id: str
+    image_data_url: str | None = None
+
+
+class ComponentProfileBody(BaseModel):
+    material: str
+    manufacturing_process: str
+    industry: str
+
+
+class DfmPartReviewBody(BaseModel):
+    rule_set_id: str
+    component_node_name: str
+    image_data_url: str | None = None
+
+
+def _load_dfm_profile_options() -> dict:
+    if not DFM_PROFILE_OPTIONS_PATH.exists():
+        raise HTTPException(status_code=500, detail="DFM profile options file is missing")
+    try:
+        return json.loads(DFM_PROFILE_OPTIONS_PATH.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="DFM profile options file is invalid JSON")
+
+
+def _collect_option_labels(options: dict, key: str) -> set[str]:
+    records = options.get(key, [])
+    labels = set()
+    for entry in records:
+        if isinstance(entry, dict):
+            label = entry.get("label")
+            if isinstance(label, str) and label.strip():
+                labels.add(label.strip())
+    return labels
+
+
+def _get_component_entry(metadata, node_name: str) -> dict | None:
+    for component in metadata.components:
+        if component.get("nodeName") == node_name:
+            return component
+    return None
+
+
 def _require_model(model_id: str) -> None:
     metadata = model_store.get(model_id)
     if not metadata:
@@ -99,6 +149,122 @@ async def health():
 @app.get("/api/review-templates")
 async def list_review_templates():
     return review_store.list_templates()
+
+
+@app.get("/api/dfm/rule-sets")
+async def list_dfm_rule_sets():
+    return list_rule_sets()
+
+
+@app.get("/api/dfm/profile-options")
+async def get_dfm_profile_options():
+    return _load_dfm_profile_options()
+
+
+@app.post("/api/dfm/review")
+async def create_dfm_review(body: DfmReviewBody):
+    available_rule_set_ids = {item["id"] for item in list_rule_sets()}
+    if body.rule_set_id not in available_rule_set_ids:
+        raise HTTPException(status_code=400, detail="Invalid rule_set_id")
+
+    report_markdown, structured = generate_dfm_report_markdown(
+        technology=body.technology,
+        material=body.material,
+        industry="None",
+        rule_set_id=body.rule_set_id,
+        component_name="Global Context",
+    )
+    return {
+        "title": "DFM Review Report",
+        "technology": body.technology,
+        "material": body.material,
+        "ruleSetId": body.rule_set_id,
+        "rolesUsed": resolve_roles(body.technology),
+        "reportMarkdown": report_markdown,
+        "structured": structured,
+    }
+
+
+@app.get("/api/models/{model_id}/component-profiles")
+async def list_component_profiles(model_id: str):
+    metadata = model_store.get(model_id)
+    if not metadata:
+        raise HTTPException(status_code=404, detail="Model not found")
+    return {"componentProfiles": metadata.component_profiles}
+
+
+@app.put("/api/models/{model_id}/component-profiles/{node_name}")
+async def upsert_component_profile(model_id: str, node_name: str, body: ComponentProfileBody):
+    metadata = model_store.get(model_id)
+    if not metadata:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    component = _get_component_entry(metadata, node_name)
+    if not component:
+        raise HTTPException(status_code=400, detail="Unknown component node_name")
+
+    options = _load_dfm_profile_options()
+    material_labels = _collect_option_labels(options, "materials")
+    process_labels = _collect_option_labels(options, "manufacturingProcesses")
+    industry_labels = _collect_option_labels(options, "industries")
+
+    if body.material and body.material not in material_labels:
+        raise HTTPException(status_code=400, detail="Invalid material")
+    if body.manufacturing_process and body.manufacturing_process not in process_labels:
+        raise HTTPException(status_code=400, detail="Invalid manufacturing_process")
+    if body.industry and body.industry not in industry_labels:
+        raise HTTPException(status_code=400, detail="Invalid industry")
+
+    metadata.component_profiles[node_name] = {
+        "material": body.material,
+        "manufacturingProcess": body.manufacturing_process,
+        "industry": body.industry,
+    }
+    model_store.update(metadata)
+    return {"nodeName": node_name, "profile": metadata.component_profiles[node_name]}
+
+
+@app.post("/api/models/{model_id}/dfm/review")
+async def create_component_dfm_review(model_id: str, body: DfmPartReviewBody):
+    metadata = model_store.get(model_id)
+    if not metadata:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    component = _get_component_entry(metadata, body.component_node_name)
+    if not component:
+        raise HTTPException(status_code=400, detail="Unknown component_node_name")
+
+    available_rule_set_ids = {item["id"] for item in list_rule_sets()}
+    if body.rule_set_id not in available_rule_set_ids:
+        raise HTTPException(status_code=400, detail="Invalid rule_set_id")
+
+    profile = metadata.component_profiles.get(body.component_node_name, {})
+    material = profile.get("material", "")
+    technology = profile.get("manufacturingProcess", "")
+    industry = profile.get("industry", "")
+    if not material or not technology or not industry:
+        raise HTTPException(status_code=400, detail="Selected component profile is incomplete")
+
+    display_name = component.get("displayName") or body.component_node_name
+    report_markdown, structured = generate_dfm_report_markdown(
+        technology=technology,
+        material=material,
+        industry=industry,
+        rule_set_id=body.rule_set_id,
+        component_name=display_name,
+    )
+    return {
+        "title": "DFM Review Report",
+        "componentNodeName": body.component_node_name,
+        "componentDisplayName": display_name,
+        "technology": technology,
+        "material": material,
+        "industry": industry,
+        "ruleSetId": body.rule_set_id,
+        "rolesUsed": resolve_roles(technology),
+        "reportMarkdown": report_markdown,
+        "structured": structured,
+    }
 
 
 @app.get("/api/models/{model_id}/tickets")
@@ -240,15 +406,28 @@ async def upload_model(file: UploadFile = File(...)):
     with metadata.step_path.open("wb") as out_file:
         shutil.copyfileobj(file.file, out_file)
     try:
-        cad_service.import_model(metadata.step_path, metadata.preview_path)
+        import_result = cad_service.import_model(metadata.step_path, metadata.preview_path)
     except CADProcessingError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
+
+    metadata.components = [
+        {
+            "id": component.id,
+            "nodeName": component.node_name,
+            "displayName": component.display_name,
+            "triangleCount": component.triangle_count,
+        }
+        for component in import_result.components
+    ]
+    model_store.update(metadata)
 
     response = {
         "modelId": metadata.model_id,
         "originalName": metadata.original_name,
         "previewUrl": f"/api/models/{metadata.model_id}/preview",
         "views": {},
+        "components": metadata.components,
+        "componentProfiles": metadata.component_profiles,
     }
     return response
 

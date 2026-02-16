@@ -6,6 +6,7 @@ import DrawingPage from "./components/DrawingPage";
 import CommentForm, { CreateTicketPayload } from "./components/CommentForm";
 import ReviewPanel from "./components/ReviewPanel";
 import ReviewStartForm, { CreateReviewPayload } from "./components/ReviewStartForm";
+import DfmReviewSidebar from "./components/DfmReviewSidebar";
 import type {
   ChecklistTemplate,
   DesignReviewSession,
@@ -19,6 +20,35 @@ type ModelState = {
   previewUrl: string;
   originalName: string;
 };
+
+type ModelComponent = {
+  id: string;
+  nodeName: string;
+  displayName: string;
+  triangleCount: number;
+};
+
+type ComponentProfile = {
+  material: string;
+  manufacturingProcess: string;
+  industry: string;
+};
+
+type DfmProfileOption = {
+  id: string;
+  label: string;
+};
+
+type DfmIndustryOption = DfmProfileOption & {
+  standards: string[];
+};
+
+type DfmProfileOptions = {
+  materials: DfmProfileOption[];
+  manufacturingProcesses: DfmProfileOption[];
+  industries: DfmIndustryOption[];
+};
+
 export type DrawingZone = {
   id: string;
   src?: string;
@@ -40,6 +70,84 @@ export type Dimension = {
 
 const apiBase = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ?? "http://localhost:8000";
 const DRAWING_STORAGE_KEY = "drawingState";
+const EMPTY_COMPONENT_PROFILE: ComponentProfile = {
+  material: "",
+  manufacturingProcess: "",
+  industry: "",
+};
+
+const normalizeComponents = (raw: unknown): ModelComponent[] => {
+  if (!Array.isArray(raw)) return [];
+  return raw.flatMap((entry, index) => {
+    if (!entry || typeof entry !== "object") return [];
+    const record = entry as Record<string, unknown>;
+    const fallbackNodeName = `component_${index + 1}`;
+    const nodeName = typeof record.nodeName === "string" && record.nodeName.trim() ? record.nodeName : fallbackNodeName;
+    const id = typeof record.id === "string" && record.id.trim() ? record.id : nodeName;
+    const displayName =
+      typeof record.displayName === "string" && record.displayName.trim() ? record.displayName : `Part ${index + 1}`;
+    const triangleCount = typeof record.triangleCount === "number" && Number.isFinite(record.triangleCount) ? record.triangleCount : 0;
+    return [{ id, nodeName, displayName, triangleCount }];
+  });
+};
+
+const buildComponentVisibility = (components: ModelComponent[], visible: boolean): Record<string, boolean> => {
+  const next: Record<string, boolean> = {};
+  components.forEach((component) => {
+    next[component.nodeName] = visible;
+  });
+  return next;
+};
+
+const normalizeComponentProfiles = (raw: unknown): Record<string, ComponentProfile> => {
+  if (!raw || typeof raw !== "object") return {};
+  const profiles: Record<string, ComponentProfile> = {};
+  Object.entries(raw as Record<string, unknown>).forEach(([nodeName, payload]) => {
+    if (!payload || typeof payload !== "object") return;
+    const profile = payload as Record<string, unknown>;
+    profiles[nodeName] = {
+      material: typeof profile.material === "string" ? profile.material : "",
+      manufacturingProcess: typeof profile.manufacturingProcess === "string" ? profile.manufacturingProcess : "",
+      industry: typeof profile.industry === "string" ? profile.industry : "",
+    };
+  });
+  return profiles;
+};
+
+const normalizeProfileOptions = (raw: unknown): DfmProfileOptions | null => {
+  if (!raw || typeof raw !== "object") return null;
+  const payload = raw as Record<string, unknown>;
+  const normalizeOptions = (source: unknown): DfmProfileOption[] => {
+    if (!Array.isArray(source)) return [];
+    return source.flatMap((entry) => {
+      if (!entry || typeof entry !== "object") return [];
+      const record = entry as Record<string, unknown>;
+      const id = typeof record.id === "string" ? record.id : "";
+      const label = typeof record.label === "string" ? record.label : "";
+      if (!id || !label) return [];
+      return [{ id, label }];
+    });
+  };
+  const normalizeIndustries = (source: unknown): DfmIndustryOption[] => {
+    if (!Array.isArray(source)) return [];
+    return source.flatMap((entry) => {
+      if (!entry || typeof entry !== "object") return [];
+      const record = entry as Record<string, unknown>;
+      const id = typeof record.id === "string" ? record.id : "";
+      const label = typeof record.label === "string" ? record.label : "";
+      const standards = Array.isArray(record.standards)
+        ? record.standards.filter((item): item is string => typeof item === "string")
+        : [];
+      if (!id || !label) return [];
+      return [{ id, label, standards }];
+    });
+  };
+  return {
+    materials: normalizeOptions(payload.materials),
+    manufacturingProcesses: normalizeOptions(payload.manufacturingProcesses),
+    industries: normalizeIndustries(payload.industries),
+  };
+};
 
 const App = () => {
   const [model, setModel] = useState<ModelState | null>(null);
@@ -53,6 +161,13 @@ const App = () => {
   const [isometricShape2DMetadata, setIsometricShape2DMetadata] = useState<Record<string, string>>({});
   const [isometricMatplotlibViews, setIsometricMatplotlibViews] = useState<Record<string, string>>({});
   const [isometricMatplotlibMetadata, setIsometricMatplotlibMetadata] = useState<Record<string, string>>({});
+  const [components, setComponents] = useState<ModelComponent[]>([]);
+  const [componentVisibility, setComponentVisibility] = useState<Record<string, boolean>>({});
+  const [selectedComponentNodeName, setSelectedComponentNodeName] = useState<string | null>(null);
+  const [componentProfiles, setComponentProfiles] = useState<Record<string, ComponentProfile>>({});
+  const [profileOptions, setProfileOptions] = useState<DfmProfileOptions | null>(null);
+  const [profileSavingByNode, setProfileSavingByNode] = useState<Record<string, boolean>>({});
+  const [profileError, setProfileError] = useState<string | null>(null);
   const [busyAction, setBusyAction] = useState<string | undefined>(undefined);
   const [statusMessage, setStatusMessage] = useState<string>("Idle");
   const [logMessage, setLogMessage] = useState<string>("");
@@ -70,6 +185,8 @@ const App = () => {
   const [globalPaneOpen, setGlobalPaneOpen] = useState(false);
   const [leftOpen, setLeftOpen] = useState(false);
   const [leftTab, setLeftTab] = useState<"views" | "reviews" | "com" | "dfm" | "km" | "req">("reviews");
+  const [rightOpen, setRightOpen] = useState(false);
+  const [rightTab, setRightTab] = useState<"dfm" | null>(null);
   const [pinMode, setPinMode] = useState<"none" | "comment" | "review">("none");
 
   const previewUrl = useMemo(() => {
@@ -161,6 +278,26 @@ const App = () => {
     return [...tickets, ...designReviews];
   }, [tickets, designReviews]);
 
+  const selectedComponent = useMemo(() => {
+    if (!selectedComponentNodeName) return null;
+    return components.find((component) => component.nodeName === selectedComponentNodeName) ?? null;
+  }, [components, selectedComponentNodeName]);
+
+  const selectedComponentProfile = useMemo<ComponentProfile | null>(() => {
+    if (!selectedComponent) return null;
+    return componentProfiles[selectedComponent.nodeName] ?? EMPTY_COMPONENT_PROFILE;
+  }, [componentProfiles, selectedComponent]);
+
+  const selectedIndustryStandards = useMemo<string[]>(() => {
+    if (!selectedComponentProfile?.industry || !profileOptions) return [];
+    const industry = profileOptions.industries.find((item) => item.label === selectedComponentProfile.industry);
+    return industry?.standards ?? [];
+  }, [profileOptions, selectedComponentProfile]);
+
+  const isSelectedProfileComplete = Boolean(
+    selectedComponentProfile?.material && selectedComponentProfile?.manufacturingProcess && selectedComponentProfile?.industry
+  );
+
   const readErrorDetail = async (response: Response, fallback: string) => {
     try {
       const payload = await response.json();
@@ -199,6 +336,43 @@ const App = () => {
     } catch (error) {
       console.error(error);
       const message = error instanceof Error ? error.message : "Unexpected error";
+      setStatusMessage(message);
+      setLogMessage(message);
+    }
+  };
+
+  const fetchProfileOptions = async () => {
+    try {
+      const response = await fetch(`${apiBase}/api/dfm/profile-options`);
+      if (!response.ok) {
+        const detail = await readErrorDetail(response, "Failed to fetch DFM profile options");
+        throw new Error(detail);
+      }
+      const payload = normalizeProfileOptions(await response.json());
+      setProfileOptions(payload);
+    } catch (error) {
+      console.error(error);
+      const message = error instanceof Error ? error.message : "Unexpected error";
+      setProfileError(message);
+      setStatusMessage(message);
+      setLogMessage(message);
+    }
+  };
+
+  const fetchComponentProfiles = async (modelId: string) => {
+    try {
+      const response = await fetch(`${apiBase}/api/models/${modelId}/component-profiles`);
+      if (!response.ok) {
+        const detail = await readErrorDetail(response, "Failed to fetch component profiles");
+        throw new Error(detail);
+      }
+      const payload = await response.json();
+      setComponentProfiles(normalizeComponentProfiles(payload.componentProfiles));
+      setProfileError(null);
+    } catch (error) {
+      console.error(error);
+      const message = error instanceof Error ? error.message : "Unexpected error";
+      setProfileError(message);
       setStatusMessage(message);
       setLogMessage(message);
     }
@@ -479,6 +653,12 @@ const App = () => {
     formData.append("file", file);
     setBusyAction("Importing");
     setStatusMessage(`Uploading ${file.name}`);
+    setComponents([]);
+    setComponentVisibility({});
+    setSelectedComponentNodeName(null);
+    setComponentProfiles({});
+    setProfileSavingByNode({});
+    setProfileError(null);
     try {
       const response = await fetch(`${apiBase}/api/models`, {
         method: "POST",
@@ -494,6 +674,11 @@ const App = () => {
         previewUrl: payload.previewUrl,
         originalName: payload.originalName,
       });
+      const loadedComponents = normalizeComponents(payload.components);
+      setComponents(loadedComponents);
+      setComponentVisibility(buildComponentVisibility(loadedComponents, true));
+      setSelectedComponentNodeName(loadedComponents[0]?.nodeName ?? null);
+      setComponentProfiles(normalizeComponentProfiles(payload.componentProfiles));
       setTickets([]);
       setDesignReviews([]);
       setSelectedItemId(null);
@@ -753,6 +938,7 @@ const App = () => {
 
   useEffect(() => {
     fetchTemplates();
+    fetchProfileOptions();
   }, []);
 
   useEffect(() => {
@@ -787,10 +973,17 @@ const App = () => {
       setTickets([]);
       setDesignReviews([]);
       setSelectedItemId(null);
+      setComponents([]);
+      setComponentVisibility({});
+      setSelectedComponentNodeName(null);
+      setComponentProfiles({});
+      setProfileSavingByNode({});
+      setProfileError(null);
       return;
     }
     fetchTickets(model.id);
     fetchDesignReviews(model.id);
+    fetchComponentProfiles(model.id);
   }, [model?.id]);
 
   useEffect(() => {
@@ -802,6 +995,19 @@ const App = () => {
       // ignore persistence errors
     }
   }, [drawingZones, dimensions, isDrawingOpen]);
+
+  useEffect(() => {
+    if (!components.length) {
+      setSelectedComponentNodeName(null);
+      return;
+    }
+    setSelectedComponentNodeName((current) => {
+      if (current && components.some((component) => component.nodeName === current)) {
+        return current;
+      }
+      return components[0].nodeName;
+    });
+  }, [components]);
 
   const handleSelectThumbnailForAssignment = (name: string, src: string, metadataUrl?: string) => {
     if (!pendingZone) return;
@@ -840,8 +1046,69 @@ const App = () => {
     setLeftTab(tab);
   };
 
-  const handleBrandToggle = () => {
-    setGlobalPaneOpen((prev) => !prev);
+  const handleRightRailToggle = (tab: "dfm") => {
+    if (rightOpen && rightTab === tab) {
+      setRightOpen(false);
+      setRightTab(null);
+      return;
+    }
+    setRightOpen(true);
+    setRightTab(tab);
+  };
+
+  const handleToggleComponent = (nodeName: string) => {
+    setComponentVisibility((prev) => ({
+      ...prev,
+      [nodeName]: !(prev[nodeName] ?? true),
+    }));
+  };
+
+  const handleShowAllComponents = () => {
+    setComponentVisibility(buildComponentVisibility(components, true));
+  };
+
+  const handleHideAllComponents = () => {
+    setComponentVisibility(buildComponentVisibility(components, false));
+  };
+
+  const handleSelectComponent = (nodeName: string) => {
+    setSelectedComponentNodeName(nodeName);
+    setProfileError(null);
+  };
+
+  const handleChangeComponentProfile = async (field: keyof ComponentProfile, value: string) => {
+    if (!model || !selectedComponentNodeName) return;
+    const nodeName = selectedComponentNodeName;
+    const nextProfile = { ...(componentProfiles[nodeName] ?? EMPTY_COMPONENT_PROFILE), [field]: value };
+    setComponentProfiles((prev) => ({
+      ...prev,
+      [nodeName]: nextProfile,
+    }));
+    setProfileSavingByNode((prev) => ({ ...prev, [nodeName]: true }));
+    setProfileError(null);
+    try {
+      const response = await fetch(`${apiBase}/api/models/${model.id}/component-profiles/${nodeName}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          material: nextProfile.material,
+          manufacturing_process: nextProfile.manufacturingProcess,
+          industry: nextProfile.industry,
+        }),
+      });
+      if (!response.ok) {
+        const detail = await readErrorDetail(response, "Failed to save component profile");
+        throw new Error(detail);
+      }
+    } catch (error) {
+      console.error(error);
+      const message = error instanceof Error ? error.message : "Unexpected error";
+      setProfileError(message);
+      setStatusMessage(message);
+      setLogMessage(message);
+    } finally {
+      setProfileSavingByNode((prev) => ({ ...prev, [nodeName]: false }));
+    }
   };
 
   const handleImportClick = () => {
@@ -939,14 +1206,22 @@ const App = () => {
   return (
     <div className="app-shell">
       <Toolbar
-        brandPaneActive={globalPaneOpen}
-        onBrandToggle={handleBrandToggle}
         busyAction={busyAction}
-        statusMessage={statusMessage}
         logMessage={logMessage}
       />
+      <button
+        className="global-menu__trigger"
+        aria-label="Toggle general menu"
+        aria-expanded={globalPaneOpen}
+        aria-controls="general-menu"
+        onClick={() => setGlobalPaneOpen((prev) => !prev)}
+      >
+        <span className="global-menu__trigger-line" />
+        <span className="global-menu__trigger-line" />
+        <span className="global-menu__trigger-line" />
+      </button>
       {globalPaneOpen && <button className="global-pane__backdrop" onClick={() => setGlobalPaneOpen(false)} aria-label="Close global pane" />}
-      <aside className={`global-pane ${globalPaneOpen ? "global-pane--open" : ""}`}>
+      <aside id="general-menu" className={`global-pane ${globalPaneOpen ? "global-pane--open" : ""}`}>
         <div className="global-pane__content">
           <input
             type="file"
@@ -973,7 +1248,7 @@ const App = () => {
           </button>
         </div>
       </aside>
-      <main className={`workspace ${leftOpen ? "" : "workspace--left-collapsed"}`}>
+      <main className={`workspace ${leftOpen ? "" : "workspace--left-collapsed"} ${rightOpen ? "" : "workspace--right-collapsed"}`}>
         <aside className="sidebar-rail sidebar-rail--left">
           <button
             className={`sidebar-rail__button ${leftOpen && leftTab === "views" ? "sidebar-rail__button--active" : ""}`}
@@ -1095,6 +1370,19 @@ const App = () => {
                 message={statusMessage}
                 onCreateDrawing={handleCreateDrawing}
                 fitTrigger={fitTrigger}
+                components={components}
+                componentVisibility={componentVisibility}
+                onToggleComponent={handleToggleComponent}
+                onShowAllComponents={handleShowAllComponents}
+                onHideAllComponents={handleHideAllComponents}
+                selectedComponentNodeName={selectedComponentNodeName}
+                onSelectComponent={handleSelectComponent}
+                profileOptions={profileOptions}
+                selectedComponentProfile={selectedComponentProfile}
+                selectedIndustryStandards={selectedIndustryStandards}
+                profileSaving={Boolean(selectedComponentNodeName && profileSavingByNode[selectedComponentNodeName])}
+                profileError={profileError}
+                onChangeComponentProfile={handleChangeComponentProfile}
                 items={pinnedItems}
                 selectedItemId={selectedItemId}
                 onSelectTicket={(id) => handleSelectTicket(id)}
@@ -1138,6 +1426,31 @@ const App = () => {
           </div>
         )}
         </div>
+        <aside className="sidebar-rail sidebar-rail--right">
+          <button
+            className={`sidebar-rail__button ${rightOpen && rightTab === "dfm" ? "sidebar-rail__button--active" : ""}`}
+            onClick={() => handleRightRailToggle("dfm")}
+          >
+            <span className="sidebar-rail__icon">D</span>
+            <span className="sidebar-rail__label">DFM (AI)</span>
+          </button>
+        </aside>
+        <DfmReviewSidebar
+          open={rightOpen && rightTab === "dfm"}
+          apiBase={apiBase}
+          modelId={model?.id ?? null}
+          selectedComponent={
+            selectedComponent
+              ? { nodeName: selectedComponent.nodeName, displayName: selectedComponent.displayName }
+              : null
+          }
+          selectedProfile={selectedComponentProfile}
+          profileComplete={isSelectedProfileComplete}
+          onClose={() => {
+            setRightOpen(false);
+            setRightTab(null);
+          }}
+        />
         {infoDialog && (
           <div className="modal-backdrop">
             <div className="modal">

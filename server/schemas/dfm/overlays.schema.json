@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rapiddraft/schemas/overlays.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "overlays"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "overlays": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "overlay_id",
+          "label",
+          "adds_refs",
+          "adds_rules_pack",
+          "rule_prefixes"
+        ],
+        "properties": {
+          "overlay_id": {
+            "type": "string",
+            "enum": [
+              "machinery",
+              "food",
+              "pressure_hvac",
+              "medical",
+              "automotive",
+              "lab"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "adds_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^REF-[A-Z0-9-]+$"
+            }
+          },
+          "adds_rules_pack": {
+            "type": "string",
+            "const": "F_OVERLAY"
+          },
+          "rule_prefixes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "extra_report_sections": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

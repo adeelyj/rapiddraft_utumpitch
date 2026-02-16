@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rapiddraft/schemas/report_templates.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "templates"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "templates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "template_id",
+          "label",
+          "description",
+          "sections"
+        ],
+        "properties": {
+          "template_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]+$"
+          },
+          "label": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "section_key",
+                "enabled_by_default"
+              ],
+              "properties": {
+                "section_key": {
+                  "type": "string",
+                  "enum": [
+                    "header_metadata",
+                    "dfm_summary",
+                    "issues_table",
+                    "evidence_appendix",
+                    "manufacturability_risks",
+                    "assembly_risks",
+                    "fixture_plan",
+                    "compliance_matrix",
+                    "standards_references_auto"
+                  ]
+                },
+                "enabled_by_default": {
+                  "type": "boolean"
+                },
+                "overlay_required": {
+                  "type": "string",
+                  "enum": [
+                    "machinery",
+                    "food",
+                    "pressure_hvac",
+                    "medical",
+                    "automotive",
+                    "lab"
+                  ]
+                },
+                "role_variants": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -6,11 +6,52 @@ import { Box3, Object3D, Vector2, Vector3 } from "three";
 import ReviewPins from "./ReviewPins";
 import type { PinPosition, PinnedItem } from "../types/review";
 
+type ModelComponent = {
+  id: string;
+  nodeName: string;
+  displayName: string;
+  triangleCount: number;
+};
+
+type DfmProfileOption = {
+  id: string;
+  label: string;
+};
+
+type DfmIndustryOption = DfmProfileOption & {
+  standards: string[];
+};
+
+type DfmProfileOptions = {
+  materials: DfmProfileOption[];
+  manufacturingProcesses: DfmProfileOption[];
+  industries: DfmIndustryOption[];
+};
+
+type ComponentProfile = {
+  material: string;
+  manufacturingProcess: string;
+  industry: string;
+};
+
 type ModelViewerProps = {
   previewUrl: string | null;
   message?: string;
   onCreateDrawing?: () => void;
   fitTrigger: number;
+  components?: ModelComponent[];
+  componentVisibility?: Record<string, boolean>;
+  onToggleComponent?: (nodeName: string) => void;
+  onShowAllComponents?: () => void;
+  onHideAllComponents?: () => void;
+  selectedComponentNodeName?: string | null;
+  onSelectComponent?: (nodeName: string) => void;
+  profileOptions?: DfmProfileOptions | null;
+  selectedComponentProfile?: ComponentProfile | null;
+  selectedIndustryStandards?: string[];
+  profileSaving?: boolean;
+  profileError?: string | null;
+  onChangeComponentProfile?: (field: keyof ComponentProfile, value: string) => void;
   items?: PinnedItem[];
   selectedItemId?: string | null;
   onSelectTicket?: (id: string) => void;
@@ -75,6 +116,8 @@ const ModelContents = ({
   onCommentPin,
   onReviewPin,
   showReviewCards,
+  components,
+  componentVisibility,
 }: {
   previewUrl: string;
   fitTrigger: number;
@@ -85,6 +128,8 @@ const ModelContents = ({
   onCommentPin?: ModelViewerProps["onCommentPin"];
   onReviewPin?: ModelViewerProps["onReviewPin"];
   showReviewCards: boolean;
+  components: ModelComponent[];
+  componentVisibility: Record<string, boolean>;
 }) => {
   const gltf = useLoader(GLTFLoader, previewUrl);
   const camera = useThree((state) => state.camera);
@@ -164,6 +209,15 @@ const ModelContents = ({
     }
   }, [selectedItemId, items, camera, controls]);
 
+  useEffect(() => {
+    if (!components.length) return;
+    components.forEach((component) => {
+      const node = gltf.scene.getObjectByName(component.nodeName);
+      if (!node) return;
+      node.visible = componentVisibility[component.nodeName] ?? true;
+    });
+  }, [components, componentVisibility, gltf.scene]);
+
   useFrame(() => {
     const animation = flyRef.current;
     if (!animation) return;
@@ -209,6 +263,19 @@ const ModelViewer = ({
   message,
   onCreateDrawing,
   fitTrigger,
+  components = [],
+  componentVisibility = {},
+  onToggleComponent = () => undefined,
+  onShowAllComponents = () => undefined,
+  onHideAllComponents = () => undefined,
+  selectedComponentNodeName = null,
+  onSelectComponent = () => undefined,
+  profileOptions = null,
+  selectedComponentProfile = null,
+  selectedIndustryStandards = [],
+  profileSaving = false,
+  profileError = null,
+  onChangeComponentProfile = () => undefined,
   items = [],
   selectedItemId = null,
   onSelectTicket = () => undefined,
@@ -218,6 +285,9 @@ const ModelViewer = ({
   onReviewPin,
 }: ModelViewerProps) => {
   const overlayMessage = message ?? (previewUrl ? "Loading preview..." : "Import a STEP file to begin.");
+  const selectedComponent =
+    components.find((component) => component.nodeName === selectedComponentNodeName) ?? components[0] ?? null;
+  const profile = selectedComponentProfile ?? { material: "", manufacturingProcess: "", industry: "" };
 
   return (
     <section className="viewer-area">
@@ -237,6 +307,8 @@ const ModelViewer = ({
                 onCommentPin={onCommentPin}
                 onReviewPin={onReviewPin}
                 showReviewCards={showReviewCards}
+                components={components}
+                componentVisibility={componentVisibility}
               />
             </Suspense>
             <Environment preset="city" />
@@ -250,6 +322,108 @@ const ModelViewer = ({
         <Placeholder />
       )}
       <div className="viewer-overlay">{overlayMessage}</div>
+      {previewUrl && components.length > 0 && (
+        <div className="viewer-left-panels">
+          <section className="assembly-tree" aria-label="Assembly tree">
+            <header className="assembly-tree__header">
+              <h3>Assembly</h3>
+              <div className="assembly-tree__actions">
+                <button type="button" onClick={onShowAllComponents}>
+                  Show all
+                </button>
+                <button type="button" onClick={onHideAllComponents}>
+                  Hide all
+                </button>
+              </div>
+            </header>
+            <div className="assembly-tree__list" role="list">
+              {components.map((component) => (
+                <div
+                  key={component.id}
+                  className={`assembly-tree__item ${
+                    selectedComponentNodeName === component.nodeName ? "assembly-tree__item--selected" : ""
+                  }`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onSelectComponent(component.nodeName)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onSelectComponent(component.nodeName);
+                    }
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={componentVisibility[component.nodeName] ?? true}
+                    onClick={(event) => event.stopPropagation()}
+                    onChange={() => onToggleComponent(component.nodeName)}
+                  />
+                  <span>{component.displayName}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+          {selectedComponent && (
+            <section className="component-profile-panel" aria-label="Component profile">
+              <header className="component-profile-panel__header">
+                <h3>{selectedComponent.displayName}</h3>
+                <span className="component-profile-panel__status">{profileSaving ? "Saving..." : "Saved"}</span>
+              </header>
+              <label className="component-profile-panel__field">
+                <span>Material</span>
+                <select
+                  value={profile.material}
+                  onChange={(event) => onChangeComponentProfile("material", event.target.value)}
+                  disabled={!profileOptions}
+                >
+                  <option value="">Select material</option>
+                  {(profileOptions?.materials ?? []).map((option) => (
+                    <option key={option.id} value={option.label}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="component-profile-panel__field">
+                <span>Manufacturing process</span>
+                <select
+                  value={profile.manufacturingProcess}
+                  onChange={(event) => onChangeComponentProfile("manufacturingProcess", event.target.value)}
+                  disabled={!profileOptions}
+                >
+                  <option value="">Select process</option>
+                  {(profileOptions?.manufacturingProcesses ?? []).map((option) => (
+                    <option key={option.id} value={option.label}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="component-profile-panel__field">
+                <span>Industry</span>
+                <select
+                  value={profile.industry}
+                  onChange={(event) => onChangeComponentProfile("industry", event.target.value)}
+                  disabled={!profileOptions}
+                >
+                  <option value="">Select industry</option>
+                  {(profileOptions?.industries ?? []).map((option) => (
+                    <option key={option.id} value={option.label}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="component-profile-panel__standards">
+                <span>Standards:</span>
+                <p>{selectedIndustryStandards.length ? selectedIndustryStandards.join(", ") : "None"}</p>
+              </div>
+              {profileError ? <p className="component-profile-panel__error">{profileError}</p> : null}
+            </section>
+          )}
+        </div>
+      )}
       {previewUrl && (
         <button className="viewer__create-drawing" onClick={onCreateDrawing}>
           Create Drawing

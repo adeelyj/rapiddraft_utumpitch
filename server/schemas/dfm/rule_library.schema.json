@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rapiddraft/schemas/rule_library.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "generated_at",
+    "packs",
+    "rules"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "packs": {
+      "type": "array",
+      "minItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pack_id",
+          "label",
+          "description",
+          "expected_rule_count",
+          "trigger_type"
+        ],
+        "properties": {
+          "pack_id": {
+            "type": "string",
+            "enum": [
+              "A_DRAWING",
+              "B_CNC",
+              "C_SHEET",
+              "D_WELD",
+              "E_ASSEMBLY",
+              "F_OVERLAY"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "expected_rule_count": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "trigger_type": {
+            "type": "string",
+            "enum": [
+              "always_base",
+              "process_primary",
+              "cross_process",
+              "overlay_selected"
+            ]
+          }
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "rule_id",
+          "pack_id",
+          "title",
+          "description",
+          "applies_to",
+          "inputs_required",
+          "check_logic",
+          "severity",
+          "fix_template",
+          "refs"
+        ],
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "pattern": "^[A-Z]{2,6}-[0-9]{3}$"
+          },
+          "pack_id": {
+            "type": "string",
+            "enum": [
+              "A_DRAWING",
+              "B_CNC",
+              "C_SHEET",
+              "D_WELD",
+              "E_ASSEMBLY",
+              "F_OVERLAY"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "applies_to": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "assembly",
+                "bom",
+                "cad_feature_bend",
+                "cad_feature_hole",
+                "cad_feature_pocket",
+                "cad_feature_thread",
+                "cad_feature_wall",
+                "cad_part",
+                "cad_sheet_metal",
+                "compliance_overlay",
+                "drawing",
+                "drawing_thread_callout",
+                "drawing_weld_callout",
+                "fixture_plan",
+                "serviceability",
+                "weldment"
+              ]
+            }
+          },
+          "inputs_required": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "assembly_model",
+                "bend_features",
+                "bom_items",
+                "coating_spec",
+                "control_plan",
+                "datum_scheme",
+                "drawing_notes",
+                "drawing_title_block",
+                "enclosure_geometry",
+                "engraving_features",
+                "flange_length",
+                "geometry_features",
+                "hazard_analysis",
+                "hole_depth",
+                "hole_diameter",
+                "hole_features",
+                "inspection_plan",
+                "joint_type",
+                "manual_context",
+                "material_spec",
+                "nameplate_parameters",
+                "part_bounding_box",
+                "pocket_corner_radius",
+                "pocket_depth",
+                "radii_set",
+                "refrigerant_type",
+                "risk_file",
+                "sheet_thickness",
+                "surface_finish_spec",
+                "thread_callouts",
+                "wall_thickness_map",
+                "weld_data",
+                "weld_notes",
+                "weld_symbols"
+              ]
+            }
+          },
+          "check_logic": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "deterministic",
+                  "hybrid",
+                  "llm_assisted"
+                ]
+              }
+            }
+          },
+          "thresholds": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "major",
+              "minor",
+              "info"
+            ]
+          },
+          "fix_template": {
+            "type": "string"
+          },
+          "refs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^REF-[A-Z0-9-]+$"
+            }
+          }
+        }
+      }
+    }
+  }
+}

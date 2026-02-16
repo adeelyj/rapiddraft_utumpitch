@@ -1,0 +1,56 @@
+{
+  "phase": "",
+  "generated_at_utc": "",
+  "implementer": "",
+  "related_prompt": "",
+  "scope": {
+    "completed": [],
+    "out_of_scope": []
+  },
+  "decisions": {
+    "locked": [],
+    "assumptions": [],
+    "defaults": []
+  },
+  "changes": {
+    "files_added": [],
+    "files_modified": [],
+    "files_deleted": []
+  },
+  "contracts": {
+    "endpoints_added": [],
+    "endpoints_updated": [],
+    "breaking_changes": [],
+    "backward_compatibility_notes": []
+  },
+  "schemas": {
+    "json_updated": [],
+    "schemas_updated": [],
+    "validation_notes": []
+  },
+  "ui": {
+    "screens_touched": [],
+    "control_bindings_updated": [],
+    "system_derived_fields_confirmed": []
+  },
+  "tests": {
+    "commands_run": [],
+    "results_summary": "",
+    "manual_checks": [],
+    "known_gaps": []
+  },
+  "risks": {
+    "open_risks": [],
+    "known_bugs": [],
+    "deferred_items": []
+  },
+  "next_phase": {
+    "ready_items": [],
+    "blockers": [],
+    "recommended_first_steps": []
+  },
+  "examples": {
+    "request_examples": [],
+    "response_examples": []
+  }
+}

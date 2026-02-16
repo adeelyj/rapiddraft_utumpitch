@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Tuple
 import json
 import logging
+import re
 
 import numpy as np
 import trimesh
@@ -44,6 +45,20 @@ class ProjectionConfig:
     label: str = ""
 
 
+@dataclass
+class ComponentInfo:
+    id: str
+    node_name: str
+    display_name: str
+    triangle_count: int
+
+
+@dataclass
+class ImportResult:
+    gltf_path: Path
+    components: List[ComponentInfo]
+
+
 class CADService:
     """
     Coordinates CAD imports, preview mesh generation, and 2D projections.
@@ -68,6 +83,10 @@ class CADService:
             "left": ProjectionConfig(axis_pair=(2, 1), invert_x=True, label="Left"),
             "right": ProjectionConfig(axis_pair=(2, 1), label="Right"),
         }
+        self._step_product_pattern = re.compile(
+            r"\bPRODUCT\s*\(\s*'((?:''|[^'])*)'\s*,\s*'((?:''|[^'])*)'\s*,",
+            re.IGNORECASE,
+        )
 
     # ------------------------------------------------------------------ helpers
     def _load_shape(self, step_path: Path):
@@ -94,12 +113,48 @@ class CADService:
     def _tessellate(self, shape_obj) -> Tuple[np.ndarray, np.ndarray]:
         """Extract triangle mesh data from the FreeCAD shape."""
         shape = shape_obj.Shape
+        return self._tessellate_shape(shape)
+
+    def _tessellate_shape(self, shape) -> Tuple[np.ndarray, np.ndarray]:
+        """Extract triangle mesh data from a FreeCAD shape."""
         pts, tri = shape.tessellate(self.linear_deflection)
 
         points = np.array([[p.x, p.y, p.z] for p in pts], dtype=np.float64)
         triangles = np.array(tri, dtype=np.int32)
         logger.debug("Tessellated mesh with %s points and %s triangles", points.shape[0], triangles.shape[0])
         return points, triangles
+
+    def _extract_component_shapes(self, shape) -> List:
+        solids = list(getattr(shape, "Solids", []) or [])
+        if solids:
+            return solids
+        return [shape]
+
+    def _extract_step_product_names(self, step_path: Path) -> List[str]:
+        try:
+            content = step_path.read_text(encoding="utf-8", errors="ignore")
+        except Exception:
+            return []
+
+        names: List[str] = []
+        seen = set()
+        for match in self._step_product_pattern.finditer(content):
+            # PRODUCT(id, name, description, ...)
+            raw_name = match.group(2).replace("''", "'")
+            normalized = " ".join(raw_name.split()).strip()
+            if not normalized:
+                continue
+            key = normalized.casefold()
+            if key in seen:
+                continue
+            seen.add(key)
+            names.append(normalized)
+        return names
+
+    def _resolve_component_name(self, component_number: int, step_names: List[str]) -> str:
+        if component_number <= len(step_names):
+            return step_names[component_number - 1]
+        return f"Part {component_number}"
 
     def _project_points(
         self,
@@ -191,15 +246,56 @@ class CADService:
         plt.close(fig)
 
     # ------------------------------------------------------------------ public API
-    def import_model(self, step_path: Path, gltf_path: Path) -> Path:
+    def import_model(self, step_path: Path, gltf_path: Path) -> ImportResult:
         """
-        Loads a STEP file and exports a glTF mesh for browser consumption.
+        Loads a STEP file and exports a glTF scene for browser consumption.
 
         The exported file is returned so FastAPI can stream it directly.
         """
         doc, obj = self._load_shape(step_path)
+        step_names = self._extract_step_product_names(step_path)
+        components: List[ComponentInfo] = []
+        scene = trimesh.Scene()
+
         try:
-            points, triangles = self._tessellate(obj)
+            component_shapes = self._extract_component_shapes(obj.Shape)
+            for shape in component_shapes:
+                points, triangles = self._tessellate_shape(shape)
+                if points.size == 0 or triangles.size == 0:
+                    continue
+
+                component_number = len(components) + 1
+                component_id = f"component_{component_number}"
+                node_name = component_id
+                display_name = self._resolve_component_name(component_number, step_names)
+
+                mesh = trimesh.Trimesh(vertices=points, faces=triangles, process=False)
+                scene.add_geometry(mesh, geom_name=node_name, node_name=node_name)
+                components.append(
+                    ComponentInfo(
+                        id=component_id,
+                        node_name=node_name,
+                        display_name=display_name,
+                        triangle_count=int(triangles.shape[0]),
+                    )
+                )
+
+            if not components:
+                # Fallback path for shapes that do not expose valid solids.
+                points, triangles = self._tessellate(obj)
+                if points.size == 0 or triangles.size == 0:
+                    raise CADProcessingError("STEP import produced no tessellated geometry")
+                mesh = trimesh.Trimesh(vertices=points, faces=triangles, process=False)
+                scene.add_geometry(mesh, geom_name="component_1", node_name="component_1")
+                fallback_name = self._resolve_component_name(1, step_names)
+                components.append(
+                    ComponentInfo(
+                        id="component_1",
+                        node_name="component_1",
+                        display_name=fallback_name,
+                        triangle_count=int(triangles.shape[0]),
+                    )
+                )
         finally:
             try:
                 import FreeCAD  # type: ignore
@@ -209,13 +305,12 @@ class CADService:
                 pass
 
         gltf_path.parent.mkdir(parents=True, exist_ok=True)
-        mesh = trimesh.Trimesh(vertices=points, faces=triangles, process=False)
         try:
-            mesh.export(gltf_path, file_type="glb")
+            scene.export(gltf_path, file_type="glb")
         except Exception as exc:
             raise CADProcessingError(f"Failed to export preview glTF: {exc}") from exc
 
-        return gltf_path
+        return ImportResult(gltf_path=gltf_path, components=components)
 
     def generate_views(self, step_path: Path, output_dir: Path) -> Tuple[Dict[str, Path], Dict[str, Path]]:
         """

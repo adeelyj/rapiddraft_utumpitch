@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rapiddraft/schemas/ui_bindings.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "screens",
+    "interaction_rules"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "screens": {
+      "type": "object"
+    },
+    "interaction_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primary_trigger",
+        "overlay_adds_pack",
+        "role_is_lens_only",
+        "template_controls_layout_only",
+        "mismatch_banner_enabled"
+      ],
+      "properties": {
+        "primary_trigger": {
+          "type": "string",
+          "const": "manufacturing_process"
+        },
+        "overlay_adds_pack": {
+          "type": "string",
+          "const": "F_OVERLAY"
+        },
+        "role_is_lens_only": {
+          "type": "boolean",
+          "const": true
+        },
+        "template_controls_layout_only": {
+          "type": "boolean",
+          "const": true
+        },
+        "mismatch_banner_enabled": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    }
+  }
+}

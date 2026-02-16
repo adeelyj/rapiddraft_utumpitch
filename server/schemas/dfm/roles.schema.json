@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rapiddraft/schemas/roles.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "roles"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "role_id",
+          "label",
+          "emphasize_packs",
+          "severity_weights",
+          "wording_style",
+          "default_issue_sort"
+        ],
+        "properties": {
+          "role_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]+$"
+          },
+          "label": {
+            "type": "string"
+          },
+          "emphasize_packs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "A_DRAWING",
+                "B_CNC",
+                "C_SHEET",
+                "D_WELD",
+                "E_ASSEMBLY",
+                "F_OVERLAY"
+              ]
+            }
+          },
+          "severity_weights": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "critical",
+              "major",
+              "minor",
+              "info"
+            ],
+            "properties": {
+              "critical": {
+                "type": "number"
+              },
+              "major": {
+                "type": "number"
+              },
+              "minor": {
+                "type": "number"
+              },
+              "info": {
+                "type": "number"
+              }
+            }
+          },
+          "wording_style": {
+            "type": "string",
+            "enum": [
+              "technical_shop_floor",
+              "formal_audit",
+              "executive"
+            ]
+          },
+          "default_issue_sort": {
+            "type": "string",
+            "enum": [
+              "by_severity",
+              "by_cost",
+              "by_manufacturability_risk"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
