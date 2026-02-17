@@ -20,8 +20,14 @@ from .dfm_planning import (
     build_component_profile_options,
     build_dfm_config,
     plan_dfm_execution,
+    plan_dfm_execution_with_template_catalog,
 )
 from .dfm_review_v2 import DfmReviewV2Body, DfmReviewV2Error, generate_dfm_review_v2
+from .dfm_template_store import (
+    DfmTemplateNotFoundError,
+    DfmTemplateStore,
+    DfmTemplateStoreError,
+)
 from .model_store import ModelStore
 from .review_store import ReviewStore
 
@@ -58,6 +64,8 @@ try:
     DFM_BUNDLE = load_dfm_bundle(bundle_dir=BASE_DIR / "dfm", repo_root=BASE_DIR.parent)
 except DfmBundleValidationError as exc:
     raise RuntimeError(f"DFM bundle validation failed during startup: {exc}") from exc
+
+dfm_template_store = DfmTemplateStore(root=MODELS_DIR, bundle=DFM_BUNDLE)
 
 
 class PinPositionBody(BaseModel):
@@ -122,6 +130,14 @@ class DfmPlanBody(BaseModel):
     run_both_if_mismatch: bool = True
 
 
+class DfmTemplateCreateBody(BaseModel):
+    template_name: str
+    base_template_id: str
+    overlay_id: str | None = None
+    default_role_id: str | None = None
+    enabled_section_keys: list[str] = Field(default_factory=list)
+
+
 def _collect_option_labels(options: dict, key: str) -> set[str]:
     records = options.get(key, [])
     labels = set()
@@ -174,6 +190,55 @@ async def create_dfm_plan(body: DfmPlanBody):
             run_both_if_mismatch=body.run_both_if_mismatch,
         )
     except DfmPlanningError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/api/models/{model_id}/dfm/templates")
+async def list_model_dfm_templates(model_id: str):
+    _require_model(model_id)
+    return dfm_template_store.list_templates(model_id)
+
+
+@app.get("/api/models/{model_id}/dfm/templates/{template_id}")
+async def get_model_dfm_template(model_id: str, template_id: str):
+    _require_model(model_id)
+    try:
+        return dfm_template_store.get_template(model_id, template_id)
+    except DfmTemplateNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+
+@app.post("/api/models/{model_id}/dfm/templates")
+async def create_model_dfm_template(model_id: str, body: DfmTemplateCreateBody):
+    _require_model(model_id)
+    try:
+        return dfm_template_store.create_template(
+            model_id=model_id,
+            template_name=body.template_name,
+            base_template_id=body.base_template_id,
+            overlay_id=body.overlay_id,
+            default_role_id=body.default_role_id,
+            enabled_section_keys=body.enabled_section_keys,
+        )
+    except DfmTemplateStoreError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/models/{model_id}/dfm/plan")
+async def create_model_dfm_plan(model_id: str, body: DfmPlanBody):
+    _require_model(model_id)
+    try:
+        return plan_dfm_execution_with_template_catalog(
+            DFM_BUNDLE,
+            extracted_part_facts=body.extracted_part_facts,
+            selected_process_override=body.selected_process_override,
+            selected_overlay=body.selected_overlay,
+            selected_role=body.selected_role,
+            selected_template=body.selected_template,
+            run_both_if_mismatch=body.run_both_if_mismatch,
+            template_catalog=dfm_template_store.planning_templates(model_id),
+        )
+    except (DfmPlanningError, DfmTemplateStoreError) as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
 

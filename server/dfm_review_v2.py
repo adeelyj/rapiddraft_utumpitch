@@ -196,12 +196,13 @@ def _normalize_execution_plan(bundle: DfmBundle, raw_plan: dict[str, Any]) -> di
     template_id = raw_plan.get("template_id")
     overlay_id = raw_plan.get("overlay_id")
     pack_ids = raw_plan.get("pack_ids", [])
+    template_sections_provided = isinstance(raw_plan.get("template_sections"), list)
 
     if process_id not in process_map:
         raise DfmReviewV2Error(f"Execution plan has unknown process_id '{process_id}'.")
     if role_id not in role_map:
         raise DfmReviewV2Error(f"Execution plan has unknown role_id '{role_id}'.")
-    if template_id not in template_map:
+    if template_id not in template_map and not template_sections_provided:
         raise DfmReviewV2Error(f"Execution plan has unknown template_id '{template_id}'.")
     if overlay_id and overlay_id not in overlay_map:
         raise DfmReviewV2Error(f"Execution plan has unknown overlay_id '{overlay_id}'.")
@@ -220,7 +221,7 @@ def _normalize_execution_plan(bundle: DfmBundle, raw_plan: dict[str, Any]) -> di
     if BASE_DRAWING_PACK_ID not in normalized_pack_ids:
         normalized_pack_ids.insert(0, BASE_DRAWING_PACK_ID)
 
-    if raw_plan.get("template_sections") is None:
+    if not template_sections_provided:
         template_sections = _resolve_template_sections(
             template=template_map[template_id],
             selected_overlay=overlay_id,
@@ -230,6 +231,15 @@ def _normalize_execution_plan(bundle: DfmBundle, raw_plan: dict[str, Any]) -> di
             "enabled": list(raw_plan.get("template_sections") or []),
             "suppressed": list(raw_plan.get("suppressed_template_sections") or []),
         }
+
+    template_label = raw_plan.get("template_label")
+    if not isinstance(template_label, str) or not template_label.strip():
+        if template_id in template_map:
+            template_label = template_map[template_id].get("label")
+        elif isinstance(template_id, str) and template_id:
+            template_label = template_id
+        else:
+            template_label = "Custom Template"
 
     return {
         "plan_id": raw_plan.get("plan_id") or "plan_1",
@@ -244,7 +254,7 @@ def _normalize_execution_plan(bundle: DfmBundle, raw_plan: dict[str, Any]) -> di
         "role_id": role_id,
         "role_label": raw_plan.get("role_label") or role_map[role_id].get("label"),
         "template_id": template_id,
-        "template_label": raw_plan.get("template_label") or template_map[template_id].get("label"),
+        "template_label": template_label,
         "template_sections": template_sections["enabled"],
         "suppressed_template_sections": template_sections["suppressed"],
     }

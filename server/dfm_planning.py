@@ -165,10 +165,37 @@ def plan_dfm_execution(
     selected_overlay: str | None = None,
     run_both_if_mismatch: bool = True,
 ) -> dict[str, Any]:
+    return plan_dfm_execution_with_template_catalog(
+        bundle,
+        extracted_part_facts=extracted_part_facts,
+        selected_role=selected_role,
+        selected_template=selected_template,
+        selected_process_override=selected_process_override,
+        selected_overlay=selected_overlay,
+        run_both_if_mismatch=run_both_if_mismatch,
+        template_catalog=[
+            template
+            for template in bundle.report_templates.get("templates", [])
+            if isinstance(template, dict)
+        ],
+    )
+
+
+def plan_dfm_execution_with_template_catalog(
+    bundle: DfmBundle,
+    *,
+    extracted_part_facts: dict[str, Any],
+    selected_role: str,
+    selected_template: str,
+    selected_process_override: str | None = None,
+    selected_overlay: str | None = None,
+    run_both_if_mismatch: bool = True,
+    template_catalog: list[dict[str, Any]],
+) -> dict[str, Any]:
     process_map = _index_by_id(bundle.process_classifier.get("process_families", []), "process_id")
     overlay_map = _index_by_id(bundle.overlays.get("overlays", []), "overlay_id")
     role_map = _index_by_id(bundle.roles.get("roles", []), "role_id")
-    template_map = _index_by_id(bundle.report_templates.get("templates", []), "template_id")
+    template_map = _index_by_id(template_catalog, "template_id")
     pack_map = _index_by_id(bundle.rule_library.get("packs", []), "pack_id")
 
     if selected_role not in role_map:
@@ -218,8 +245,10 @@ def plan_dfm_execution(
         pack_ids = _build_pack_ids_for_plan(
             process_entry.get("default_packs", []), overlay_pack_id
         )
-        template_sections = _resolve_template_sections(
-            template=template_map[selected_template], selected_overlay=selected_overlay
+        selected_template_entry = template_map[selected_template]
+        template_sections = _resolve_template_sections_for_plan(
+            template=selected_template_entry,
+            selected_overlay=selected_overlay,
         )
 
         if run_both_executed and idx == 0:
@@ -244,7 +273,7 @@ def plan_dfm_execution(
                 "role_id": selected_role,
                 "role_label": role_map[selected_role].get("label"),
                 "template_id": selected_template,
-                "template_label": template_map[selected_template].get("label"),
+                "template_label": selected_template_entry.get("label"),
                 "template_sections": template_sections["enabled"],
                 "suppressed_template_sections": template_sections["suppressed"],
                 "standards_used_mode": "findings.refs_auto",
@@ -544,6 +573,30 @@ def _resolve_template_sections(
         enabled_sections.append(section_key)
 
     return {"enabled": enabled_sections, "suppressed": suppressed_sections}
+
+
+def _resolve_template_sections_for_plan(
+    template: dict[str, Any], selected_overlay: str | None
+) -> dict[str, list[str]]:
+    explicit_enabled = template.get("template_sections")
+    if isinstance(explicit_enabled, list):
+        enabled = _dedupe_strings(explicit_enabled)
+        suppressed = _dedupe_strings(template.get("suppressed_template_sections", []))
+        return {"enabled": enabled, "suppressed": suppressed}
+
+    return _resolve_template_sections(template, selected_overlay)
+
+
+def _dedupe_strings(values: list[Any]) -> list[str]:
+    deduped: list[str] = []
+    for value in values:
+        if not isinstance(value, str):
+            continue
+        normalized = value.strip()
+        if not normalized or normalized in deduped:
+            continue
+        deduped.append(normalized)
+    return deduped
 
 
 def _process_ref(

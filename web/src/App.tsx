@@ -7,6 +7,7 @@ import CommentForm, { CreateTicketPayload } from "./components/CommentForm";
 import ReviewPanel from "./components/ReviewPanel";
 import ReviewStartForm, { CreateReviewPayload } from "./components/ReviewStartForm";
 import DfmReviewSidebar from "./components/DfmReviewSidebar";
+import ReportTemplateBuilderSidebar from "./components/ReportTemplateBuilderSidebar";
 import type {
   ChecklistTemplate,
   DesignReviewSession,
@@ -190,7 +191,7 @@ const App = () => {
   const [leftOpen, setLeftOpen] = useState(false);
   const [leftTab, setLeftTab] = useState<"views" | "reviews" | "com" | "dfm" | "km" | "req">("reviews");
   const [rightOpen, setRightOpen] = useState(false);
-  const [rightTab, setRightTab] = useState<"dfm" | null>(null);
+  const [rightTab, setRightTab] = useState<"dfm" | "rep" | null>(null);
   const [pinMode, setPinMode] = useState<"none" | "comment" | "review">("none");
 
   const previewUrl = useMemo(() => {
@@ -1050,7 +1051,7 @@ const App = () => {
     setLeftTab(tab);
   };
 
-  const handleRightRailToggle = (tab: "dfm") => {
+  const handleRightRailToggle = (tab: "dfm" | "rep") => {
     if (rightOpen && rightTab === tab) {
       setRightOpen(false);
       setRightTab(null);
@@ -1438,23 +1439,43 @@ const App = () => {
             <span className="sidebar-rail__icon">D</span>
             <span className="sidebar-rail__label">DFM (AI)</span>
           </button>
+          <button
+            className={`sidebar-rail__button ${rightOpen && rightTab === "rep" ? "sidebar-rail__button--active" : ""}`}
+            onClick={() => handleRightRailToggle("rep")}
+          >
+            <span className="sidebar-rail__icon">R</span>
+            <span className="sidebar-rail__label">REP</span>
+          </button>
         </aside>
-        <DfmReviewSidebar
-          open={rightOpen && rightTab === "dfm"}
-          apiBase={apiBase}
-          modelId={model?.id ?? null}
-          selectedComponent={
-            selectedComponent
-              ? { nodeName: selectedComponent.nodeName, displayName: selectedComponent.displayName }
-              : null
-          }
-          selectedProfile={selectedComponentProfile}
-          profileComplete={isSelectedProfileComplete}
-          onClose={() => {
-            setRightOpen(false);
-            setRightTab(null);
-          }}
-        />
+        {rightOpen && rightTab === "dfm" ? (
+          <DfmReviewSidebar
+            open
+            apiBase={apiBase}
+            modelId={model?.id ?? null}
+            selectedComponent={
+              selectedComponent
+                ? { nodeName: selectedComponent.nodeName, displayName: selectedComponent.displayName }
+                : null
+            }
+            selectedProfile={selectedComponentProfile}
+            profileComplete={isSelectedProfileComplete}
+            onClose={() => {
+              setRightOpen(false);
+              setRightTab(null);
+            }}
+          />
+        ) : null}
+        {rightOpen && rightTab === "rep" ? (
+          <ReportTemplateBuilderSidebar
+            open
+            apiBase={apiBase}
+            modelId={model?.id ?? null}
+            onClose={() => {
+              setRightOpen(false);
+              setRightTab(null);
+            }}
+          />
+        ) : null}
         {infoDialog && (
           <div className="modal-backdrop">
             <div className="modal">

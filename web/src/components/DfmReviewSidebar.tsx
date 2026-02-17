@@ -60,6 +60,17 @@ type DfmConfigResponse = {
   };
 };
 
+type DfmModelTemplate = {
+  template_id: string;
+  label: string;
+  source: "bundle" | "custom";
+};
+
+type DfmModelTemplateListResponse = {
+  templates: DfmModelTemplate[];
+  count: number;
+};
+
 type DfmPlanProcessRef = {
   process_id: string;
   process_label: string;
@@ -232,6 +243,8 @@ const DfmReviewSidebar = ({
   const [selectedOverlayId, setSelectedOverlayId] = useState("");
   const [selectedRoleId, setSelectedRoleId] = useState("");
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [modelTemplates, setModelTemplates] = useState<DfmModelTemplate[]>([]);
+  const [loadingModelTemplates, setLoadingModelTemplates] = useState(false);
   const [selectedAdvancedModel, setSelectedAdvancedModel] = useState("");
   const [runBothIfMismatch, setRunBothIfMismatch] = useState(true);
   const [planResult, setPlanResult] = useState<DfmPlanResponse | null>(null);
@@ -286,6 +299,10 @@ const DfmReviewSidebar = ({
   }, [modelId, selectedComponent?.nodeName]);
 
   useEffect(() => {
+    setSelectedTemplateId("");
+  }, [modelId]);
+
+  useEffect(() => {
     if (!open) return;
     let cancelled = false;
     const loadConfig = async () => {
@@ -312,6 +329,36 @@ const DfmReviewSidebar = ({
   }, [apiBase, open]);
 
   useEffect(() => {
+    if (!open || !modelId) {
+      setModelTemplates([]);
+      return;
+    }
+    let cancelled = false;
+    const loadTemplates = async () => {
+      setLoadingModelTemplates(true);
+      setError(null);
+      try {
+        const response = await fetch(`${apiBase}/api/models/${modelId}/dfm/templates`);
+        if (!response.ok) throw new Error(await readErrorText(response, "Failed to load model templates"));
+        const payload = (await response.json()) as DfmModelTemplateListResponse;
+        if (cancelled) return;
+        setModelTemplates(payload.templates ?? []);
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Unexpected error while loading model templates");
+          setModelTemplates([]);
+        }
+      } finally {
+        if (!cancelled) setLoadingModelTemplates(false);
+      }
+    };
+    loadTemplates();
+    return () => {
+      cancelled = true;
+    };
+  }, [apiBase, modelId, open]);
+
+  useEffect(() => {
     if (!dfmConfig) return;
 
     const roleControlDefault = controlsById.get("role_lens")?.default;
@@ -321,7 +368,7 @@ const DfmReviewSidebar = ({
         : dfmConfig.roles[0]?.role_id ?? "";
     setSelectedRoleId((current) => current || roleFallback);
 
-    const templateFallback = dfmConfig.templates[0]?.template_id ?? "";
+    const templateFallback = modelTemplates[0]?.template_id ?? "";
     setSelectedTemplateId((current) => current || templateFallback);
 
     const processMode = controlsById.get("manufacturing_process")?.default_mode;
@@ -340,7 +387,7 @@ const DfmReviewSidebar = ({
     if (!selectedAdvancedModel && advancedModelOptions.length) {
       setSelectedAdvancedModel(advancedModelOptions[0]);
     }
-  }, [advancedModelOptions, controlsById, dfmConfig, selectedAdvancedModel]);
+  }, [advancedModelOptions, controlsById, dfmConfig, modelTemplates, selectedAdvancedModel]);
 
   const handlePaste = (event: ClipboardEvent<HTMLTextAreaElement>) => {
     const files = event.clipboardData.files;
@@ -421,7 +468,7 @@ const DfmReviewSidebar = ({
         run_both_if_mismatch: runBothIfMismatch,
       };
 
-      const planResponse = await fetch(`${apiBase}/api/dfm/plan`, {
+      const planResponse = await fetch(`${apiBase}/api/models/${modelId}/dfm/plan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(planningInputs),
@@ -445,7 +492,7 @@ const DfmReviewSidebar = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           component_node_name: selectedComponent.nodeName,
-          planning_inputs: planningInputs,
+          execution_plans: planPayload.execution_plans,
           screenshot_data_url: imageDataUrl || null,
           context_payload: contextPayload,
         }),
@@ -523,10 +570,14 @@ const DfmReviewSidebar = ({
       return (
         <label key={controlId} className="dfm-sidebar__field dfm-sidebar__flow-step">
           <span>{label}</span>
-          <select value={selectedTemplateId} onChange={(event) => setSelectedTemplateId(event.target.value)}>
-            {dfmConfig.templates.map((template) => (
+          <select
+            value={selectedTemplateId}
+            onChange={(event) => setSelectedTemplateId(event.target.value)}
+            disabled={loadingModelTemplates || !modelTemplates.length}
+          >
+            {modelTemplates.map((template) => (
               <option key={template.template_id} value={template.template_id}>
-                {template.label}
+                {template.label} {template.source === "custom" ? "(custom)" : ""}
               </option>
             ))}
           </select>
@@ -576,7 +627,12 @@ const DfmReviewSidebar = ({
       return (
         <div key={controlId} className="dfm-sidebar__field dfm-sidebar__flow-step">
           <span>{label}</span>
-          <button type="button" className="dfm-sidebar__submit" onClick={handleSubmit} disabled={submitting || loadingConfig}>
+          <button
+            type="button"
+            className="dfm-sidebar__submit"
+            onClick={handleSubmit}
+            disabled={submitting || loadingConfig || loadingModelTemplates}
+          >
             {submitting ? "Generating..." : "Generate review"}
           </button>
         </div>
@@ -744,6 +800,9 @@ const DfmReviewSidebar = ({
           <p className="dfm-sidebar__hint">
             Complete material, manufacturing process, and industry in the component profile for stronger DFM results.
           </p>
+        ) : null}
+        {modelId && !modelTemplates.length && !loadingModelTemplates ? (
+          <p className="dfm-sidebar__hint">No templates found for this model yet.</p>
         ) : null}
       </div>
     </aside>
