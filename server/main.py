@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 
 from .cad_service import CADProcessingError, CADService
 from .cad_service_occ import CADServiceOCC
+from .cnc_analysis import CncAnalysisError, CncAnalysisService, CncReportNotFoundError
 from .dfm_bundle import DfmBundleValidationError, load_dfm_bundle
 from .dfm_planning import (
     DfmPlanningError,
@@ -30,6 +31,13 @@ from .dfm_template_store import (
 )
 from .model_store import ModelStore
 from .review_store import ReviewStore
+from .vision_analysis import (
+    VisionAnalysisError,
+    VisionAnalysisService,
+    VisionExecutionError,
+    VisionReportNotFoundError,
+    VisionViewSetMissingError,
+)
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
@@ -50,6 +58,8 @@ cad_service = CADService(workspace=PROCESS_DIR)
 cad_service_occ = CADServiceOCC(workspace=PROCESS_DIR / "occ")
 model_store = ModelStore(root=MODELS_DIR)
 review_store = ReviewStore(root=MODELS_DIR, templates_path=DATA_DIR / "review_templates.json")
+cnc_analysis_service = CncAnalysisService(root=MODELS_DIR)
+vision_analysis_service = VisionAnalysisService(root=MODELS_DIR, occ_service=cad_service_occ)
 
 app = FastAPI(title="TextCAD Drafting Service", version="0.1.0")
 app.add_middleware(
@@ -136,6 +146,66 @@ class DfmTemplateCreateBody(BaseModel):
     overlay_id: str | None = None
     default_role_id: str | None = None
     enabled_section_keys: list[str] = Field(default_factory=list)
+
+
+class CncThresholdCriteriaBody(BaseModel):
+    critical_enabled: bool = True
+    critical_max_mm: float = 0.0001
+    warning_enabled: bool = True
+    warning_max_mm: float = 1.5
+    caution_enabled: bool = True
+    caution_max_mm: float = 3.0
+    ok_enabled: bool = True
+    ok_min_mm: float = 3.0
+
+
+class CncFilterCriteriaBody(BaseModel):
+    concave_internal_edges_only: bool = True
+    pocket_internal_cavity_heuristic: bool = True
+    exclude_bbox_exterior_edges: bool = True
+    include_ok_rows_in_output: bool | None = None
+
+
+class CncCriteriaBody(BaseModel):
+    thresholds: CncThresholdCriteriaBody = Field(default_factory=CncThresholdCriteriaBody)
+    filters: CncFilterCriteriaBody = Field(default_factory=CncFilterCriteriaBody)
+    aggravating_factor_ratio_threshold: float = 5.0
+
+
+class CncGeometryReportBody(BaseModel):
+    component_node_name: str | None = None
+    include_ok_rows: bool = False
+    criteria: CncCriteriaBody | None = None
+
+
+class VisionChecksBody(BaseModel):
+    internal_pocket_tight_corners: bool = True
+    tool_access_risk: bool = True
+    annotation_note_scan: bool = True
+
+
+class VisionCriteriaBody(BaseModel):
+    checks: VisionChecksBody = Field(default_factory=VisionChecksBody)
+    sensitivity: str = "medium"
+    max_flagged_features: int = 8
+    confidence_threshold: str = "medium"
+
+
+class VisionProviderBody(BaseModel):
+    route: str = "openai"
+    model_override: str | None = None
+    local_base_url: str | None = None
+
+
+class CreateVisionViewSetBody(BaseModel):
+    component_node_name: str | None = None
+
+
+class CreateVisionReportBody(BaseModel):
+    component_node_name: str | None = None
+    view_set_id: str
+    criteria: VisionCriteriaBody | None = None
+    provider: VisionProviderBody = Field(default_factory=VisionProviderBody)
 
 
 def _collect_option_labels(options: dict, key: str) -> set[str]:
@@ -331,6 +401,180 @@ async def create_component_dfm_review_v2(model_id: str, body: DfmReviewV2Body):
         )
     except (DfmReviewV2Error, DfmPlanningError) as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/models/{model_id}/cnc/geometry-report")
+async def create_cnc_geometry_report(model_id: str, body: CncGeometryReportBody):
+    metadata = model_store.get(model_id)
+    if not metadata:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    component = None
+    if body.component_node_name:
+        component = _get_component_entry(metadata, body.component_node_name)
+
+    component_display_name = (
+        component.get("displayName")
+        if component
+        else (body.component_node_name or "Global Context")
+    )
+    criteria_payload = body.criteria.dict() if body.criteria else None
+    include_ok_rows = body.include_ok_rows
+    if body.criteria and body.criteria.filters.include_ok_rows_in_output is not None:
+        include_ok_rows = body.criteria.filters.include_ok_rows_in_output
+
+    try:
+        return cnc_analysis_service.create_geometry_report(
+            model_id=model_id,
+            step_path=metadata.step_path,
+            component_node_name=body.component_node_name,
+            component_display_name=component_display_name,
+            include_ok_rows=include_ok_rows,
+            criteria=criteria_payload,
+        )
+    except CncAnalysisError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unexpected CNC route error: {exc.__class__.__name__}: {exc}",
+        )
+
+
+@app.get("/api/models/{model_id}/cnc/reports/{report_id}")
+async def get_cnc_geometry_report(model_id: str, report_id: str):
+    _require_model(model_id)
+    try:
+        return cnc_analysis_service.get_report(model_id=model_id, report_id=report_id)
+    except CncReportNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except CncAnalysisError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.get("/api/models/{model_id}/cnc/reports/{report_id}/pdf")
+async def get_cnc_geometry_report_pdf(model_id: str, report_id: str):
+    _require_model(model_id)
+    try:
+        pdf_path = cnc_analysis_service.get_report_pdf_path(
+            model_id=model_id,
+            report_id=report_id,
+        )
+    except CncReportNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except CncAnalysisError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    return FileResponse(
+        pdf_path,
+        media_type="application/pdf",
+        filename=f"{report_id}.pdf",
+    )
+
+
+@app.post("/api/models/{model_id}/vision/view-sets")
+async def create_vision_view_set(model_id: str, body: CreateVisionViewSetBody):
+    metadata = model_store.get(model_id)
+    if not metadata:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    component = None
+    component_solid_index = None
+    if body.component_node_name:
+        component = _get_component_entry(metadata, body.component_node_name)
+        if not component:
+            raise HTTPException(status_code=400, detail="Unknown component_node_name")
+        try:
+            component_solid_index = metadata.components.index(component) + 1
+        except ValueError:
+            component_solid_index = None
+
+    try:
+        return vision_analysis_service.create_view_set(
+            model_id=model_id,
+            step_path=metadata.step_path,
+            component_node_name=body.component_node_name,
+            component_solid_index=component_solid_index,
+        )
+    except VisionAnalysisError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unexpected vision view generation error: {exc.__class__.__name__}: {exc}",
+        )
+
+
+@app.get("/api/models/{model_id}/vision/providers")
+async def list_vision_providers(model_id: str):
+    _require_model(model_id)
+    return vision_analysis_service.list_providers()
+
+
+@app.post("/api/models/{model_id}/vision/reports")
+async def create_vision_report(model_id: str, body: CreateVisionReportBody):
+    metadata = model_store.get(model_id)
+    if not metadata:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    if body.component_node_name:
+        component = _get_component_entry(metadata, body.component_node_name)
+        if not component:
+            raise HTTPException(status_code=400, detail="Unknown component_node_name")
+
+    if not body.view_set_id or not body.view_set_id.strip():
+        raise HTTPException(status_code=400, detail="view_set_id is required")
+
+    try:
+        return vision_analysis_service.create_report(
+            model_id=model_id,
+            component_node_name=body.component_node_name,
+            view_set_id=body.view_set_id.strip(),
+            criteria_payload=body.criteria.dict() if body.criteria else None,
+            provider_payload=body.provider.dict(),
+        )
+    except VisionViewSetMissingError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except VisionExecutionError as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
+    except VisionAnalysisError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unexpected vision analysis error: {exc.__class__.__name__}: {exc}",
+        )
+
+
+@app.get("/api/models/{model_id}/vision/reports/{report_id}")
+async def get_vision_report(model_id: str, report_id: str):
+    _require_model(model_id)
+    try:
+        return vision_analysis_service.get_report(model_id=model_id, report_id=report_id)
+    except VisionReportNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except VisionAnalysisError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.get("/api/models/{model_id}/vision/view-sets/{view_set_id}/views/{view_name}")
+async def get_vision_view_image(model_id: str, view_set_id: str, view_name: str):
+    _require_model(model_id)
+    try:
+        image_path = vision_analysis_service.get_view_image_path(
+            model_id=model_id,
+            view_set_id=view_set_id,
+            view_name=view_name,
+        )
+    except VisionViewSetMissingError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except VisionAnalysisError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    return FileResponse(
+        image_path,
+        media_type="image/png",
+        filename=f"{view_set_id}_{view_name}.png",
+    )
 
 
 @app.get("/api/models/{model_id}/tickets")

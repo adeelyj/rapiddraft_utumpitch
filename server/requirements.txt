@@ -8,3 +8,5 @@ numpy
 trimesh
 pytest
 jsonschema
+reportlab
+httpx

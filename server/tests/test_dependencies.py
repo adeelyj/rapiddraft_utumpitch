@@ -24,6 +24,7 @@ DEPENDENCIES = [
     ("python-multipart", "multipart"),
     ("pydantic", "pydantic"),
     ("aiofiles", "aiofiles"),
+    ("httpx", "httpx"),
     ("numpy", "numpy"),
     ("matplotlib", "matplotlib"),
     ("FreeCAD", "FreeCAD"),  # required for CAD processing

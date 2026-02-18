@@ -9,6 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Dict, Iterable, List, Tuple
 import logging
+import re
 
 import numpy as np
 import matplotlib
@@ -27,13 +28,14 @@ from OCC.Core.HLRBRep import HLRBRep_Algo, HLRBRep_HLRToShape
 from OCC.Core.HLRAlgo import HLRAlgo_Projector
 from OCC.Core.gp import gp_Ax2, gp_Dir, gp_Pln, gp_Pnt
 from OCC.Core.TopExp import TopExp_Explorer
-from OCC.Core.TopAbs import TopAbs_EDGE
+from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_SOLID
 from OCC.Core.BRepAdaptor import BRepAdaptor_Curve
 from OCC.Core.GCPnts import GCPnts_QuasiUniformAbscissa
 from OCC.Core.Bnd import Bnd_Box
 from OCC.Core.BRepBndLib import brepbndlib_Add
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeFace
 from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Section
+from OCC.Core.TopoDS import topods
 
 from .cad_service import CADProcessingError
 
@@ -171,13 +173,64 @@ class CADServiceOCC:
             raise CADProcessingError(f"Mid-plane section returned empty geometry for axis {axis}")
         return sec_shape
 
+    def _parse_component_index(self, component_node_name: str | None) -> int | None:
+        if not isinstance(component_node_name, str):
+            return None
+        match = re.match(r"^component_(\d+)$", component_node_name.strip())
+        if not match:
+            return None
+        index = int(match.group(1))
+        return index if index >= 1 else None
+
+    def _collect_solids(self, shape) -> List[object]:
+        solids: List[object] = []
+        explorer = TopExp_Explorer(shape, TopAbs_SOLID)
+        while explorer.More():
+            solids.append(topods.Solid(explorer.Current()))
+            explorer.Next()
+        return solids
+
+    def _resolve_component_shape(
+        self,
+        shape,
+        *,
+        component_node_name: str | None = None,
+        component_solid_index: int | None = None,
+    ):
+        index = component_solid_index if isinstance(component_solid_index, int) and component_solid_index >= 1 else None
+        if index is None:
+            index = self._parse_component_index(component_node_name)
+        if index is None:
+            return shape
+
+        solids = self._collect_solids(shape)
+        if not solids:
+            raise CADProcessingError("No solids found in STEP model for component view selection.")
+        if index > len(solids):
+            raise CADProcessingError(
+                f"Component solid index {index} is out of range for this model ({len(solids)} solids)."
+            )
+        return solids[index - 1]
+
     # ------------------------------------------------------------------ public API
-    def generate_occ_views(self, step_path: Path, output_dir: Path) -> Dict[str, Path]:
+    def generate_occ_views(
+        self,
+        step_path: Path,
+        output_dir: Path,
+        *,
+        component_node_name: str | None = None,
+        component_solid_index: int | None = None,
+    ) -> Dict[str, Path]:
         shape = self._load_shape(step_path)
+        view_shape = self._resolve_component_shape(
+            shape,
+            component_node_name=component_node_name,
+            component_solid_index=component_solid_index,
+        )
 
         results: Dict[str, Path] = {}
         for name, config in self._projection_table.items():
-            visible_edges = self._run_hlr(shape, config["dir"])
+            visible_edges = self._run_hlr(view_shape, config["dir"])
 
             segments: List[np.ndarray] = []
             for edge_pts in self._iter_edge_points(visible_edges):

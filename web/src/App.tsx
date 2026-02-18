@@ -8,6 +8,8 @@ import ReviewPanel from "./components/ReviewPanel";
 import ReviewStartForm, { CreateReviewPayload } from "./components/ReviewStartForm";
 import DfmReviewSidebar from "./components/DfmReviewSidebar";
 import ReportTemplateBuilderSidebar from "./components/ReportTemplateBuilderSidebar";
+import CncAnalysisSidebar from "./components/CncAnalysisSidebar";
+import VisionAnalysisSidebar from "./components/VisionAnalysisSidebar";
 import type {
   ChecklistTemplate,
   DesignReviewSession,
@@ -69,7 +71,22 @@ export type Dimension = {
   label?: string;
 };
 
-const apiBase = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ?? "http://localhost:8000";
+const resolveApiBase = (): string => {
+  const configured = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim();
+  if (configured) return configured.replace(/\/$/, "");
+
+  if (typeof window !== "undefined") {
+    const devPorts = new Set(["5173", "4173", "5174", "4174"]);
+    if (devPorts.has(window.location.port)) {
+      return `${window.location.protocol}//${window.location.hostname}:8000`;
+    }
+    return window.location.origin.replace(/\/$/, "");
+  }
+
+  return "http://localhost:8000";
+};
+
+const apiBase = resolveApiBase();
 const DRAWING_STORAGE_KEY = "drawingState";
 const EMPTY_COMPONENT_PROFILE: ComponentProfile = {
   material: "",
@@ -191,7 +208,7 @@ const App = () => {
   const [leftOpen, setLeftOpen] = useState(false);
   const [leftTab, setLeftTab] = useState<"views" | "reviews" | "com" | "dfm" | "km" | "req">("reviews");
   const [rightOpen, setRightOpen] = useState(false);
-  const [rightTab, setRightTab] = useState<"dfm" | "rep" | null>(null);
+  const [rightTab, setRightTab] = useState<"dfm" | "rep" | "cnc" | "vision" | null>(null);
   const [pinMode, setPinMode] = useState<"none" | "comment" | "review">("none");
 
   const previewUrl = useMemo(() => {
@@ -1051,7 +1068,7 @@ const App = () => {
     setLeftTab(tab);
   };
 
-  const handleRightRailToggle = (tab: "dfm" | "rep") => {
+  const handleRightRailToggle = (tab: "dfm" | "rep" | "cnc" | "vision") => {
     if (rightOpen && rightTab === tab) {
       setRightOpen(false);
       setRightTab(null);
@@ -1433,6 +1450,20 @@ const App = () => {
         </div>
         <aside className="sidebar-rail sidebar-rail--right">
           <button
+            className={`sidebar-rail__button ${rightOpen && rightTab === "vision" ? "sidebar-rail__button--active" : ""}`}
+            onClick={() => handleRightRailToggle("vision")}
+          >
+            <span className="sidebar-rail__icon">V</span>
+            <span className="sidebar-rail__label">Vision</span>
+          </button>
+          <button
+            className={`sidebar-rail__button ${rightOpen && rightTab === "cnc" ? "sidebar-rail__button--active" : ""}`}
+            onClick={() => handleRightRailToggle("cnc")}
+          >
+            <span className="sidebar-rail__icon">C</span>
+            <span className="sidebar-rail__label">CNC</span>
+          </button>
+          <button
             className={`sidebar-rail__button ${rightOpen && rightTab === "dfm" ? "sidebar-rail__button--active" : ""}`}
             onClick={() => handleRightRailToggle("dfm")}
           >
@@ -1459,6 +1490,38 @@ const App = () => {
             }
             selectedProfile={selectedComponentProfile}
             profileComplete={isSelectedProfileComplete}
+            onClose={() => {
+              setRightOpen(false);
+              setRightTab(null);
+            }}
+          />
+        ) : null}
+        {rightOpen && rightTab === "cnc" ? (
+          <CncAnalysisSidebar
+            open
+            apiBase={apiBase}
+            modelId={model?.id ?? null}
+            selectedComponent={
+              selectedComponent
+                ? { nodeName: selectedComponent.nodeName, displayName: selectedComponent.displayName }
+                : null
+            }
+            onClose={() => {
+              setRightOpen(false);
+              setRightTab(null);
+            }}
+          />
+        ) : null}
+        {rightOpen && rightTab === "vision" ? (
+          <VisionAnalysisSidebar
+            open
+            apiBase={apiBase}
+            modelId={model?.id ?? null}
+            selectedComponent={
+              selectedComponent
+                ? { nodeName: selectedComponent.nodeName, displayName: selectedComponent.displayName }
+                : null
+            }
             onClose={() => {
               setRightOpen(false);
               setRightTab(null);
