@@ -1,4 +1,4 @@
-import { ClipboardEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type DfmConfigProcess = {
   process_id: string;
@@ -76,47 +76,47 @@ type DfmPlanProcessRef = {
   process_label: string;
 };
 
-type DfmExecutionPlan = {
-  plan_id: string;
-  route_source: string;
+type DfmAiRecommendation = {
   process_id: string;
   process_label: string;
-  pack_ids: string[];
-  pack_labels: (string | null)[];
-  overlay_id: string | null;
-  overlay_label: string | null;
-  role_id: string;
-  role_label: string;
-  template_id: string;
-  template_label: string;
-  template_sections: string[];
-  suppressed_template_sections: string[];
+  confidence: number;
+  confidence_level: string;
+  reasons: string[];
 };
 
-type DfmPlanResponse = {
-  ai_recommendation: {
-    process_id: string;
-    process_label: string;
-    confidence: number;
-    confidence_level: string;
-    reasons: string[];
-  };
-  selected_process: {
-    process_id: string;
-    process_label: string;
-    selected_via: string;
-  };
-  selected_packs: string[];
-  mismatch: {
-    has_mismatch: boolean;
-    user_selected_process: DfmPlanProcessRef | null;
-    ai_process: DfmPlanProcessRef | null;
-    run_both_requested: boolean;
-    policy_allows_run_both: boolean;
-    run_both_executed: boolean;
-    banner: string | null;
-  };
-  execution_plans: DfmExecutionPlan[];
+type DfmMismatch = {
+  has_mismatch: boolean;
+  user_selected_process: DfmPlanProcessRef | null;
+  ai_process: DfmPlanProcessRef | null;
+  run_both_requested: boolean;
+  policy_allows_run_both: boolean;
+  run_both_executed: boolean;
+  banner: string | null;
+};
+
+type DfmEffectiveProcessContext = {
+  selection_mode: string;
+  source: string;
+  profile_value?: string | null;
+  profile_mapped_process_id?: string | null;
+  requested_override?: string | null;
+  effective_process_id?: string | null;
+  effective_process_label?: string | null;
+};
+
+type DfmEffectiveOverlayContext = {
+  selection_mode: string;
+  source: string;
+  profile_value?: string | null;
+  profile_mapped_overlay_id?: string | null;
+  requested_override?: string | null;
+  effective_overlay_id?: string | null;
+  effective_overlay_label?: string | null;
+};
+
+type DfmEffectiveAnalysisModeContext = {
+  selected_mode: "geometry_dfm" | "drawing_spec" | "full";
+  source?: string;
 };
 
 type DfmStandardRef = {
@@ -127,12 +127,23 @@ type DfmStandardRef = {
   notes?: string;
 };
 
+type DfmFindingExpectedImpact = {
+  impact_type?: string;
+  risk_reduction?: string;
+  cost_impact?: string;
+  lead_time_impact?: string;
+  rationale?: string;
+};
+
 type DfmReviewFinding = {
   rule_id: string;
   pack_id: string;
+  finding_type?: "evidence_gap" | "rule_violation";
   severity: string;
   title?: string;
   refs: string[];
+  recommended_action?: string;
+  expected_impact?: DfmFindingExpectedImpact;
 };
 
 type DfmCostEstimate = {
@@ -184,6 +195,13 @@ type DfmReviewRoute = {
 
 type DfmReviewV2Response = {
   model_id: string;
+  effective_context?: {
+    process?: DfmEffectiveProcessContext;
+    overlay?: DfmEffectiveOverlayContext;
+    analysis_mode?: DfmEffectiveAnalysisModeContext;
+  } | null;
+  ai_recommendation: DfmAiRecommendation | null;
+  mismatch: DfmMismatch;
   route_count: number;
   finding_count_total: number;
   standards_used_auto_union: DfmStandardRef[];
@@ -215,6 +233,7 @@ type DfmReviewSidebarProps = {
 };
 
 const DEFAULT_FLOW_ORDER = [
+  "analysis_mode",
   "manufacturing_process",
   "industry_overlay",
   "role_lens",
@@ -223,6 +242,21 @@ const DEFAULT_FLOW_ORDER = [
   "run_both_if_mismatch",
   "generate_review",
 ];
+
+type ProcessOverrideMode = "profile" | "auto" | "force";
+type OverlayOverrideMode = "profile" | "pilot" | "force";
+type AnalysisMode = "geometry_dfm" | "drawing_spec" | "full";
+const PILOT_OVERLAY_ID = "pilot_prototype";
+
+const processLabelById = (processes: DfmConfigProcess[], processId: string | null) => {
+  if (!processId) return "";
+  return processes.find((process) => process.process_id === processId)?.label ?? processId;
+};
+
+const overlayLabelById = (overlays: DfmConfigOverlay[], overlayId: string | null) => {
+  if (!overlayId) return "None";
+  return overlays.find((overlay) => overlay.overlay_id === overlayId)?.label ?? overlayId;
+};
 
 const DfmReviewSidebar = ({
   open,
@@ -233,21 +267,22 @@ const DfmReviewSidebar = ({
   profileComplete,
   onClose,
 }: DfmReviewSidebarProps) => {
-  const [imageDataUrl, setImageDataUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [dfmConfig, setDfmConfig] = useState<DfmConfigResponse | null>(null);
   const [loadingConfig, setLoadingConfig] = useState(false);
-  const [selectedProcessOverride, setSelectedProcessOverride] = useState("auto");
-  const [selectedOverlayId, setSelectedOverlayId] = useState("");
+  const [analysisMode, setAnalysisMode] = useState<AnalysisMode>("geometry_dfm");
+  const [processOverrideMode, setProcessOverrideMode] = useState<ProcessOverrideMode>("profile");
+  const [forcedProcessId, setForcedProcessId] = useState("");
+  const [overlayOverrideMode, setOverlayOverrideMode] = useState<OverlayOverrideMode>("profile");
+  const [forcedOverlayId, setForcedOverlayId] = useState("");
   const [selectedRoleId, setSelectedRoleId] = useState("");
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [modelTemplates, setModelTemplates] = useState<DfmModelTemplate[]>([]);
   const [loadingModelTemplates, setLoadingModelTemplates] = useState(false);
   const [selectedAdvancedModel, setSelectedAdvancedModel] = useState("");
   const [runBothIfMismatch, setRunBothIfMismatch] = useState(true);
-  const [planResult, setPlanResult] = useState<DfmPlanResponse | null>(null);
   const [reviewV2Result, setReviewV2Result] = useState<DfmReviewV2Response | null>(null);
 
   const panelBindings = useMemo(() => {
@@ -269,6 +304,28 @@ const DfmReviewSidebar = ({
     return configured;
   }, [panelBindings]);
 
+  const primaryControlIds = useMemo(
+    () =>
+      flowOrder.filter((controlId) =>
+        [
+          "analysis_mode",
+          "manufacturing_process",
+          "industry_overlay",
+          "run_both_if_mismatch",
+          "generate_review",
+        ].includes(controlId)
+      ),
+    [flowOrder]
+  );
+
+  const secondaryControlIds = useMemo(
+    () =>
+      flowOrder.filter((controlId) =>
+        ["role_lens", "report_template", "advanced_llm_model"].includes(controlId)
+      ),
+    [flowOrder]
+  );
+
   const advancedModelOptions = useMemo(() => {
     const values = controlsById.get("advanced_llm_model")?.options;
     if (!Array.isArray(values)) return [];
@@ -283,18 +340,21 @@ const DfmReviewSidebar = ({
     return panelBindings?.cost_outputs?.label ?? "Should-cost (auto)";
   }, [panelBindings]);
 
+  const pilotOverlay = useMemo(() => {
+    return dfmConfig?.overlays.find((overlay) => overlay.overlay_id === PILOT_OVERLAY_ID) ?? null;
+  }, [dfmConfig]);
+
   const mismatchBanner = useMemo(() => {
-    if (!planResult?.mismatch?.has_mismatch) return null;
-    if (planResult.mismatch.banner) return planResult.mismatch.banner;
-    const user = planResult.mismatch.user_selected_process?.process_label;
-    const ai = planResult.mismatch.ai_process?.process_label;
+    if (!reviewV2Result?.mismatch?.has_mismatch) return null;
+    if (reviewV2Result.mismatch.banner) return reviewV2Result.mismatch.banner;
+    const user = reviewV2Result.mismatch.user_selected_process?.process_label;
+    const ai = reviewV2Result.mismatch.ai_process?.process_label;
     if (!user || !ai) return null;
     return `User selected ${user}, AI recommended ${ai}.`;
-  }, [planResult]);
+  }, [reviewV2Result]);
 
   useEffect(() => {
     setError(null);
-    setPlanResult(null);
     setReviewV2Result(null);
   }, [modelId, selectedComponent?.nodeName]);
 
@@ -371,66 +431,27 @@ const DfmReviewSidebar = ({
     const templateFallback = modelTemplates[0]?.template_id ?? "";
     setSelectedTemplateId((current) => current || templateFallback);
 
-    const processMode = controlsById.get("manufacturing_process")?.default_mode;
-    if (processMode === "auto") {
-      setSelectedProcessOverride((current) => current || "auto");
-    } else {
-      const firstProcess = dfmConfig.processes[0]?.process_id ?? "auto";
-      setSelectedProcessOverride((current) => current || firstProcess);
-    }
+    const firstProcess = dfmConfig.processes[0]?.process_id ?? "";
+    const firstOverlay = dfmConfig.overlays[0]?.overlay_id ?? "";
+    setForcedProcessId((current) => current || firstProcess);
+    setForcedOverlayId((current) => current || firstOverlay);
 
     const runBothDefault = controlsById.get("run_both_if_mismatch")?.default;
     if (typeof runBothDefault === "boolean") {
       setRunBothIfMismatch(runBothDefault);
+    }
+    const analysisModeDefault = controlsById.get("analysis_mode")?.default;
+    if (
+      typeof analysisModeDefault === "string" &&
+      (analysisModeDefault === "geometry_dfm" || analysisModeDefault === "drawing_spec" || analysisModeDefault === "full")
+    ) {
+      setAnalysisMode(analysisModeDefault as AnalysisMode);
     }
 
     if (!selectedAdvancedModel && advancedModelOptions.length) {
       setSelectedAdvancedModel(advancedModelOptions[0]);
     }
   }, [advancedModelOptions, controlsById, dfmConfig, modelTemplates, selectedAdvancedModel]);
-
-  const handlePaste = (event: ClipboardEvent<HTMLTextAreaElement>) => {
-    const files = event.clipboardData.files;
-    if (!files || files.length === 0) return;
-    const imageFile = Array.from(files).find((file) => file.type.startsWith("image/"));
-    if (!imageFile) return;
-    event.preventDefault();
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        setImageDataUrl(reader.result);
-      }
-    };
-    reader.readAsDataURL(imageFile);
-  };
-
-  const buildExtractedPartFacts = (): Record<string, unknown> => {
-    const facts: Record<string, unknown> = {};
-    const processLabel = selectedProfile?.manufacturingProcess?.toLowerCase() ?? "";
-
-    if (processLabel.includes("sheet")) {
-      facts.bends_present = true;
-      facts.constant_thickness = true;
-      facts.sheet_thickness = 2.0;
-    }
-    if (processLabel.includes("turn")) {
-      facts.rotational_symmetry = true;
-      facts.turned_faces_present = true;
-    }
-    if (processLabel.includes("weld")) {
-      facts.weld_symbols_detected = true;
-      facts.multi_part_joined = true;
-    }
-    if (processLabel.includes("cnc") || processLabel.includes("mill")) {
-      facts.pockets_present = true;
-      facts.threaded_holes_count = 2;
-      facts.feature_complexity_score = 1;
-    }
-    if (imageDataUrl) {
-      facts.manual_context = true;
-    }
-    return facts;
-  };
 
   const readErrorText = async (response: Response, fallback: string) => {
     try {
@@ -458,42 +479,36 @@ const DfmReviewSidebar = ({
     setSubmitting(true);
     setError(null);
     try {
-      const planningInputs = {
-        extracted_part_facts: buildExtractedPartFacts(),
-        selected_process_override:
-          selectedProcessOverride === "auto" ? null : selectedProcessOverride,
-        selected_overlay: selectedOverlayId || null,
-        selected_role: selectedRoleId,
-        selected_template: selectedTemplateId,
-        run_both_if_mismatch: runBothIfMismatch,
-      };
-
-      const planResponse = await fetch(`${apiBase}/api/models/${modelId}/dfm/plan`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(planningInputs),
-      });
-      if (!planResponse.ok) {
-        throw new Error(await readErrorText(planResponse, "Failed to create DFM plan"));
-      }
-      const planPayload = (await planResponse.json()) as DfmPlanResponse;
-      setPlanResult(planPayload);
-
       const contextPayload: Record<string, unknown> = {};
       if (selectedAdvancedModel) {
         contextPayload.advanced_llm_model = selectedAdvancedModel;
       }
-      if (imageDataUrl) {
-        contextPayload.manual_context = true;
-      }
+      const selectedOverlayId =
+        overlayOverrideMode === "force"
+          ? forcedOverlayId || null
+          : overlayOverrideMode === "pilot"
+          ? pilotOverlay?.overlay_id ?? null
+          : null;
+      const overlaySelectionMode = overlayOverrideMode === "profile" ? "profile" : "override";
+
+      const planningInputs = {
+        extracted_part_facts: {},
+        analysis_mode: analysisMode,
+        selected_process_override: processOverrideMode === "force" ? forcedProcessId || null : null,
+        selected_overlay: selectedOverlayId,
+        process_selection_mode: processOverrideMode === "force" ? "override" : processOverrideMode,
+        overlay_selection_mode: overlaySelectionMode,
+        selected_role: selectedRoleId,
+        selected_template: selectedTemplateId,
+        run_both_if_mismatch: runBothIfMismatch,
+      };
 
       const reviewResponse = await fetch(`${apiBase}/api/models/${modelId}/dfm/review-v2`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           component_node_name: selectedComponent.nodeName,
-          execution_plans: planPayload.execution_plans,
-          screenshot_data_url: imageDataUrl || null,
+          planning_inputs: planningInputs,
           context_payload: contextPayload,
         }),
       });
@@ -518,19 +533,47 @@ const DfmReviewSidebar = ({
     if (controlId === "manufacturing_process") {
       return (
         <label key={controlId} className="dfm-sidebar__field dfm-sidebar__flow-step">
-          <span>{label}</span>
-          <select
-            value={selectedProcessOverride}
-            onChange={(event) => setSelectedProcessOverride(event.target.value)}
-            disabled={loadingConfig || !dfmConfig.processes.length}
-          >
-            <option value="auto">Auto (AI recommendation)</option>
-            {dfmConfig.processes.map((process) => (
-              <option key={process.process_id} value={process.process_id}>
-                {process.label}
-              </option>
-            ))}
+          <span>Process override (optional)</span>
+          <select value={processOverrideMode} onChange={(event) => setProcessOverrideMode(event.target.value as ProcessOverrideMode)}>
+            <option value="profile">Use profile value</option>
+            <option value="auto">Auto from PartFacts/AI</option>
+            <option value="force">Force selection</option>
           </select>
+          {processOverrideMode === "force" ? (
+            <select
+              value={forcedProcessId}
+              onChange={(event) => setForcedProcessId(event.target.value)}
+              disabled={loadingConfig || !dfmConfig.processes.length}
+            >
+              {dfmConfig.processes.map((process) => (
+                <option key={process.process_id} value={process.process_id}>
+                  {process.label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <p className="dfm-sidebar__meta">Profile process: {selectedProfile?.manufacturingProcess || "-"}</p>
+          )}
+        </label>
+      );
+    }
+
+    if (controlId === "analysis_mode") {
+      return (
+        <label key={controlId} className="dfm-sidebar__field dfm-sidebar__flow-step">
+          <span>Analysis mode</span>
+          <select value={analysisMode} onChange={(event) => setAnalysisMode(event.target.value as AnalysisMode)}>
+            <option value="geometry_dfm">Geometry DFM (STEP-only)</option>
+            <option value="drawing_spec">Drawing/spec completeness</option>
+            <option value="full">Full</option>
+          </select>
+          <p className="dfm-sidebar__meta">
+            {analysisMode === "geometry_dfm"
+              ? "Designer-first mode. Excludes drawing-only checks."
+              : analysisMode === "drawing_spec"
+              ? "Documentation-focused mode. Highlights drawing/spec gaps."
+              : "Full mode. Includes geometry and documentation checks."}
+          </p>
         </label>
       );
     }
@@ -538,15 +581,30 @@ const DfmReviewSidebar = ({
     if (controlId === "industry_overlay") {
       return (
         <label key={controlId} className="dfm-sidebar__field dfm-sidebar__flow-step">
-          <span>{label}</span>
-          <select value={selectedOverlayId} onChange={(event) => setSelectedOverlayId(event.target.value)}>
-            <option value="">None</option>
-            {dfmConfig.overlays.map((overlay) => (
-              <option key={overlay.overlay_id} value={overlay.overlay_id}>
-                {overlay.label}
-              </option>
-            ))}
+          <span>Standards profile (optional)</span>
+          <select value={overlayOverrideMode} onChange={(event) => setOverlayOverrideMode(event.target.value as OverlayOverrideMode)}>
+            <option value="profile">Use profile industry mapping</option>
+            <option value="pilot" disabled={!pilotOverlay}>
+              Pilot standards set {pilotOverlay ? "" : "(not available)"}
+            </option>
+            <option value="force">Force selection</option>
           </select>
+          {overlayOverrideMode === "force" ? (
+            <select value={forcedOverlayId} onChange={(event) => setForcedOverlayId(event.target.value)}>
+              <option value="">None</option>
+              {dfmConfig.overlays.map((overlay) => (
+                <option key={overlay.overlay_id} value={overlay.overlay_id}>
+                  {overlay.label}
+                </option>
+              ))}
+            </select>
+          ) : overlayOverrideMode === "pilot" ? (
+            <p className="dfm-sidebar__meta">
+              Pilot standards: {pilotOverlay?.label ?? "Overlay not available in bundle"}
+            </p>
+          ) : (
+            <p className="dfm-sidebar__meta">Profile industry: {selectedProfile?.industry || "-"}</p>
+          )}
         </label>
       );
     }
@@ -642,11 +700,25 @@ const DfmReviewSidebar = ({
     return null;
   };
 
+  const renderFindingItem = (route: DfmReviewRoute, finding: DfmReviewFinding) => (
+    <li key={`${route.plan_id}-${finding.rule_id}-${finding.pack_id}-${finding.finding_type ?? "unknown"}`}>
+      <strong>{finding.rule_id}</strong> [{finding.severity}] {finding.title ?? "Untitled rule"}
+      {finding.refs.length ? <span> refs: {finding.refs.join(", ")}</span> : null}
+      {finding.recommended_action ? <div className="dfm-sidebar__finding-action">{finding.recommended_action}</div> : null}
+      {finding.expected_impact ? (
+        <div className="dfm-sidebar__finding-impact">
+          Impact: risk {finding.expected_impact.risk_reduction ?? "-"}, cost {finding.expected_impact.cost_impact ?? "-"},
+          lead-time {finding.expected_impact.lead_time_impact ?? "-"}.
+        </div>
+      ) : null}
+    </li>
+  );
+
   return (
     <aside className={`sidebar-panel sidebar-panel--right ${open ? "sidebar-panel--open" : ""}`}>
       <div className="dfm-sidebar">
         <div className="dfm-sidebar__header">
-          <h2>DFM Review v2</h2>
+          <h2>Simple DFM Review</h2>
           <button type="button" onClick={onClose} className="dfm-sidebar__close" aria-label="Close DFM template">
             x
           </button>
@@ -656,50 +728,91 @@ const DfmReviewSidebar = ({
           <span>Selected part</span>
           <div className="dfm-sidebar__readonly">{selectedComponent?.displayName ?? "No part selected"}</div>
         </div>
-        <div className="dfm-sidebar__field">
-          <span>Profile process</span>
-          <div className="dfm-sidebar__readonly">{selectedProfile?.manufacturingProcess || "-"}</div>
-        </div>
-        <div className="dfm-sidebar__field">
-          <span>Material</span>
-          <div className="dfm-sidebar__readonly">{selectedProfile?.material || "-"}</div>
-        </div>
-        <div className="dfm-sidebar__field">
-          <span>Industry</span>
-          <div className="dfm-sidebar__readonly">{selectedProfile?.industry || "-"}</div>
-        </div>
 
-        <label className="dfm-sidebar__field">
-          <span>Paste screenshot</span>
-          <textarea
-            className="dfm-sidebar__paste"
-            onPaste={handlePaste}
-            placeholder="Click here and paste image from clipboard (Ctrl/Cmd + V)."
-          />
-        </label>
-
-        {imageDataUrl ? <img src={imageDataUrl} alt="Pasted screenshot preview" className="dfm-sidebar__image-preview" /> : null}
+        <div className="dfm-sidebar__plan-summary">
+          <h3>Part context (from profile)</h3>
+          <p className="dfm-sidebar__meta">Manufacturing process: {selectedProfile?.manufacturingProcess || "-"}</p>
+          <p className="dfm-sidebar__meta">Material: {selectedProfile?.material || "-"}</p>
+          <p className="dfm-sidebar__meta">Industry: {selectedProfile?.industry || "-"}</p>
+        </div>
 
         <div className="dfm-sidebar__flow">
-          <h3>Flow order</h3>
+          <h3>Analysis controls</h3>
           <div className="dfm-sidebar__flow-controls">
-            {flowOrder.map((controlId) => renderFlowControl(controlId))}
+            {primaryControlIds.map((controlId) => renderFlowControl(controlId))}
           </div>
+          {secondaryControlIds.length ? (
+            <details className="dfm-sidebar__details">
+              <summary>Advanced report options</summary>
+              <div className="dfm-sidebar__flow-controls">
+                {secondaryControlIds.map((controlId) => renderFlowControl(controlId))}
+              </div>
+            </details>
+          ) : null}
         </div>
 
-        {planResult ? (
+        <div className="dfm-sidebar__plan-summary">
+          <h3>Effective analysis context</h3>
+          <p className="dfm-sidebar__meta">
+            Analysis mode:{" "}
+            {reviewV2Result?.effective_context?.analysis_mode
+              ? reviewV2Result.effective_context.analysis_mode.selected_mode
+              : analysisMode}{" "}
+            (source: {reviewV2Result?.effective_context?.analysis_mode?.source ?? "ui_selection"})
+          </p>
+          {reviewV2Result?.effective_context?.process ? (
+            <p className="dfm-sidebar__meta">
+              Process: {reviewV2Result.effective_context.process.effective_process_label || "Auto (AI recommendation)"}{" "}
+              (source: {reviewV2Result.effective_context.process.source})
+            </p>
+          ) : (
+            <p className="dfm-sidebar__meta">
+              Process:{" "}
+              {processOverrideMode === "force"
+                ? processLabelById(dfmConfig?.processes ?? [], forcedProcessId || null) || "None"
+                : processOverrideMode === "auto"
+                ? "Auto (AI recommendation)"
+                : "Profile value"}{" "}
+              (source: pending backend resolution)
+            </p>
+          )}
+          {reviewV2Result?.effective_context?.overlay ? (
+            <p className="dfm-sidebar__meta">
+              Rule overlay: {reviewV2Result.effective_context.overlay.effective_overlay_label || "None"} (source:{" "}
+              {reviewV2Result.effective_context.overlay.source})
+            </p>
+          ) : (
+            <p className="dfm-sidebar__meta">
+              Rule overlay:{" "}
+              {overlayOverrideMode === "force"
+                ? overlayLabelById(dfmConfig?.overlays ?? [], forcedOverlayId || null)
+                : overlayOverrideMode === "pilot"
+                ? overlayLabelById(dfmConfig?.overlays ?? [], pilotOverlay?.overlay_id ?? null)
+                : "Profile mapping"}{" "}
+              (source: pending backend resolution)
+            </p>
+          )}
+          <p className="dfm-sidebar__meta">Part facts: Auto-loaded from selected part</p>
+        </div>
+
+        {reviewV2Result ? (
           <div className="dfm-sidebar__plan-summary">
             <h3>Plan summary</h3>
             <p className="dfm-sidebar__meta">
-              AI recommendation: {planResult.ai_recommendation.process_label} ({planResult.ai_recommendation.confidence_level},{" "}
-              {planResult.ai_recommendation.confidence.toFixed(2)})
+              AI recommendation:{" "}
+              {reviewV2Result.ai_recommendation
+                ? `${reviewV2Result.ai_recommendation.process_label} (${reviewV2Result.ai_recommendation.confidence_level}, ${reviewV2Result.ai_recommendation.confidence.toFixed(2)})`
+                : "Not available"}
             </p>
             <p className="dfm-sidebar__meta">
-              Selected packs: {planResult.selected_packs.length ? planResult.selected_packs.join(", ") : "None"}
+              Selected packs:{" "}
+              {reviewV2Result.routes[0]?.pack_ids?.length
+                ? reviewV2Result.routes[0].pack_ids.join(", ")
+                : "None"}
             </p>
             <p className="dfm-sidebar__meta">
-              Route count: {planResult.execution_plans.length}{" "}
-              {planResult.mismatch.run_both_executed ? "(run-both)" : ""}
+              Route count: {reviewV2Result.route_count}{" "}
+              {reviewV2Result.mismatch.run_both_executed ? "(run-both)" : ""}
             </p>
           </div>
         ) : null}
@@ -711,49 +824,54 @@ const DfmReviewSidebar = ({
             <div className="dfm-sidebar__standards">
               <h3>{standardsLabel}</h3>
               <p className="dfm-sidebar__hint">Read-only. Derived from findings references only.</p>
-              {reviewV2Result.standards_used_auto_union.length ? (
-                <ul className="dfm-sidebar__standards-list">
-                  {reviewV2Result.standards_used_auto_union.map((standard) => (
-                    <li key={standard.ref_id}>
-                      <strong>{standard.ref_id}</strong>
-                      {standard.url ? (
-                        <a href={standard.url} target="_blank" rel="noreferrer">
-                          {standard.title ?? standard.ref_id}
-                        </a>
-                      ) : (
-                        <span>{standard.title ?? standard.ref_id}</span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="dfm-sidebar__hint">No standards fired from current findings.</p>
-              )}
+              <details className="dfm-sidebar__standards-toggle">
+                <summary>Standards list ({reviewV2Result.standards_used_auto_union.length})</summary>
+                {reviewV2Result.standards_used_auto_union.length ? (
+                  <ul className="dfm-sidebar__standards-list">
+                    {reviewV2Result.standards_used_auto_union.map((standard) => (
+                      <li key={standard.ref_id}>
+                        <strong>{standard.ref_id}</strong>
+                        {standard.url ? (
+                          <a href={standard.url} target="_blank" rel="noreferrer">
+                            {standard.title ?? standard.ref_id}
+                          </a>
+                        ) : (
+                          <span>{standard.title ?? standard.ref_id}</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="dfm-sidebar__hint">No standards fired from current findings.</p>
+                )}
+              </details>
             </div>
 
             <div className="dfm-sidebar__cost">
-              <h3>{costLabel}</h3>
-              <p className="dfm-sidebar__hint">Read-only. System-derived should-cost estimate.</p>
-              {reviewV2Result.cost_estimate ? (
-                <>
-                  <p className="dfm-sidebar__meta">
-                    Unit: {reviewV2Result.cost_estimate.currency} {reviewV2Result.cost_estimate.unit_cost.toFixed(2)} | Total:{" "}
-                    {reviewV2Result.cost_estimate.currency} {reviewV2Result.cost_estimate.total_cost.toFixed(2)}
+              <details className="dfm-sidebar__cost-toggle">
+                <summary>{costLabel}</summary>
+                <p className="dfm-sidebar__hint">Read-only. System-derived should-cost estimate.</p>
+                {reviewV2Result.cost_estimate ? (
+                  <>
+                    <p className="dfm-sidebar__meta">
+                      Unit: {reviewV2Result.cost_estimate.currency} {reviewV2Result.cost_estimate.unit_cost.toFixed(2)} | Total:{" "}
+                      {reviewV2Result.cost_estimate.currency} {reviewV2Result.cost_estimate.total_cost.toFixed(2)}
+                    </p>
+                    <p className="dfm-sidebar__meta">
+                      Confidence: {reviewV2Result.cost_estimate.confidence_level} ({reviewV2Result.cost_estimate.confidence.toFixed(2)})
+                    </p>
+                  </>
+                ) : (
+                  <p className="dfm-sidebar__hint">Cost estimation is disabled.</p>
+                )}
+                {reviewV2Result.cost_compare_routes ? (
+                  <p className="dfm-sidebar__cost-delta">
+                    Route delta: {reviewV2Result.cost_compare_routes.currency}{" "}
+                    {reviewV2Result.cost_compare_routes.unit_cost_delta.toFixed(2)} per unit (
+                    {reviewV2Result.cost_compare_routes.unit_cost_delta_percent.toFixed(2)}%).
                   </p>
-                  <p className="dfm-sidebar__meta">
-                    Confidence: {reviewV2Result.cost_estimate.confidence_level} ({reviewV2Result.cost_estimate.confidence.toFixed(2)})
-                  </p>
-                </>
-              ) : (
-                <p className="dfm-sidebar__hint">Cost estimation is disabled.</p>
-              )}
-              {reviewV2Result.cost_compare_routes ? (
-                <p className="dfm-sidebar__cost-delta">
-                  Route delta: {reviewV2Result.cost_compare_routes.currency}{" "}
-                  {reviewV2Result.cost_compare_routes.unit_cost_delta.toFixed(2)} per unit (
-                  {reviewV2Result.cost_compare_routes.unit_cost_delta_percent.toFixed(2)}%).
-                </p>
-              ) : null}
+                ) : null}
+              </details>
             </div>
 
             <div className="dfm-sidebar__report">
@@ -761,36 +879,57 @@ const DfmReviewSidebar = ({
               <p className="dfm-sidebar__meta">
                 Routes: {reviewV2Result.route_count} | Findings: {reviewV2Result.finding_count_total}
               </p>
-              {reviewV2Result.routes.map((route) => (
-                <article key={`${route.plan_id}-${route.process_id}`} className="dfm-sidebar__route">
-                  <header className="dfm-sidebar__route-header">
-                    <strong>{route.process_label}</strong>
-                    <span>{route.finding_count} findings</span>
-                  </header>
-                  <p className="dfm-sidebar__meta">
-                    Packs:{" "}
-                    {route.pack_labels.filter((label): label is string => Boolean(label)).join(", ") || route.pack_ids.join(", ")}
-                  </p>
-                  {route.cost_estimate ? (
+              {reviewV2Result.routes.map((route) => {
+                const designRiskFindings = route.findings.filter((finding) => finding.finding_type === "rule_violation");
+                const evidenceGapFindings = route.findings.filter((finding) => finding.finding_type !== "rule_violation");
+                return (
+                  <article key={`${route.plan_id}-${route.process_id}`} className="dfm-sidebar__route">
+                    <header className="dfm-sidebar__route-header">
+                      <strong>{route.process_label}</strong>
+                      <span>{route.finding_count} findings</span>
+                    </header>
                     <p className="dfm-sidebar__meta">
-                      Cost: {route.cost_estimate.currency} {route.cost_estimate.unit_cost.toFixed(2)} / unit (
-                      {route.cost_estimate.confidence_level})
+                      Packs:{" "}
+                      {route.pack_labels.filter((label): label is string => Boolean(label)).join(", ") || route.pack_ids.join(", ")}
                     </p>
-                  ) : null}
-                  {route.findings.length ? (
-                    <ul className="dfm-sidebar__findings">
-                      {route.findings.slice(0, 20).map((finding) => (
-                        <li key={`${route.plan_id}-${finding.rule_id}`}>
-                          <strong>{finding.rule_id}</strong> [{finding.severity}] {finding.title ?? "Untitled rule"}
-                          {finding.refs.length ? <span> refs: {finding.refs.join(", ")}</span> : null}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="dfm-sidebar__hint">No findings for this route.</p>
-                  )}
-                </article>
-              ))}
+                    <p className="dfm-sidebar__meta">
+                      Design risks: {designRiskFindings.length} | Drawing/spec evidence gaps: {evidenceGapFindings.length}
+                    </p>
+                    {route.cost_estimate ? (
+                      <p className="dfm-sidebar__meta">
+                        Cost: {route.cost_estimate.currency} {route.cost_estimate.unit_cost.toFixed(2)} / unit (
+                        {route.cost_estimate.confidence_level})
+                      </p>
+                    ) : null}
+                    {route.findings.length ? (
+                      <div className="dfm-sidebar__findings-groups">
+                        <details className="dfm-sidebar__finding-group" open={designRiskFindings.length > 0}>
+                          <summary>Design risks ({designRiskFindings.length})</summary>
+                          {designRiskFindings.length ? (
+                            <ul className="dfm-sidebar__findings">
+                              {designRiskFindings.slice(0, 20).map((finding) => renderFindingItem(route, finding))}
+                            </ul>
+                          ) : (
+                            <p className="dfm-sidebar__hint">No design risk findings in this route.</p>
+                          )}
+                        </details>
+                        <details className="dfm-sidebar__finding-group">
+                          <summary>Drawing/spec evidence gaps ({evidenceGapFindings.length})</summary>
+                          {evidenceGapFindings.length ? (
+                            <ul className="dfm-sidebar__findings">
+                              {evidenceGapFindings.slice(0, 20).map((finding) => renderFindingItem(route, finding))}
+                            </ul>
+                          ) : (
+                            <p className="dfm-sidebar__hint">No evidence gaps in this route.</p>
+                          )}
+                        </details>
+                      </div>
+                    ) : (
+                      <p className="dfm-sidebar__hint">No findings for this route.</p>
+                    )}
+                  </article>
+                );
+              })}
             </div>
           </>
         ) : null}

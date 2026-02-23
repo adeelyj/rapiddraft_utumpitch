@@ -45,9 +45,18 @@ def test_dfm_config_has_expected_ui_flow_order():
     review_panel = payload["ui_bindings"]["screens"]["dfm_review_panel"]
     flow_order = review_panel["flow_order"]
     assert isinstance(flow_order, list) and flow_order
-    assert flow_order[0] == "manufacturing_process"
+    assert flow_order[0] == "analysis_mode"
+    assert "manufacturing_process" in flow_order
     assert "run_both_if_mismatch" in flow_order
     assert flow_order[-1] == "generate_review"
+
+    controls = review_panel["controls"]
+    analysis_control = next(
+        (control for control in controls if control.get("control_id") == "analysis_mode"),
+        None,
+    )
+    assert analysis_control is not None
+    assert analysis_control.get("default") == "geometry_dfm"
 
 
 def test_dfm_primary_routes_present_and_legacy_routes_removed():
@@ -62,3 +71,8 @@ def test_dfm_primary_routes_present_and_legacy_routes_removed():
     assert '@app.post("/api/models/{model_id}/dfm/review")' not in main_source
     assert '@app.post("/api/dfm/review")' not in main_source
     assert "dfm_profile_options.json" not in main_source
+    assert "from .dfm_review import" not in main_source
+
+
+def test_legacy_dfm_module_is_removed():
+    assert not (REPO_ROOT / "server" / "dfm_review.py").exists()

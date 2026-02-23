@@ -3,6 +3,7 @@
   "screens": {
     "dfm_review_panel": {
       "flow_order": [
+        "analysis_mode",
         "manufacturing_process",
         "industry_overlay",
         "role_lens",
@@ -12,6 +13,18 @@
         "generate_review"
       ],
       "controls": [
+        {
+          "control_id": "analysis_mode",
+          "label": "Analysis mode",
+          "type": "select",
+          "required": true,
+          "default": "geometry_dfm",
+          "options": [
+            "geometry_dfm",
+            "drawing_spec",
+            "full"
+          ]
+        },
         {
           "control_id": "manufacturing_process",
           "label": "Manufacturing process",

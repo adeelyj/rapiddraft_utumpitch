@@ -16,6 +16,8 @@ from .cad_service import CADProcessingError, CADService
 from .cad_service_occ import CADServiceOCC
 from .cnc_analysis import CncAnalysisError, CncAnalysisService, CncReportNotFoundError
 from .dfm_bundle import DfmBundleValidationError, load_dfm_bundle
+from .dfm_effective_context import resolve_effective_planning_inputs
+from .dfm_part_facts_bridge import build_extracted_facts_from_part_facts
 from .dfm_planning import (
     DfmPlanningError,
     build_component_profile_options,
@@ -30,6 +32,7 @@ from .dfm_template_store import (
     DfmTemplateStoreError,
 )
 from .model_store import ModelStore
+from .part_facts import PartFactsError, PartFactsService
 from .review_store import ReviewStore
 from .vision_analysis import (
     VisionAnalysisError,
@@ -75,6 +78,7 @@ try:
 except DfmBundleValidationError as exc:
     raise RuntimeError(f"DFM bundle validation failed during startup: {exc}") from exc
 
+part_facts_service = PartFactsService(root=MODELS_DIR, bundle=DFM_BUNDLE)
 dfm_template_store = DfmTemplateStore(root=MODELS_DIR, bundle=DFM_BUNDLE)
 
 
@@ -133,6 +137,7 @@ class ComponentProfileBody(BaseModel):
 
 class DfmPlanBody(BaseModel):
     extracted_part_facts: dict[str, object] = Field(default_factory=dict)
+    analysis_mode: str | None = None
     selected_process_override: str | None = None
     selected_overlay: str | None = None
     selected_role: str
@@ -194,6 +199,8 @@ class VisionCriteriaBody(BaseModel):
 class VisionProviderBody(BaseModel):
     route: str = "openai"
     model_override: str | None = None
+    base_url_override: str | None = None
+    api_key_override: str | None = None
     local_base_url: str | None = None
 
 
@@ -201,9 +208,16 @@ class CreateVisionViewSetBody(BaseModel):
     component_node_name: str | None = None
 
 
+class VisionPastedImageBody(BaseModel):
+    name: str | None = None
+    data_url: str
+
+
 class CreateVisionReportBody(BaseModel):
     component_node_name: str | None = None
     view_set_id: str
+    selected_view_names: list[str] | None = None
+    pasted_images: list[VisionPastedImageBody] = Field(default_factory=list)
     criteria: VisionCriteriaBody | None = None
     provider: VisionProviderBody = Field(default_factory=VisionProviderBody)
 
@@ -253,6 +267,7 @@ async def create_dfm_plan(body: DfmPlanBody):
         return plan_dfm_execution(
             DFM_BUNDLE,
             extracted_part_facts=body.extracted_part_facts,
+            analysis_mode=body.analysis_mode,
             selected_process_override=body.selected_process_override,
             selected_overlay=body.selected_overlay,
             selected_role=body.selected_role,
@@ -301,6 +316,7 @@ async def create_model_dfm_plan(model_id: str, body: DfmPlanBody):
         return plan_dfm_execution_with_template_catalog(
             DFM_BUNDLE,
             extracted_part_facts=body.extracted_part_facts,
+            analysis_mode=body.analysis_mode,
             selected_process_override=body.selected_process_override,
             selected_overlay=body.selected_overlay,
             selected_role=body.selected_role,
@@ -351,6 +367,56 @@ async def upsert_component_profile(model_id: str, node_name: str, body: Componen
     return {"nodeName": node_name, "profile": metadata.component_profiles[node_name]}
 
 
+@app.get("/api/models/{model_id}/components/{node_name}/part-facts")
+async def get_component_part_facts(model_id: str, node_name: str):
+    metadata = model_store.get(model_id)
+    if not metadata:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    component = _get_component_entry(metadata, node_name)
+    if not component:
+        raise HTTPException(status_code=400, detail="Unknown component node_name")
+
+    try:
+        return part_facts_service.get_or_create(
+            model_id=model_id,
+            step_path=metadata.step_path,
+            component_node_name=node_name,
+            component_display_name=str(component.get("displayName") or node_name),
+            component_profile=metadata.component_profiles.get(node_name, {}),
+            triangle_count=component.get("triangleCount"),
+            assembly_component_count=len(metadata.components),
+            force_refresh=False,
+        )
+    except PartFactsError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/models/{model_id}/components/{node_name}/part-facts/refresh")
+async def refresh_component_part_facts(model_id: str, node_name: str):
+    metadata = model_store.get(model_id)
+    if not metadata:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    component = _get_component_entry(metadata, node_name)
+    if not component:
+        raise HTTPException(status_code=400, detail="Unknown component node_name")
+
+    try:
+        return part_facts_service.get_or_create(
+            model_id=model_id,
+            step_path=metadata.step_path,
+            component_node_name=node_name,
+            component_display_name=str(component.get("displayName") or node_name),
+            component_profile=metadata.component_profiles.get(node_name, {}),
+            triangle_count=component.get("triangleCount"),
+            assembly_component_count=len(metadata.components),
+            force_refresh=True,
+        )
+    except PartFactsError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
 @app.post("/api/models/{model_id}/dfm/review-v2")
 async def create_component_dfm_review_v2(model_id: str, body: DfmReviewV2Body):
     metadata = model_store.get(model_id)
@@ -381,7 +447,39 @@ async def create_component_dfm_review_v2(model_id: str, body: DfmReviewV2Body):
         "triangle_count": (component or {}).get("triangleCount") if component else None,
     }
 
+    context_payload = dict(body.context_payload or {})
     planning_inputs = body.planning_inputs.dict() if body.planning_inputs else None
+    effective_context = None
+    if planning_inputs:
+        planning_inputs, effective_context = resolve_effective_planning_inputs(
+            DFM_BUNDLE,
+            planning_inputs=planning_inputs,
+            component_profile=component_profile,
+        )
+    if planning_inputs and component_node_name:
+        extracted_facts = planning_inputs.get("extracted_part_facts")
+        if not isinstance(extracted_facts, dict) or not extracted_facts:
+            try:
+                part_facts_payload = part_facts_service.get_or_create(
+                    model_id=model_id,
+                    step_path=metadata.step_path,
+                    component_node_name=component_node_name,
+                    component_display_name=str(component_display_name),
+                    component_profile=component_profile,
+                    triangle_count=(component or {}).get("triangleCount") if component else None,
+                    assembly_component_count=len(metadata.components),
+                    force_refresh=False,
+                )
+            except PartFactsError as exc:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Failed to resolve part facts for DFM review: {exc}",
+                )
+            planning_inputs["extracted_part_facts"] = build_extracted_facts_from_part_facts(
+                part_facts_payload=part_facts_payload,
+                component_profile=component_profile,
+                context_payload=context_payload,
+            )
     execution_plans = (
         [plan.dict() for plan in body.execution_plans]
         if body.execution_plans
@@ -395,8 +493,8 @@ async def create_component_dfm_review_v2(model_id: str, body: DfmReviewV2Body):
             planning_inputs=planning_inputs,
             execution_plans=execution_plans,
             selected_execution_plan_id=body.selected_execution_plan_id,
-            screenshot_data_url=body.screenshot_data_url,
-            context_payload=body.context_payload,
+            context_payload=context_payload,
+            effective_context=effective_context,
             cost_enabled=DFM_COST_ENABLED,
         )
     except (DfmReviewV2Error, DfmPlanningError) as exc:
@@ -529,6 +627,8 @@ async def create_vision_report(model_id: str, body: CreateVisionReportBody):
             model_id=model_id,
             component_node_name=body.component_node_name,
             view_set_id=body.view_set_id.strip(),
+            selected_view_names=body.selected_view_names,
+            pasted_images_payload=[image.dict() for image in body.pasted_images],
             criteria_payload=body.criteria.dict() if body.criteria else None,
             provider_payload=body.provider.dict(),
         )
