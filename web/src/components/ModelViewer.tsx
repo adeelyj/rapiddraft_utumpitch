@@ -1,9 +1,10 @@
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { Center, Environment, GizmoHelper, GizmoViewport, OrbitControls } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { Box3, Object3D, Vector2, Vector3 } from "three";
 import ReviewPins from "./ReviewPins";
+import type { AnalysisFocusPayload } from "../types/analysis";
 import type { PinPosition, PinnedItem } from "../types/review";
 import type { PartFactMetric, PartFactsResponse } from "../types/partFacts";
 
@@ -74,6 +75,8 @@ type ModelViewerProps = {
     screenX: number;
     screenY: number;
   }) => void;
+  analysisFocus?: AnalysisFocusPayload | null;
+  onClearAnalysisFocus?: () => void;
 };
 
 const joinApiUrl = (base: string, path: string): string => {
@@ -81,6 +84,14 @@ const joinApiUrl = (base: string, path: string): string => {
   if (!normalizedBase) return path;
   if (path.startsWith("http")) return path;
   return `${normalizedBase}${path}`;
+};
+
+const analysisTone = (severity: string | undefined): "critical" | "warning" | "caution" | "info" => {
+  const value = String(severity || "").trim().toLowerCase();
+  if (value === "critical" || value === "major") return "critical";
+  if (value === "warning") return "warning";
+  if (value === "caution" || value === "minor") return "caution";
+  return "info";
 };
 
 const metricStateClass = (state: string): string => {
@@ -151,6 +162,7 @@ const ModelContents = ({
   showReviewCards,
   components,
   componentVisibility,
+  analysisFocus,
 }: {
   previewUrl: string;
   fitTrigger: number;
@@ -163,12 +175,14 @@ const ModelContents = ({
   showReviewCards: boolean;
   components: ModelComponent[];
   componentVisibility: Record<string, boolean>;
+  analysisFocus?: AnalysisFocusPayload | null;
 }) => {
   const gltf = useLoader(GLTFLoader, previewUrl);
   const camera = useThree((state) => state.camera);
   const raycaster = useThree((state) => state.raycaster);
   const gl = useThree((state) => state.gl);
   const controls = useThree((state) => state.controls) as { target: Vector3; update: () => void; enabled: boolean } | null;
+  const [analysisMarkerExpanded, setAnalysisMarkerExpanded] = useState(true);
   const flyRef = useRef<{
     startPos: Vector3;
     startTarget: Vector3;
@@ -177,6 +191,11 @@ const ModelContents = ({
     startTime: number;
     duration: number;
   } | null>(null);
+
+  useEffect(() => {
+    if (!analysisFocus) return;
+    setAnalysisMarkerExpanded(true);
+  }, [analysisFocus?.id]);
 
   useEffect(() => {
     if (pinMode === "none" || (!onCommentPin && !onReviewPin)) {
@@ -271,6 +290,34 @@ const ModelContents = ({
     }
   });
 
+  const analysisMarker = useMemo(() => {
+    if (!analysisFocus) return null;
+    const requestedNode = analysisFocus.component_node_name || null;
+    const fallbackNode = components[0]?.nodeName ?? null;
+    const targetNodeName = requestedNode || fallbackNode;
+    const targetObject = targetNodeName ? gltf.scene.getObjectByName(targetNodeName) : null;
+    const boundsTarget = targetObject || gltf.scene;
+    const bounds = new Box3().setFromObject(boundsTarget);
+    if (!Number.isFinite(bounds.max.x) || !Number.isFinite(bounds.min.x)) {
+      return null;
+    }
+    const center = bounds.getCenter(new Vector3());
+    const extents = bounds.getSize(new Vector3());
+    const extent = Math.max(extents.length(), 1);
+    const offsetDirection = camera.position.clone().sub(center);
+    if (offsetDirection.lengthSq() < 1e-6) {
+      offsetDirection.set(0, 1, 0);
+    }
+    offsetDirection.normalize();
+    const markerPosition = center.clone().add(offsetDirection.multiplyScalar(Math.max(0.035 * extent, 0.09)));
+
+    return {
+      position: [markerPosition.x, markerPosition.y, markerPosition.z] as [number, number, number],
+      lineEnd: [center.x, center.y, center.z] as [number, number, number],
+      tone: analysisTone(analysisFocus.severity),
+    };
+  }, [analysisFocus, camera, components, gltf.scene]);
+
   return (
     <>
       <FitCamera object={gltf.scene} trigger={fitTrigger} />
@@ -285,6 +332,29 @@ const ModelContents = ({
         onSelect={onSelectTicket}
         showCards={showReviewCards}
       />
+      {analysisFocus && analysisMarker ? (
+        <group key={`analysis-focus-${analysisFocus.id}`}>
+          <Line points={[analysisMarker.position, analysisMarker.lineEnd]} color="#ef651a" lineWidth={1.2} />
+          <Html position={analysisMarker.position} center>
+            <div className={`analysis-pin analysis-pin--${analysisMarker.tone}`}>
+              <button
+                className="analysis-pin__dot"
+                onClick={() => setAnalysisMarkerExpanded((prev) => !prev)}
+                aria-label={`Focus marker: ${analysisFocus.title}`}
+              />
+              {analysisMarkerExpanded ? (
+                <div className="analysis-pin-card">
+                  <div className="analysis-pin-card__title">{analysisFocus.title}</div>
+                  <div className="analysis-pin-card__meta">
+                    <span>{analysisFocus.source.toUpperCase()}</span>
+                    <span>{analysisMarker.tone}</span>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </Html>
+        </group>
+      ) : null}
     </>
   );
 };
@@ -318,6 +388,8 @@ const ModelViewer = ({
   showReviewCards = true,
   onCommentPin,
   onReviewPin,
+  analysisFocus = null,
+  onClearAnalysisFocus = () => undefined,
 }: ModelViewerProps) => {
   const overlayMessage = message ?? (previewUrl ? "Loading preview..." : "Import a STEP file to begin.");
   const selectedComponent =
@@ -398,6 +470,7 @@ const ModelViewer = ({
                 showReviewCards={showReviewCards}
                 components={components}
                 componentVisibility={componentVisibility}
+                analysisFocus={analysisFocus}
               />
             </Suspense>
             <Environment preset="city" />
@@ -411,6 +484,18 @@ const ModelViewer = ({
         <Placeholder />
       )}
       <div className="viewer-overlay">{overlayMessage}</div>
+      {previewUrl && analysisFocus ? (
+        <div className={`analysis-focus-overlay analysis-focus-overlay--${analysisTone(analysisFocus.severity)}`}>
+          <div className="analysis-focus-overlay__header">
+            <span className="analysis-focus-overlay__source">{analysisFocus.source.toUpperCase()} finding</span>
+            <button type="button" onClick={onClearAnalysisFocus}>
+              Clear
+            </button>
+          </div>
+          <p className="analysis-focus-overlay__title">{analysisFocus.title}</p>
+          {analysisFocus.details ? <p className="analysis-focus-overlay__details">{analysisFocus.details}</p> : null}
+        </div>
+      ) : null}
       {previewUrl && components.length > 0 && (
         <div className="viewer-left-panels">
           <section className="assembly-tree" aria-label="Assembly tree">

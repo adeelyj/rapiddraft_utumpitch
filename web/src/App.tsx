@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Toolbar from "./components/Toolbar";
 import ModelViewer from "./components/ModelViewer";
-import ViewsPanel from "./components/ViewsPanel";
+import ViewsPanel, {
+  type VisionPastedScreenshotSlot,
+  type VisionSelectableView,
+} from "./components/ViewsPanel";
 import DrawingPage from "./components/DrawingPage";
 import CommentForm, { CreateTicketPayload } from "./components/CommentForm";
 import ReviewPanel from "./components/ReviewPanel";
@@ -11,6 +14,7 @@ import ReportTemplateBuilderSidebar from "./components/ReportTemplateBuilderSide
 import CncAnalysisSidebar from "./components/CncAnalysisSidebar";
 import VisionAnalysisSidebar from "./components/VisionAnalysisSidebar";
 import FusionAnalysisSidebar from "./components/FusionAnalysisSidebar";
+import type { AnalysisFocusPayload } from "./types/analysis";
 import type {
   ChecklistTemplate,
   DesignReviewSession,
@@ -70,6 +74,12 @@ export type Dimension = {
   units?: string;
   scale?: number;
   label?: string;
+};
+
+type VisionInputSource = {
+  id: string;
+  label: string;
+  src: string;
 };
 
 const resolveApiBase = (): string => {
@@ -225,6 +235,10 @@ const App = () => {
   const [rightOpen, setRightOpen] = useState(false);
   const [rightTab, setRightTab] = useState<"dfm" | "rep" | "cnc" | "vision" | "fusion" | null>(null);
   const [pinMode, setPinMode] = useState<"none" | "comment" | "review">("none");
+  const [visionViewCatalog, setVisionViewCatalog] = useState<VisionSelectableView[]>([]);
+  const [visionViewSelection, setVisionViewSelection] = useState<Record<string, boolean>>({});
+  const [visionPastedScreenshots, setVisionPastedScreenshots] = useState<VisionPastedScreenshotSlot[]>([]);
+  const [analysisFocus, setAnalysisFocus] = useState<AnalysisFocusPayload | null>(null);
 
   const previewUrl = useMemo(() => {
     if (!model) return null;
@@ -330,6 +344,24 @@ const App = () => {
     const industry = profileOptions.industries.find((item) => item.label === selectedComponentProfile.industry);
     return industry?.standards ?? [];
   }, [profileOptions, selectedComponentProfile]);
+
+  const visionSelectedInputSources = useMemo<VisionInputSource[]>(() => {
+    const selectedViews = visionViewCatalog
+      .filter((view) => Boolean(visionViewSelection[view.id]))
+      .map((view) => ({
+        id: view.id,
+        label: view.label,
+        src: view.src,
+      }));
+    const selectedScreenshots = visionPastedScreenshots
+      .filter((slot) => slot.selected && typeof slot.dataUrl === "string" && slot.dataUrl.length > 0)
+      .map((slot) => ({
+        id: `pasted:${slot.id}`,
+        label: slot.label,
+        src: slot.dataUrl as string,
+      }));
+    return [...selectedViews, ...selectedScreenshots];
+  }, [visionPastedScreenshots, visionViewCatalog, visionViewSelection]);
 
   const isSelectedProfileComplete = Boolean(
     selectedComponentProfile?.material && selectedComponentProfile?.manufacturingProcess && selectedComponentProfile?.industry
@@ -734,6 +766,9 @@ const App = () => {
       setIsometricShape2DMetadata({});
       setIsometricMatplotlibViews({});
       setIsometricMatplotlibMetadata({});
+      setVisionViewCatalog([]);
+      setVisionViewSelection({});
+      setVisionPastedScreenshots([]);
       const successMsg = `Loaded ${payload.originalName}`;
       setStatusMessage(successMsg);
       setLogMessage(successMsg);
@@ -1016,6 +1051,10 @@ const App = () => {
       setComponentProfiles({});
       setProfileSavingByNode({});
       setProfileError(null);
+      setVisionViewCatalog([]);
+      setVisionViewSelection({});
+      setVisionPastedScreenshots([]);
+      setAnalysisFocus(null);
       return;
     }
     fetchTickets(model.id);
@@ -1032,6 +1071,26 @@ const App = () => {
       // ignore persistence errors
     }
   }, [drawingZones, dimensions, isDrawingOpen]);
+
+  useEffect(() => {
+    const validIds = new Set(visionViewCatalog.map((item) => item.id));
+    setVisionViewSelection((current) => {
+      let changed = false;
+      const next: Record<string, boolean> = {};
+      Object.entries(current).forEach(([id, selected]) => {
+        if (!selected) return;
+        if (!validIds.has(id)) {
+          changed = true;
+          return;
+        }
+        next[id] = true;
+      });
+      if (!changed && Object.keys(next).length === Object.keys(current).length) {
+        return current;
+      }
+      return next;
+    });
+  }, [visionViewCatalog]);
 
   useEffect(() => {
     if (!components.length) {
@@ -1093,6 +1152,71 @@ const App = () => {
     setRightTab(tab);
   };
 
+  const addVisionPastedScreenshotSlot = () => {
+    setVisionPastedScreenshots((current) => {
+      const id =
+        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : `vision_shot_${Date.now()}_${current.length + 1}`;
+      return [
+        ...current,
+        {
+          id,
+          label: `Screenshot ${current.length + 1}`,
+          dataUrl: null,
+          selected: false,
+        },
+      ];
+    });
+  };
+
+  const updateVisionPastedScreenshot = (slotId: string, dataUrl: string, label: string) => {
+    setVisionPastedScreenshots((current) =>
+      current.map((slot) =>
+        slot.id === slotId
+          ? {
+              ...slot,
+              label: label && label.trim() ? label.trim() : slot.label,
+              dataUrl,
+              selected: true,
+            }
+          : slot,
+      ),
+    );
+  };
+
+  const toggleVisionPastedScreenshot = (slotId: string, selected: boolean) => {
+    setVisionPastedScreenshots((current) =>
+      current.map((slot) =>
+        slot.id === slotId
+          ? {
+              ...slot,
+              selected,
+            }
+          : slot,
+      ),
+    );
+  };
+
+  const removeVisionPastedScreenshot = (slotId: string) => {
+    setVisionPastedScreenshots((current) => current.filter((slot) => slot.id !== slotId));
+  };
+
+  const toggleVisionViewSelection = (source: VisionSelectableView, selected: boolean) => {
+    setVisionViewSelection((current) => {
+      if (selected) {
+        return {
+          ...current,
+          [source.id]: true,
+        };
+      }
+      if (!current[source.id]) return current;
+      const next = { ...current };
+      delete next[source.id];
+      return next;
+    });
+  };
+
   const handleToggleComponent = (nodeName: string) => {
     setComponentVisibility((prev) => ({
       ...prev,
@@ -1111,6 +1235,14 @@ const App = () => {
   const handleSelectComponent = (nodeName: string) => {
     setSelectedComponentNodeName(nodeName);
     setProfileError(null);
+  };
+
+  const handleFocusInModel = (payload: AnalysisFocusPayload) => {
+    setAnalysisFocus(payload);
+    if (payload.component_node_name) {
+      setSelectedComponentNodeName(payload.component_node_name);
+    }
+    setFitTrigger((prev) => prev + 1);
   };
 
   const handleChangeComponentProfile = async (field: keyof ComponentProfile, value: string) => {
@@ -1357,6 +1489,14 @@ const App = () => {
               onGenerateIsometricViews={generateIsometricViews}
               canGenerate={Boolean(model)}
               busyAction={busyAction}
+              visionViewSelection={visionViewSelection}
+              onVisionViewCatalogChange={setVisionViewCatalog}
+              onToggleVisionViewSelection={toggleVisionViewSelection}
+              visionPastedScreenshots={visionPastedScreenshots}
+              onAddVisionPastedScreenshotSlot={addVisionPastedScreenshotSlot}
+              onUpdateVisionPastedScreenshot={updateVisionPastedScreenshot}
+              onToggleVisionPastedScreenshot={toggleVisionPastedScreenshot}
+              onRemoveVisionPastedScreenshot={removeVisionPastedScreenshot}
             />
           ) : (
             <ReviewPanel
@@ -1428,7 +1568,9 @@ const App = () => {
                 pinMode={pinMode}
                 onCommentPin={handleCommentPin}
                 onReviewPin={handleReviewPin}
-              showReviewCards={leftOpen && pinMode === "none" && (leftTab === "reviews" || leftTab === "com")}
+                showReviewCards={leftOpen && pinMode === "none" && (leftTab === "reviews" || leftTab === "com")}
+                analysisFocus={analysisFocus}
+                onClearAnalysisFocus={() => setAnalysisFocus(null)}
               />
               <CommentForm
                 open={commentFormOpen}
@@ -1502,83 +1644,76 @@ const App = () => {
             <span className="sidebar-rail__label">REP</span>
           </button>
         </aside>
-        {rightOpen && rightTab === "dfm" ? (
-          <DfmReviewSidebar
-            open
-            apiBase={apiBase}
-            modelId={model?.id ?? null}
-            selectedComponent={
-              selectedComponent
-                ? { nodeName: selectedComponent.nodeName, displayName: selectedComponent.displayName }
-                : null
-            }
-            selectedProfile={selectedComponentProfile}
-            profileComplete={isSelectedProfileComplete}
-            onClose={() => {
-              setRightOpen(false);
-              setRightTab(null);
-            }}
-          />
-        ) : null}
-        {rightOpen && rightTab === "cnc" ? (
-          <CncAnalysisSidebar
-            open
-            apiBase={apiBase}
-            modelId={model?.id ?? null}
-            selectedComponent={
-              selectedComponent
-                ? { nodeName: selectedComponent.nodeName, displayName: selectedComponent.displayName }
-                : null
-            }
-            onClose={() => {
-              setRightOpen(false);
-              setRightTab(null);
-            }}
-          />
-        ) : null}
-        {rightOpen && rightTab === "vision" ? (
-          <VisionAnalysisSidebar
-            open
-            apiBase={apiBase}
-            modelId={model?.id ?? null}
-            selectedComponent={
-              selectedComponent
-                ? { nodeName: selectedComponent.nodeName, displayName: selectedComponent.displayName }
-                : null
-            }
-            onClose={() => {
-              setRightOpen(false);
-              setRightTab(null);
-            }}
-          />
-        ) : null}
-        {rightOpen && rightTab === "fusion" ? (
-          <FusionAnalysisSidebar
-            open
-            apiBase={apiBase}
-            modelId={model?.id ?? null}
-            selectedComponent={
-              selectedComponent
-                ? { nodeName: selectedComponent.nodeName, displayName: selectedComponent.displayName }
-                : null
-            }
-            onClose={() => {
-              setRightOpen(false);
-              setRightTab(null);
-            }}
-          />
-        ) : null}
-        {rightOpen && rightTab === "rep" ? (
-          <ReportTemplateBuilderSidebar
-            open
-            apiBase={apiBase}
-            modelId={model?.id ?? null}
-            onClose={() => {
-              setRightOpen(false);
-              setRightTab(null);
-            }}
-          />
-        ) : null}
+        <DfmReviewSidebar
+          open={rightOpen && rightTab === "dfm"}
+          apiBase={apiBase}
+          modelId={model?.id ?? null}
+          selectedComponent={
+            selectedComponent
+              ? { nodeName: selectedComponent.nodeName, displayName: selectedComponent.displayName }
+              : null
+          }
+          selectedProfile={selectedComponentProfile}
+          profileComplete={isSelectedProfileComplete}
+          onClose={() => {
+            setRightOpen(false);
+            setRightTab(null);
+          }}
+        />
+        <CncAnalysisSidebar
+          open={rightOpen && rightTab === "cnc"}
+          apiBase={apiBase}
+          modelId={model?.id ?? null}
+          selectedComponent={
+            selectedComponent
+              ? { nodeName: selectedComponent.nodeName, displayName: selectedComponent.displayName }
+              : null
+          }
+          onClose={() => {
+            setRightOpen(false);
+            setRightTab(null);
+          }}
+        />
+        <VisionAnalysisSidebar
+          open={rightOpen && rightTab === "vision"}
+          apiBase={apiBase}
+          modelId={model?.id ?? null}
+          selectedInputSources={visionSelectedInputSources}
+          selectedComponent={
+            selectedComponent
+              ? { nodeName: selectedComponent.nodeName, displayName: selectedComponent.displayName }
+              : null
+          }
+          onFocusInModel={handleFocusInModel}
+          onClose={() => {
+            setRightOpen(false);
+            setRightTab(null);
+          }}
+        />
+        <FusionAnalysisSidebar
+          open={rightOpen && rightTab === "fusion"}
+          apiBase={apiBase}
+          modelId={model?.id ?? null}
+          selectedComponent={
+            selectedComponent
+              ? { nodeName: selectedComponent.nodeName, displayName: selectedComponent.displayName }
+              : null
+          }
+          onFocusInModel={handleFocusInModel}
+          onClose={() => {
+            setRightOpen(false);
+            setRightTab(null);
+          }}
+        />
+        <ReportTemplateBuilderSidebar
+          open={rightOpen && rightTab === "rep"}
+          apiBase={apiBase}
+          modelId={model?.id ?? null}
+          onClose={() => {
+            setRightOpen(false);
+            setRightTab(null);
+          }}
+        />
         {infoDialog && (
           <div className="modal-backdrop">
             <div className="modal">

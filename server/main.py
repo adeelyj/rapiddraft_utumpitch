@@ -13,6 +13,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from .analysis_runs import AnalysisRunNotFoundError, AnalysisRunStore, AnalysisRunStoreError
 from .cad_service import CADProcessingError, CADService
 from .cad_service_occ import CADServiceOCC
 from .cnc_analysis import CncAnalysisError, CncAnalysisService, CncReportNotFoundError
@@ -36,6 +37,7 @@ from .fusion_analysis import (
     FusionAnalysisError,
     FusionAnalysisService,
     FusionReportNotFoundError,
+    vision_report_matches_component,
 )
 from .model_store import ModelStore
 from .part_facts import PartFactsError, PartFactsService
@@ -70,6 +72,7 @@ review_store = ReviewStore(root=MODELS_DIR, templates_path=DATA_DIR / "review_te
 cnc_analysis_service = CncAnalysisService(root=MODELS_DIR)
 vision_analysis_service = VisionAnalysisService(root=MODELS_DIR, occ_service=cad_service_occ)
 fusion_analysis_service = FusionAnalysisService(root=MODELS_DIR)
+analysis_run_store = AnalysisRunStore(root=MODELS_DIR)
 
 app = FastAPI(title="TextCAD Drafting Service", version="0.1.0")
 app.add_middleware(
@@ -225,6 +228,7 @@ class CreateVisionReportBody(BaseModel):
     view_set_id: str
     selected_view_names: list[str] | None = None
     pasted_images: list[VisionPastedImageBody] = Field(default_factory=list)
+    prompt_override: str | None = None
     criteria: VisionCriteriaBody | None = None
     provider: VisionProviderBody = Field(default_factory=VisionProviderBody)
 
@@ -233,6 +237,7 @@ class CreateFusionReviewBody(BaseModel):
     component_node_name: str | None = None
     vision_report_id: str | None = None
     dfm_review_request: DfmReviewV2Body | None = None
+    fusion_tuning: dict[str, float] | None = None
 
 
 def _collect_option_labels(options: dict, key: str) -> set[str]:
@@ -714,6 +719,7 @@ async def create_vision_report(model_id: str, body: CreateVisionReportBody):
     if not metadata:
         raise HTTPException(status_code=404, detail="Model not found")
 
+    component = None
     if body.component_node_name:
         component = _get_component_entry(metadata, body.component_node_name)
         if not component:
@@ -722,6 +728,23 @@ async def create_vision_report(model_id: str, body: CreateVisionReportBody):
     if not body.view_set_id or not body.view_set_id.strip():
         raise HTTPException(status_code=400, detail="view_set_id is required")
 
+    part_facts_payload = None
+    if component is not None and body.component_node_name:
+        try:
+            part_facts_payload = part_facts_service.get_or_create(
+                model_id=model_id,
+                step_path=metadata.step_path,
+                component_node_name=body.component_node_name,
+                component_display_name=str(component.get("displayName") or body.component_node_name),
+                component_profile=metadata.component_profiles.get(body.component_node_name, {}),
+                triangle_count=component.get("triangleCount"),
+                assembly_component_count=len(metadata.components),
+                force_refresh=False,
+            )
+        except PartFactsError:
+            # Vision can still run without part-facts context; keep this non-blocking.
+            part_facts_payload = None
+
     try:
         return vision_analysis_service.create_report(
             model_id=model_id,
@@ -729,8 +752,10 @@ async def create_vision_report(model_id: str, body: CreateVisionReportBody):
             view_set_id=body.view_set_id.strip(),
             selected_view_names=body.selected_view_names,
             pasted_images_payload=[image.dict() for image in body.pasted_images],
+            prompt_override=body.prompt_override,
             criteria_payload=body.criteria.dict() if body.criteria else None,
             provider_payload=body.provider.dict(),
+            part_facts_payload=part_facts_payload,
         )
     except VisionViewSetMissingError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
@@ -781,12 +806,28 @@ async def create_fusion_review(model_id: str, body: CreateFusionReviewBody):
                 model_id=model_id,
                 report_id=requested_vision_report_id,
             )
+            if not vision_report_matches_component(
+                vision_report=vision_report_payload,
+                component_node_name=dfm_body.component_node_name,
+            ):
+                report_component = vision_report_payload.get("component_node_name")
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        f"vision_report_id '{requested_vision_report_id}' is scoped to "
+                        f"component '{report_component or 'unknown'}', expected "
+                        f"'{dfm_body.component_node_name}'."
+                    ),
+                )
         except VisionReportNotFoundError as exc:
             raise HTTPException(status_code=404, detail=str(exc))
         except VisionAnalysisError as exc:
             raise HTTPException(status_code=500, detail=str(exc))
     else:
-        latest_vision_report_id = fusion_analysis_service.latest_vision_report_id(model_id)
+        latest_vision_report_id = fusion_analysis_service.latest_vision_report_id(
+            model_id,
+            component_node_name=dfm_body.component_node_name,
+        )
         resolved_vision_report_id = latest_vision_report_id
         if latest_vision_report_id:
             try:
@@ -794,21 +835,51 @@ async def create_fusion_review(model_id: str, body: CreateFusionReviewBody):
                     model_id=model_id,
                     report_id=latest_vision_report_id,
                 )
+                if not vision_report_matches_component(
+                    vision_report=vision_report_payload,
+                    component_node_name=dfm_body.component_node_name,
+                ):
+                    vision_report_payload = {}
+                    resolved_vision_report_id = None
             except VisionReportNotFoundError:
                 vision_report_payload = {}
+                resolved_vision_report_id = None
             except VisionAnalysisError:
                 vision_report_payload = {}
+                resolved_vision_report_id = None
 
     try:
-        return fusion_analysis_service.create_report(
+        analysis_run_id = analysis_run_store.next_analysis_run_id(model_id)
+    except AnalysisRunStoreError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    try:
+        fusion_report = fusion_analysis_service.create_report(
             model_id=model_id,
             component_node_name=dfm_body.component_node_name,
             dfm_review=dfm_review,
             vision_report=vision_report_payload,
             vision_report_id=resolved_vision_report_id,
+            fusion_tuning_payload=body.fusion_tuning,
+            analysis_run_id=analysis_run_id,
         )
     except FusionAnalysisError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
+
+    try:
+        analysis_run_store.create_manifest(
+            model_id=model_id,
+            analysis_run_id=analysis_run_id,
+            component_node_name=dfm_body.component_node_name,
+            dfm_review=dfm_review,
+            vision_report_id=resolved_vision_report_id,
+            vision_report=vision_report_payload,
+            fusion_report=fusion_report,
+        )
+    except AnalysisRunStoreError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    return fusion_report
 
 
 @app.get("/api/models/{model_id}/fusion/reports/{report_id}")
@@ -819,6 +890,20 @@ async def get_fusion_report(model_id: str, report_id: str):
     except FusionReportNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except FusionAnalysisError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.get("/api/models/{model_id}/analysis-runs/{analysis_run_id}")
+async def get_analysis_run_manifest(model_id: str, analysis_run_id: str):
+    _require_model(model_id)
+    try:
+        return analysis_run_store.get_manifest(
+            model_id=model_id,
+            analysis_run_id=analysis_run_id,
+        )
+    except AnalysisRunNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except AnalysisRunStoreError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
 

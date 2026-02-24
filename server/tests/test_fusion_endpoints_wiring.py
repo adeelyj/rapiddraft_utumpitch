@@ -14,6 +14,7 @@ def test_fusion_endpoints_are_wired_in_main():
 
     assert '@app.post("/api/models/{model_id}/fusion/reviews")' in source
     assert '@app.get("/api/models/{model_id}/fusion/reports/{report_id}")' in source
+    assert '@app.get("/api/models/{model_id}/analysis-runs/{analysis_run_id}")' in source
 
 
 def test_fusion_sidebar_is_wired_in_app():
@@ -22,4 +23,3 @@ def test_fusion_sidebar_is_wired_in_app():
     assert "FusionAnalysisSidebar" in source
     assert 'handleRightRailToggle("fusion")' in source
     assert 'sidebar-rail__label">Fusion<' in source
-

@@ -11,6 +11,13 @@ export type FusionSourceReports = {
   vision_flagged_count: number;
 };
 
+export type FusionTuning = {
+  threshold: number;
+  weight_semantic: number;
+  weight_refs: number;
+  weight_geometry: number;
+};
+
 export type FusionPrioritySummary = {
   max_priority_score: number;
   confirmed_count: number;
@@ -37,12 +44,27 @@ export type FusionVisionFinding = {
   confidence: string;
   refs?: string[];
   source_views: string[];
+  geometry_anchor?: Record<string, unknown>;
+};
+
+export type FusionMatchSignals = {
+  semantic_score: number;
+  refs_overlap_score: number;
+  refs_overlap_count: number;
+  shared_refs: string[];
+  geometry_anchor_score: number;
+  geometry_anchor_considered: boolean;
+  matched_anchor_tokens: string[];
+  overall_match_score: number;
+  threshold: number;
 };
 
 export type FusionConfirmedFinding = {
   id: string;
   priority_score: number;
   match_score: number;
+  match_signals: FusionMatchSignals;
+  match_rationale: string;
   refs: string[];
   dfm: FusionDfmFinding;
   vision: FusionVisionFinding;
@@ -51,6 +73,8 @@ export type FusionConfirmedFinding = {
 export type FusionDfmOnlyFinding = {
   id: string;
   priority_score: number;
+  match_signals: FusionMatchSignals;
+  match_rationale: string;
   refs: string[];
   dfm: FusionDfmFinding;
 };
@@ -58,6 +82,8 @@ export type FusionDfmOnlyFinding = {
 export type FusionVisionOnlyFinding = {
   id: string;
   priority_score: number;
+  match_signals: FusionMatchSignals;
+  match_rationale: string;
   vision: FusionVisionFinding;
 };
 
@@ -78,6 +104,7 @@ export type FusionStandardTrace = {
 
 export type FusionReportResponse = {
   report_id: string;
+  analysis_run_id?: string | null;
   model_id: string;
   component_node_name: string | null;
   source_reports: FusionSourceReports;
@@ -87,11 +114,12 @@ export type FusionReportResponse = {
   dfm_only: FusionDfmOnlyFinding[];
   vision_only: FusionVisionOnlyFinding[];
   standards_trace_union: FusionStandardTrace[];
+  tuning_applied?: FusionTuning;
   created_at: string;
 };
 
 export type FusionCreateRequest = {
   component_node_name: string | null;
   vision_report_id?: string | null;
+  fusion_tuning?: Partial<FusionTuning> | null;
 };
-

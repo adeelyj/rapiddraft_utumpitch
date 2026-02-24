@@ -197,6 +197,8 @@ def test_create_report_local_runs_sequential_and_persists_artifacts(tmp_path: Pa
     assert len(local_provider.calls) == 3
     assert payload["provider_applied"]["route_used"] == "local"
     assert payload["summary"]["flagged_count"] == 2
+    assert payload["customer_summary"]["status"] in {"attention", "critical", "watch"}
+    assert len(payload["customer_findings"]) == 2
     assert "--- x ---" in payload["raw_output_text"]
     assert "X view finding" in payload["raw_output_text"]
     assert payload["report_id"].startswith("vision_rpt_")
@@ -281,6 +283,50 @@ def test_create_report_openai_passes_base_url_override(tmp_path: Path):
     assert len(openai_provider.calls) == 1
     assert openai_provider.calls[0]["base_url_override"] == fireworks_base_url
     assert payload["provider_applied"]["base_url_used"] == fireworks_base_url
+
+
+def test_create_report_uses_prompt_override_verbatim(tmp_path: Path):
+    view_service = _FakeViewSetService(tmp_path)
+    openai_provider = _FakeProvider(
+        route_id="openai",
+        label="OpenAI",
+        configured=True,
+        default_model="gpt-4o-mini",
+        base_url="https://api.openai.com/v1",
+        multi_response=json.dumps(
+            {
+                "flagged_features": [],
+                "general_observations": "Prompt override executed.",
+                "confidence": "high",
+            }
+        ),
+    )
+
+    service = VisionAnalysisService(
+        root=tmp_path,
+        occ_service=None,
+        view_set_service=view_service,
+        providers={"openai": openai_provider},
+    )
+
+    custom_prompt = "CUSTOM VISION PROMPT FOR TEST"
+    payload = service.create_report(
+        model_id="model_x",
+        component_node_name="component_1",
+        view_set_id="vset_20260218_001",
+        criteria_payload=None,
+        provider_payload={"route": "openai"},
+        prompt_override=custom_prompt,
+    )
+
+    assert len(openai_provider.calls) == 1
+    assert openai_provider.calls[0]["prompt"] == custom_prompt
+    assert payload["prompt_used"] == custom_prompt
+
+    report_dir = tmp_path / "model_x" / "vision_reports" / payload["report_id"]
+    request_payload = json.loads((report_dir / "request.json").read_text(encoding="utf-8"))
+    assert request_payload["prompt_override_provided"] is True
+    assert request_payload["prompt_used"] == custom_prompt
 
 
 def test_create_report_openai_passes_api_key_override_without_persisting_secret(tmp_path: Path):

@@ -1,18 +1,29 @@
-import { useMemo, useState } from "react";
-import type { FusionReportResponse } from "../types/fusion";
+import { useEffect, useMemo, useState } from "react";
+import type { AnalysisFocusPayload } from "../types/analysis";
+import type { FusionReportResponse, FusionTuning } from "../types/fusion";
 
 type FusionAnalysisSidebarProps = {
   open: boolean;
   apiBase: string;
   modelId: string | null;
   selectedComponent: { nodeName: string; displayName: string } | null;
+  onFocusInModel?: (payload: AnalysisFocusPayload) => void;
   onClose: () => void;
 };
 
 type AnalysisMode = "geometry_dfm" | "drawing_spec" | "full";
 type StandardsProfileMode = "pilot" | "profile";
 
-const FusionAnalysisSidebar = ({ open, apiBase, modelId, selectedComponent, onClose }: FusionAnalysisSidebarProps) => {
+const formatSignal = (value: number): string => value.toFixed(3);
+const FUSION_TUNING_STORAGE_KEY = "fusion_tuning_v1";
+const DEFAULT_FUSION_TUNING: FusionTuning = {
+  threshold: 0.28,
+  weight_semantic: 0.6,
+  weight_refs: 0.25,
+  weight_geometry: 0.15,
+};
+
+const FusionAnalysisSidebar = ({ open, apiBase, modelId, selectedComponent, onFocusInModel, onClose }: FusionAnalysisSidebarProps) => {
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<FusionReportResponse | null>(null);
@@ -20,6 +31,34 @@ const FusionAnalysisSidebar = ({ open, apiBase, modelId, selectedComponent, onCl
   const [standardsProfileMode, setStandardsProfileMode] = useState<StandardsProfileMode>("pilot");
   const [useLatestVisionReport, setUseLatestVisionReport] = useState(true);
   const [visionReportId, setVisionReportId] = useState("");
+  const [tuningExpanded, setTuningExpanded] = useState(false);
+  const [fusionTuning, setFusionTuning] = useState<FusionTuning>(DEFAULT_FUSION_TUNING);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(FUSION_TUNING_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Partial<FusionTuning>;
+      setFusionTuning({
+        threshold: typeof parsed.threshold === "number" ? parsed.threshold : DEFAULT_FUSION_TUNING.threshold,
+        weight_semantic:
+          typeof parsed.weight_semantic === "number" ? parsed.weight_semantic : DEFAULT_FUSION_TUNING.weight_semantic,
+        weight_refs: typeof parsed.weight_refs === "number" ? parsed.weight_refs : DEFAULT_FUSION_TUNING.weight_refs,
+        weight_geometry:
+          typeof parsed.weight_geometry === "number" ? parsed.weight_geometry : DEFAULT_FUSION_TUNING.weight_geometry,
+      });
+    } catch {
+      // Ignore malformed local storage; defaults remain active.
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(FUSION_TUNING_STORAGE_KEY, JSON.stringify(fusionTuning));
+    } catch {
+      // Best effort only.
+    }
+  }, [fusionTuning]);
 
   const canRun = Boolean(modelId && selectedComponent && !running);
   const selectedVisionReportId = useMemo(() => {
@@ -35,6 +74,31 @@ const FusionAnalysisSidebar = ({ open, apiBase, modelId, selectedComponent, onCl
     } catch {
       return fallback;
     }
+  };
+
+  const clamp01 = (value: number): number => Math.max(0, Math.min(1, value));
+  const setTuningField = (field: keyof FusionTuning, rawValue: string) => {
+    const parsed = Number(rawValue);
+    if (!Number.isFinite(parsed)) return;
+    setFusionTuning((prev) => ({ ...prev, [field]: clamp01(parsed) }));
+  };
+  const resetFusionTuning = () => setFusionTuning(DEFAULT_FUSION_TUNING);
+
+  const focusFindingInModel = (payload: {
+    id: string;
+    title: string;
+    details?: string;
+    severity?: string;
+  }) => {
+    if (!onFocusInModel) return;
+    onFocusInModel({
+      id: payload.id,
+      source: "fusion",
+      title: payload.title,
+      details: payload.details,
+      severity: payload.severity,
+      component_node_name: selectedComponent?.nodeName ?? report?.component_node_name ?? null,
+    });
   };
 
   const handleRunFusion = async () => {
@@ -56,6 +120,7 @@ const FusionAnalysisSidebar = ({ open, apiBase, modelId, selectedComponent, onCl
         body: JSON.stringify({
           component_node_name: selectedComponent.nodeName,
           vision_report_id: selectedVisionReportId,
+          fusion_tuning: fusionTuning,
           dfm_review_request: {
             component_node_name: selectedComponent.nodeName,
             planning_inputs: {
@@ -141,6 +206,67 @@ const FusionAnalysisSidebar = ({ open, apiBase, modelId, selectedComponent, onCl
           </label>
         ) : null}
 
+        <button
+          type="button"
+          className="fusion-sidebar__details-toggle"
+          onClick={() => setTuningExpanded((prev) => !prev)}
+        >
+          <span>Advanced matching controls</span>
+          <span>{tuningExpanded ? "v" : ">"}</span>
+        </button>
+
+        {tuningExpanded ? (
+          <div className="fusion-sidebar__tuning-card">
+            <label className="fusion-sidebar__field">
+              <span>Match threshold</span>
+              <input
+                type="number"
+                min={0}
+                max={1}
+                step={0.01}
+                value={fusionTuning.threshold}
+                onChange={(event) => setTuningField("threshold", event.target.value)}
+              />
+            </label>
+            <label className="fusion-sidebar__field">
+              <span>Semantic weight</span>
+              <input
+                type="number"
+                min={0}
+                max={1}
+                step={0.01}
+                value={fusionTuning.weight_semantic}
+                onChange={(event) => setTuningField("weight_semantic", event.target.value)}
+              />
+            </label>
+            <label className="fusion-sidebar__field">
+              <span>Refs weight</span>
+              <input
+                type="number"
+                min={0}
+                max={1}
+                step={0.01}
+                value={fusionTuning.weight_refs}
+                onChange={(event) => setTuningField("weight_refs", event.target.value)}
+              />
+            </label>
+            <label className="fusion-sidebar__field">
+              <span>Geometry weight</span>
+              <input
+                type="number"
+                min={0}
+                max={1}
+                step={0.01}
+                value={fusionTuning.weight_geometry}
+                onChange={(event) => setTuningField("weight_geometry", event.target.value)}
+              />
+            </label>
+            <button type="button" className="fusion-sidebar__reset" onClick={resetFusionTuning}>
+              Reset defaults
+            </button>
+          </div>
+        ) : null}
+
         <button type="button" className="fusion-sidebar__submit" onClick={handleRunFusion} disabled={!canRun}>
           {running ? "Running fusion..." : "Generate fusion review"}
         </button>
@@ -153,6 +279,18 @@ const FusionAnalysisSidebar = ({ open, apiBase, modelId, selectedComponent, onCl
               <div className="fusion-sidebar__chip">Vision only: {report.priority_summary.vision_only_count}</div>
               <div className="fusion-sidebar__chip">Max score: {report.priority_summary.max_priority_score}</div>
             </div>
+
+            {report.tuning_applied ? (
+              <div className="fusion-sidebar__meta">
+                Tuning: threshold={formatSignal(report.tuning_applied.threshold)} | weights S/R/G=
+                {formatSignal(report.tuning_applied.weight_semantic)}/
+                {formatSignal(report.tuning_applied.weight_refs)}/
+                {formatSignal(report.tuning_applied.weight_geometry)}
+              </div>
+            ) : null}
+            {report.analysis_run_id ? (
+              <div className="fusion-sidebar__meta">Analysis run: {report.analysis_run_id}</div>
+            ) : null}
 
             <div className="fusion-sidebar__card">
               <h3>Top actions</h3>
@@ -174,6 +312,27 @@ const FusionAnalysisSidebar = ({ open, apiBase, modelId, selectedComponent, onCl
                         Priority: {finding.priority_score} | Match: {finding.match_score}
                       </div>
                       <div className="fusion-sidebar__meta">Vision: {finding.vision.description}</div>
+                      <div className="fusion-sidebar__meta fusion-sidebar__meta--rationale">{finding.match_rationale}</div>
+                      <div className="fusion-sidebar__signals">
+                        <span>S: {formatSignal(finding.match_signals.semantic_score)}</span>
+                        <span>R: {formatSignal(finding.match_signals.refs_overlap_score)}</span>
+                        <span>G: {formatSignal(finding.match_signals.geometry_anchor_score)}</span>
+                        <span>O: {formatSignal(finding.match_signals.overall_match_score)}</span>
+                      </div>
+                      <button
+                        type="button"
+                        className="analysis-focus-action"
+                        onClick={() =>
+                          focusFindingInModel({
+                            id: finding.id,
+                            title: finding.vision.description || finding.dfm.title,
+                            details: finding.match_rationale,
+                            severity: finding.vision.severity || finding.dfm.severity,
+                          })
+                        }
+                      >
+                        Show in model
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -190,6 +349,28 @@ const FusionAnalysisSidebar = ({ open, apiBase, modelId, selectedComponent, onCl
                     <li key={finding.id}>
                       <strong>{finding.dfm.rule_id}</strong> {finding.dfm.title}
                       <div className="fusion-sidebar__meta">Priority: {finding.priority_score}</div>
+                      <div className="fusion-sidebar__meta fusion-sidebar__meta--rationale">{finding.match_rationale}</div>
+                      <div className="fusion-sidebar__signals">
+                        <span>S: {formatSignal(finding.match_signals.semantic_score)}</span>
+                        <span>R: {formatSignal(finding.match_signals.refs_overlap_score)}</span>
+                        <span>G: {formatSignal(finding.match_signals.geometry_anchor_score)}</span>
+                        <span>O: {formatSignal(finding.match_signals.overall_match_score)}</span>
+                        <span>T: {formatSignal(finding.match_signals.threshold)}</span>
+                      </div>
+                      <button
+                        type="button"
+                        className="analysis-focus-action"
+                        onClick={() =>
+                          focusFindingInModel({
+                            id: finding.id,
+                            title: finding.dfm.title,
+                            details: finding.dfm.description || finding.match_rationale,
+                            severity: finding.dfm.severity,
+                          })
+                        }
+                      >
+                        Show in model
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -208,6 +389,28 @@ const FusionAnalysisSidebar = ({ open, apiBase, modelId, selectedComponent, onCl
                       <div className="fusion-sidebar__meta">
                         Priority: {finding.priority_score} | Confidence: {finding.vision.confidence}
                       </div>
+                      <div className="fusion-sidebar__meta fusion-sidebar__meta--rationale">{finding.match_rationale}</div>
+                      <div className="fusion-sidebar__signals">
+                        <span>S: {formatSignal(finding.match_signals.semantic_score)}</span>
+                        <span>R: {formatSignal(finding.match_signals.refs_overlap_score)}</span>
+                        <span>G: {formatSignal(finding.match_signals.geometry_anchor_score)}</span>
+                        <span>O: {formatSignal(finding.match_signals.overall_match_score)}</span>
+                        <span>T: {formatSignal(finding.match_signals.threshold)}</span>
+                      </div>
+                      <button
+                        type="button"
+                        className="analysis-focus-action"
+                        onClick={() =>
+                          focusFindingInModel({
+                            id: finding.id,
+                            title: finding.vision.description,
+                            details: finding.match_rationale,
+                            severity: finding.vision.severity,
+                          })
+                        }
+                      >
+                        Show in model
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -242,4 +445,3 @@ const FusionAnalysisSidebar = ({ open, apiBase, modelId, selectedComponent, onCl
 };
 
 export default FusionAnalysisSidebar;
-

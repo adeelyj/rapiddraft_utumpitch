@@ -35,6 +35,17 @@ CONFIDENCE_RANK = {
     "high": 3,
 }
 
+FUSION_MATCH_THRESHOLD = 0.28
+FUSION_MATCH_WEIGHT_SEMANTIC = 0.6
+FUSION_MATCH_WEIGHT_REFS = 0.25
+FUSION_MATCH_WEIGHT_GEOMETRY = 0.15
+DEFAULT_FUSION_TUNING = {
+    "threshold": FUSION_MATCH_THRESHOLD,
+    "weight_semantic": FUSION_MATCH_WEIGHT_SEMANTIC,
+    "weight_refs": FUSION_MATCH_WEIGHT_REFS,
+    "weight_geometry": FUSION_MATCH_WEIGHT_GEOMETRY,
+}
+
 
 class FusionAnalysisService:
     def __init__(self, *, root: Path) -> None:
@@ -48,10 +59,13 @@ class FusionAnalysisService:
         dfm_review: dict[str, Any],
         vision_report: dict[str, Any],
         vision_report_id: str | None,
+        fusion_tuning_payload: dict[str, Any] | None = None,
+        analysis_run_id: str | None = None,
     ) -> dict[str, Any]:
         report_id = self._next_report_id(model_id)
         report_dir = self._report_dir(model_id, report_id)
         report_dir.mkdir(parents=True, exist_ok=True)
+        fusion_tuning = _resolve_fusion_tuning(fusion_tuning_payload)
 
         fused_payload = build_fusion_payload(
             model_id=model_id,
@@ -60,6 +74,8 @@ class FusionAnalysisService:
             dfm_review=dfm_review,
             vision_report=vision_report,
             vision_report_id=vision_report_id,
+            fusion_tuning=fusion_tuning,
+            analysis_run_id=analysis_run_id,
         )
         try:
             (report_dir / "result.json").write_text(
@@ -73,6 +89,9 @@ class FusionAnalysisService:
                         "component_node_name": component_node_name,
                         "vision_report_id": vision_report_id,
                         "dfm_route_count": dfm_review.get("route_count"),
+                        "fusion_tuning_requested": fusion_tuning_payload or {},
+                        "fusion_tuning_applied": fusion_tuning,
+                        "analysis_run_id": analysis_run_id,
                     },
                     indent=2,
                 ),
@@ -94,15 +113,38 @@ class FusionAnalysisService:
             raise FusionAnalysisError("Fusion report payload has invalid format.")
         return payload
 
-    def latest_vision_report_id(self, model_id: str) -> str | None:
+    def latest_vision_report_id(self, model_id: str, *, component_node_name: str | None = None) -> str | None:
         vision_reports_root = self.root / model_id / "vision_reports"
         if not vision_reports_root.exists():
             return None
-        candidates = [entry.name for entry in vision_reports_root.iterdir() if entry.is_dir()]
+        candidates = sorted([entry.name for entry in vision_reports_root.iterdir() if entry.is_dir()], reverse=True)
         if not candidates:
             return None
-        # Existing report IDs sort lexicographically by timestamp suffix.
-        return sorted(candidates)[-1]
+        if component_node_name is None:
+            return candidates[0]
+
+        for report_id in candidates:
+            report_payload = self._read_vision_report_payload(model_id=model_id, report_id=report_id)
+            if not isinstance(report_payload, dict):
+                continue
+            if vision_report_matches_component(
+                vision_report=report_payload,
+                component_node_name=component_node_name,
+            ):
+                return report_id
+        return None
+
+    def _read_vision_report_payload(self, *, model_id: str, report_id: str) -> dict[str, Any] | None:
+        result_path = self.root / model_id / "vision_reports" / report_id / "result.json"
+        if not result_path.exists():
+            return None
+        try:
+            payload = json.loads(result_path.read_text(encoding="utf-8"))
+        except Exception:
+            return None
+        if not isinstance(payload, dict):
+            return None
+        return payload
 
     def _reports_root(self, model_id: str) -> Path:
         return self.root / model_id / "fusion_reports"
@@ -137,7 +179,10 @@ def build_fusion_payload(
     dfm_review: dict[str, Any],
     vision_report: dict[str, Any],
     vision_report_id: str | None,
+    fusion_tuning: dict[str, Any] | None = None,
+    analysis_run_id: str | None = None,
 ) -> dict[str, Any]:
+    tuning = _resolve_fusion_tuning(fusion_tuning)
     dfm_entries = _collect_dfm_entries(dfm_review)
     vision_entries = _collect_vision_entries(vision_report)
     vision_report_exists = bool(vision_entries) or bool(vision_report.get("report_id"))
@@ -149,19 +194,29 @@ def build_fusion_payload(
     for dfm_entry in dfm_entries:
         best_match_id: str | None = None
         best_match_score = 0.0
+        best_match_signals: dict[str, Any] | None = None
         for vision_entry in unmatched_vision.values():
-            score = _fusion_match_score(dfm_entry=dfm_entry, vision_entry=vision_entry)
+            signals = _fusion_match_signals(
+                dfm_entry=dfm_entry,
+                vision_entry=vision_entry,
+                tuning=tuning,
+            )
+            score = float(signals.get("overall_match_score", 0.0))
             if score > best_match_score:
                 best_match_score = score
                 best_match_id = vision_entry["id"]
-        if best_match_id is not None and best_match_score >= 0.28:
+                best_match_signals = signals
+        if best_match_id is not None and best_match_score >= float(tuning["threshold"]):
             vision_match = unmatched_vision.pop(best_match_id)
             priority_score = _priority_score(dfm_entry=dfm_entry, vision_entry=vision_match, confirmed=True)
+            match_signals = best_match_signals or _empty_match_signals(tuning=tuning)
             confirmed_by_both.append(
                 {
                     "id": f"confirmed::{dfm_entry['id']}::{vision_match['id']}",
                     "priority_score": priority_score,
                     "match_score": round(best_match_score, 3),
+                    "match_signals": match_signals,
+                    "match_rationale": _confirmed_match_rationale(match_signals),
                     "refs": dfm_entry["refs"],
                     "dfm": _dfm_public_entry(dfm_entry),
                     "vision": _vision_public_entry(vision_match),
@@ -169,10 +224,13 @@ def build_fusion_payload(
             )
         else:
             priority_score = _priority_score(dfm_entry=dfm_entry, vision_entry=None, confirmed=False)
+            match_signals = best_match_signals or _empty_match_signals(tuning=tuning)
             dfm_only.append(
                 {
                     "id": f"dfm::{dfm_entry['id']}",
                     "priority_score": priority_score,
+                    "match_signals": match_signals,
+                    "match_rationale": _dfm_only_match_rationale(match_signals),
                     "refs": dfm_entry["refs"],
                     "dfm": _dfm_public_entry(dfm_entry),
                 }
@@ -181,10 +239,17 @@ def build_fusion_payload(
     vision_only: list[dict[str, Any]] = []
     for vision_entry in unmatched_vision.values():
         priority_score = _priority_score(dfm_entry=None, vision_entry=vision_entry, confirmed=False)
+        best_signals = _best_dfm_candidate_signals(
+            vision_entry=vision_entry,
+            dfm_entries=dfm_entries,
+            tuning=tuning,
+        )
         vision_only.append(
             {
                 "id": f"vision::{vision_entry['id']}",
                 "priority_score": priority_score,
+                "match_signals": best_signals,
+                "match_rationale": _vision_only_match_rationale(best_signals),
                 "vision": _vision_public_entry(vision_entry),
             }
         )
@@ -215,6 +280,7 @@ def build_fusion_payload(
 
     return {
         "report_id": report_id,
+        "analysis_run_id": analysis_run_id,
         "model_id": model_id,
         "component_node_name": component_node_name,
         "source_reports": {
@@ -239,6 +305,7 @@ def build_fusion_payload(
         "dfm_only": dfm_only,
         "vision_only": vision_only,
         "standards_trace_union": dfm_review.get("standards_trace_union", []),
+        "tuning_applied": tuning,
         "created_at": _now_iso(),
     }
 
@@ -272,6 +339,7 @@ def _collect_dfm_entries(dfm_review: dict[str, Any]) -> list[dict[str, Any]]:
                     "refs": refs,
                     "recommended_action": finding.get("recommended_action"),
                     "text_blob": text_blob,
+                    "tokens": _tokenize(text_blob),
                 }
             )
     return entries
@@ -301,6 +369,7 @@ def _collect_vision_entries(vision_report: dict[str, Any]) -> list[dict[str, Any
                     for view in finding.get("source_views", [])
                     if isinstance(view, str) and str(view).strip()
                 ],
+                "geometry_anchor": _normalize_geometry_anchor(finding.get("geometry_anchor")),
             }
         )
     return entries
@@ -322,15 +391,261 @@ def _semantic_match_score(dfm_text: str, vision_text: str) -> float:
     return min(1.0, jaccard + boost)
 
 
-def _fusion_match_score(*, dfm_entry: dict[str, Any], vision_entry: dict[str, Any]) -> float:
-    semantic = _semantic_match_score(dfm_entry.get("text_blob", ""), vision_entry.get("description", ""))
-    dfm_refs = set(dfm_entry.get("refs", []))
-    vision_refs = set(vision_entry.get("refs", []))
-    if dfm_refs and vision_refs:
-        overlap = len(dfm_refs & vision_refs)
-        if overlap > 0:
-            semantic = min(1.0, semantic + 0.2 + (0.05 * overlap))
-    return semantic
+def _fusion_match_signals(
+    *,
+    dfm_entry: dict[str, Any],
+    vision_entry: dict[str, Any],
+    tuning: dict[str, float],
+) -> dict[str, Any]:
+    semantic_score = _semantic_match_score(
+        str(dfm_entry.get("text_blob") or ""),
+        str(vision_entry.get("description") or ""),
+    )
+
+    dfm_refs = {
+        str(ref).strip()
+        for ref in dfm_entry.get("refs", [])
+        if isinstance(ref, str) and str(ref).strip()
+    }
+    vision_refs = {
+        str(ref).strip()
+        for ref in vision_entry.get("refs", [])
+        if isinstance(ref, str) and str(ref).strip()
+    }
+    shared_refs = sorted(dfm_refs & vision_refs)
+    refs_union_count = len(dfm_refs | vision_refs)
+    refs_overlap_score = (
+        (len(shared_refs) / refs_union_count)
+        if refs_union_count > 0
+        else 0.0
+    )
+
+    anchor_tokens = _collect_geometry_anchor_tokens(vision_entry.get("geometry_anchor"))
+    dfm_tokens = dfm_entry.get("tokens")
+    if not isinstance(dfm_tokens, set):
+        dfm_tokens = _tokenize(str(dfm_entry.get("text_blob") or ""))
+    matched_anchor_tokens = sorted(anchor_tokens & dfm_tokens) if anchor_tokens else []
+    geometry_anchor_score = (
+        (len(matched_anchor_tokens) / len(anchor_tokens))
+        if anchor_tokens
+        else 0.0
+    )
+
+    overall_match_score = (
+        (float(tuning["weight_semantic"]) * semantic_score)
+        + (float(tuning["weight_refs"]) * refs_overlap_score)
+        + (float(tuning["weight_geometry"]) * geometry_anchor_score)
+    )
+    overall_match_score = max(0.0, min(1.0, overall_match_score))
+
+    return {
+        "semantic_score": round(semantic_score, 3),
+        "refs_overlap_score": round(refs_overlap_score, 3),
+        "refs_overlap_count": len(shared_refs),
+        "shared_refs": shared_refs,
+        "geometry_anchor_score": round(geometry_anchor_score, 3),
+        "geometry_anchor_considered": bool(anchor_tokens),
+        "matched_anchor_tokens": matched_anchor_tokens,
+        "overall_match_score": round(overall_match_score, 3),
+        "threshold": round(float(tuning["threshold"]), 3),
+    }
+
+
+def _empty_match_signals(*, tuning: dict[str, float]) -> dict[str, Any]:
+    return {
+        "semantic_score": 0.0,
+        "refs_overlap_score": 0.0,
+        "refs_overlap_count": 0,
+        "shared_refs": [],
+        "geometry_anchor_score": 0.0,
+        "geometry_anchor_considered": False,
+        "matched_anchor_tokens": [],
+        "overall_match_score": 0.0,
+        "threshold": round(float(tuning["threshold"]), 3),
+    }
+
+
+def _best_dfm_candidate_signals(
+    *,
+    vision_entry: dict[str, Any],
+    dfm_entries: list[dict[str, Any]],
+    tuning: dict[str, float],
+) -> dict[str, Any]:
+    best_signals = _empty_match_signals(tuning=tuning)
+    best_score = 0.0
+    for dfm_entry in dfm_entries:
+        signals = _fusion_match_signals(
+            dfm_entry=dfm_entry,
+            vision_entry=vision_entry,
+            tuning=tuning,
+        )
+        score = float(signals.get("overall_match_score", 0.0))
+        if score > best_score:
+            best_score = score
+            best_signals = signals
+    return best_signals
+
+
+def _confirmed_match_rationale(signals: dict[str, Any]) -> str:
+    semantic = float(signals.get("semantic_score", 0.0))
+    refs_overlap_count = int(signals.get("refs_overlap_count", 0))
+    shared_refs = [
+        str(ref).strip()
+        for ref in signals.get("shared_refs", [])
+        if isinstance(ref, str) and str(ref).strip()
+    ]
+    geometry_score = float(signals.get("geometry_anchor_score", 0.0))
+    overall = float(signals.get("overall_match_score", 0.0))
+    threshold = float(signals.get("threshold", FUSION_MATCH_THRESHOLD))
+
+    fragments = [
+        f"Matched above threshold ({overall:.3f} >= {threshold:.3f})",
+        f"semantic overlap={semantic:.3f}",
+    ]
+    if refs_overlap_count > 0:
+        refs_text = ", ".join(shared_refs[:3])
+        suffix = "..." if len(shared_refs) > 3 else ""
+        fragments.append(f"shared refs={refs_overlap_count} ({refs_text}{suffix})")
+    else:
+        fragments.append("no shared refs")
+    if bool(signals.get("geometry_anchor_considered")):
+        fragments.append(f"geometry-anchor overlap={geometry_score:.3f}")
+    else:
+        fragments.append("no geometry-anchor signal")
+    return "; ".join(fragments) + "."
+
+
+def _dfm_only_match_rationale(signals: dict[str, Any]) -> str:
+    overall = float(signals.get("overall_match_score", 0.0))
+    threshold = float(signals.get("threshold", FUSION_MATCH_THRESHOLD))
+    semantic = float(signals.get("semantic_score", 0.0))
+    refs_overlap_count = int(signals.get("refs_overlap_count", 0))
+    geometry_score = float(signals.get("geometry_anchor_score", 0.0))
+    return (
+        f"No Vision finding exceeded threshold ({overall:.3f} < {threshold:.3f}). "
+        f"Best candidate signals: semantic={semantic:.3f}, shared_refs={refs_overlap_count}, "
+        f"geometry_anchor={geometry_score:.3f}."
+    )
+
+
+def _vision_only_match_rationale(signals: dict[str, Any]) -> str:
+    overall = float(signals.get("overall_match_score", 0.0))
+    threshold = float(signals.get("threshold", FUSION_MATCH_THRESHOLD))
+    semantic = float(signals.get("semantic_score", 0.0))
+    refs_overlap_count = int(signals.get("refs_overlap_count", 0))
+    geometry_score = float(signals.get("geometry_anchor_score", 0.0))
+    return (
+        f"No DFM finding exceeded threshold ({overall:.3f} < {threshold:.3f}) for this Vision signal. "
+        f"Best candidate signals: semantic={semantic:.3f}, shared_refs={refs_overlap_count}, "
+        f"geometry_anchor={geometry_score:.3f}."
+    )
+
+
+def _collect_geometry_anchor_tokens(raw_geometry_anchor: Any) -> set[str]:
+    if not isinstance(raw_geometry_anchor, dict):
+        return set()
+
+    tokens: set[str] = set()
+
+    def _collect(value: Any) -> None:
+        if isinstance(value, str):
+            tokens.update(_tokenize(value))
+            return
+        if isinstance(value, list):
+            for item in value:
+                _collect(item)
+            return
+        if isinstance(value, dict):
+            for nested_value in value.values():
+                _collect(nested_value)
+            return
+        if isinstance(value, (int, float)):
+            tokens.update(_tokenize(str(value)))
+
+    for item in raw_geometry_anchor.values():
+        _collect(item)
+    return tokens
+
+
+def _normalize_geometry_anchor(raw_geometry_anchor: Any) -> dict[str, Any] | None:
+    if not isinstance(raw_geometry_anchor, dict):
+        return None
+    normalized: dict[str, Any] = {}
+    for raw_key, raw_value in raw_geometry_anchor.items():
+        if not isinstance(raw_key, str):
+            continue
+        key = raw_key.strip()
+        if not key:
+            continue
+        if isinstance(raw_value, str):
+            value = raw_value.strip()
+            if value:
+                normalized[key] = value
+            continue
+        if isinstance(raw_value, (bool, int, float)):
+            normalized[key] = raw_value
+            continue
+        if isinstance(raw_value, list):
+            values = []
+            for item in raw_value:
+                if isinstance(item, str):
+                    text = item.strip()
+                    if text:
+                        values.append(text)
+                elif isinstance(item, (bool, int, float)):
+                    values.append(item)
+            if values:
+                normalized[key] = values
+            continue
+        if isinstance(raw_value, dict):
+            nested: dict[str, Any] = {}
+            for nested_raw_key, nested_raw_value in raw_value.items():
+                if not isinstance(nested_raw_key, str):
+                    continue
+                nested_key = nested_raw_key.strip()
+                if not nested_key:
+                    continue
+                if isinstance(nested_raw_value, str):
+                    text = nested_raw_value.strip()
+                    if text:
+                        nested[nested_key] = text
+                elif isinstance(nested_raw_value, (bool, int, float)):
+                    nested[nested_key] = nested_raw_value
+            if nested:
+                normalized[key] = nested
+    return normalized or None
+
+
+def _resolve_fusion_tuning(raw_tuning: dict[str, Any] | None) -> dict[str, float]:
+    tuning = {
+        "threshold": float(DEFAULT_FUSION_TUNING["threshold"]),
+        "weight_semantic": float(DEFAULT_FUSION_TUNING["weight_semantic"]),
+        "weight_refs": float(DEFAULT_FUSION_TUNING["weight_refs"]),
+        "weight_geometry": float(DEFAULT_FUSION_TUNING["weight_geometry"]),
+    }
+    if not isinstance(raw_tuning, dict):
+        return tuning
+
+    for key in ("threshold", "weight_semantic", "weight_refs", "weight_geometry"):
+        if key not in raw_tuning:
+            continue
+        raw_value = raw_tuning.get(key)
+        try:
+            parsed = float(raw_value)
+        except (TypeError, ValueError):
+            raise FusionAnalysisError(f"fusion_tuning.{key} must be a number.")
+        if key == "threshold":
+            if not (0.0 <= parsed <= 1.0):
+                raise FusionAnalysisError("fusion_tuning.threshold must be between 0 and 1.")
+        else:
+            if not (0.0 <= parsed <= 1.0):
+                raise FusionAnalysisError(f"fusion_tuning.{key} must be between 0 and 1.")
+        tuning[key] = parsed
+
+    weight_sum = tuning["weight_semantic"] + tuning["weight_refs"] + tuning["weight_geometry"]
+    if weight_sum <= 0:
+        raise FusionAnalysisError("fusion_tuning weights must not all be zero.")
+    return tuning
 
 
 def _tokenize(text: str) -> set[str]:
@@ -375,7 +690,7 @@ def _dfm_public_entry(dfm_entry: dict[str, Any]) -> dict[str, Any]:
 
 
 def _vision_public_entry(vision_entry: dict[str, Any]) -> dict[str, Any]:
-    return {
+    payload = {
         "feature_id": vision_entry.get("id"),
         "description": vision_entry.get("description"),
         "severity": vision_entry.get("severity"),
@@ -383,6 +698,10 @@ def _vision_public_entry(vision_entry: dict[str, Any]) -> dict[str, Any]:
         "refs": vision_entry.get("refs", []),
         "source_views": vision_entry.get("source_views", []),
     }
+    geometry_anchor = vision_entry.get("geometry_anchor")
+    if isinstance(geometry_anchor, dict) and geometry_anchor:
+        payload["geometry_anchor"] = geometry_anchor
+    return payload
 
 
 def _now_iso() -> str:
@@ -392,3 +711,12 @@ def _now_iso() -> str:
         .isoformat()
         .replace("+00:00", "Z")
     )
+
+
+def vision_report_matches_component(*, vision_report: dict[str, Any], component_node_name: str | None) -> bool:
+    if not isinstance(component_node_name, str) or not component_node_name.strip():
+        return True
+    report_component = vision_report.get("component_node_name")
+    if not isinstance(report_component, str) or not report_component.strip():
+        return False
+    return report_component.strip() == component_node_name.strip()

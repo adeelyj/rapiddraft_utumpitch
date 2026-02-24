@@ -145,15 +145,24 @@ def merge_view_results(
                 raw_finding.get("confidence"),
                 fallback=confidence,
             )
+            refs = _normalize_refs(raw_finding.get("refs"))
+            geometry_anchor = _normalize_geometry_anchor(raw_finding.get("geometry_anchor"))
+            evidence_quality = _normalize_optional_evidence_quality(raw_finding.get("evidence_quality"))
 
             existing = aggregated.get(key)
             if not existing:
-                aggregated[key] = {
+                entry = {
                     "description": description,
                     "severity": severity,
                     "confidence": finding_confidence,
                     "source_views": [view_name],
+                    "refs": refs,
                 }
+                if geometry_anchor is not None:
+                    entry["geometry_anchor"] = geometry_anchor
+                if evidence_quality is not None:
+                    entry["evidence_quality"] = evidence_quality
+                aggregated[key] = entry
                 continue
 
             if SEVERITY_ORDER[severity] > SEVERITY_ORDER[existing["severity"]]:
@@ -168,6 +177,20 @@ def merge_view_results(
             source_views = set(existing.get("source_views", []))
             source_views.add(view_name)
             existing["source_views"] = sorted(source_views)
+
+            merged_refs = set(existing.get("refs", []))
+            merged_refs.update(refs)
+            existing["refs"] = sorted(merged_refs)
+
+            if existing.get("geometry_anchor") is None and geometry_anchor is not None:
+                existing["geometry_anchor"] = geometry_anchor
+
+            existing_evidence_quality = existing.get("evidence_quality")
+            if existing_evidence_quality is None:
+                if evidence_quality is not None:
+                    existing["evidence_quality"] = evidence_quality
+            elif evidence_quality is not None and existing_evidence_quality != evidence_quality:
+                existing["evidence_quality"] = "low"
 
     merged_confidence = "medium"
     distinct_confidence = {value for value in confidence_values if value in VALID_CONFIDENCE}
@@ -186,15 +209,23 @@ def merge_view_results(
 
     normalized_findings: list[dict[str, Any]] = []
     for index, finding in enumerate(findings, start=1):
-        normalized_findings.append(
-            {
-                "feature_id": f"V{index}",
-                "description": finding["description"],
-                "severity": finding["severity"],
-                "confidence": finding["confidence"],
-                "source_views": finding.get("source_views", []),
-            }
-        )
+        payload = {
+            "feature_id": f"V{index}",
+            "description": finding["description"],
+            "severity": finding["severity"],
+            "confidence": finding["confidence"],
+            "source_views": finding.get("source_views", []),
+        }
+        refs = _normalize_refs(finding.get("refs"))
+        if refs:
+            payload["refs"] = refs
+        geometry_anchor = _normalize_geometry_anchor(finding.get("geometry_anchor"))
+        if geometry_anchor is not None:
+            payload["geometry_anchor"] = geometry_anchor
+        evidence_quality = _normalize_optional_evidence_quality(finding.get("evidence_quality"))
+        if evidence_quality is not None:
+            payload["evidence_quality"] = evidence_quality
+        normalized_findings.append(payload)
 
     return {
         "flagged_features": normalized_findings,
@@ -237,6 +268,9 @@ def normalize_provider_result(
 
         severity = _normalize_severity(item.get("severity"))
         confidence = _normalize_confidence_label(item.get("confidence"), fallback="medium")
+        refs = _normalize_refs(item.get("refs"))
+        geometry_anchor = _normalize_geometry_anchor(item.get("geometry_anchor"))
+        evidence_quality = _normalize_optional_evidence_quality(item.get("evidence_quality"))
 
         source_views_raw = item.get("source_views")
         source_views: list[str] = []
@@ -248,29 +282,41 @@ def normalize_provider_result(
         if fallback_view and fallback_view not in source_views:
             source_views.append(fallback_view)
 
-        normalized_findings.append(
-            {
-                "description": description,
-                "severity": severity,
-                "confidence": confidence,
-                "source_views": sorted(set(source_views)),
-            }
-        )
+        finding_payload = {
+            "description": description,
+            "severity": severity,
+            "confidence": confidence,
+            "source_views": sorted(set(source_views)),
+            "refs": refs,
+        }
+        if geometry_anchor is not None:
+            finding_payload["geometry_anchor"] = geometry_anchor
+        if evidence_quality is not None:
+            finding_payload["evidence_quality"] = evidence_quality
+        normalized_findings.append(finding_payload)
 
     overall_confidence = _normalize_confidence_label(raw_payload.get("confidence"), fallback="medium")
     general_observations = str(raw_payload.get("general_observations") or "").strip()
 
     normalized_with_ids: list[dict[str, Any]] = []
     for index, finding in enumerate(normalized_findings, start=1):
-        normalized_with_ids.append(
-            {
-                "feature_id": f"V{index}",
-                "description": finding["description"],
-                "severity": finding["severity"],
-                "confidence": finding["confidence"],
-                "source_views": finding["source_views"],
-            }
-        )
+        payload = {
+            "feature_id": f"V{index}",
+            "description": finding["description"],
+            "severity": finding["severity"],
+            "confidence": finding["confidence"],
+            "source_views": finding["source_views"],
+        }
+        refs = _normalize_refs(finding.get("refs"))
+        if refs:
+            payload["refs"] = refs
+        geometry_anchor = _normalize_geometry_anchor(finding.get("geometry_anchor"))
+        if geometry_anchor is not None:
+            payload["geometry_anchor"] = geometry_anchor
+        evidence_quality = _normalize_optional_evidence_quality(finding.get("evidence_quality"))
+        if evidence_quality is not None:
+            payload["evidence_quality"] = evidence_quality
+        normalized_with_ids.append(payload)
 
     return {
         "flagged_features": normalized_with_ids,
@@ -364,6 +410,8 @@ class VisionAnalysisService:
         provider_payload: dict[str, Any] | None,
         selected_view_names: list[str] | None = None,
         pasted_images_payload: list[dict[str, Any]] | None = None,
+        prompt_override: str | None = None,
+        part_facts_payload: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         criteria = parse_vision_criteria(criteria_payload)
         provider_payload = provider_payload or {}
@@ -418,10 +466,16 @@ class VisionAnalysisService:
         if not analysis_inputs:
             raise VisionAnalysisError("Select at least one generated or pasted image for analysis.")
 
-        prompt_base = _build_prompt(
+        analysis_image_labels = [label for label, _ in analysis_inputs]
+        part_facts_context_lines = _build_part_facts_prompt_context(part_facts_payload)
+        default_prompt = _build_prompt(
             criteria=criteria,
             component_node_name=component_node_name,
+            selected_image_labels=analysis_image_labels,
+            part_facts_context_lines=part_facts_context_lines,
         )
+        prompt_override_text = _clean_optional_str(prompt_override)
+        prompt_base = prompt_override_text or default_prompt
 
         request_artifact = {
             "model_id": model_id,
@@ -432,6 +486,7 @@ class VisionAnalysisService:
                 "selected_view_names": selected_generated_view_names,
                 "pasted_image_labels": [label for label, _ in pasted_analysis_inputs],
             },
+            "analysis_image_labels": analysis_image_labels,
             "provider_request": {
                 "route": route_requested,
                 "model_override": model_override,
@@ -439,7 +494,11 @@ class VisionAnalysisService:
                 "api_key_override_provided": bool(api_key_override),
                 "local_base_url": legacy_local_base_url_override if route_requested == "local" else None,
             },
+            "prompt_override_provided": bool(prompt_override_text),
+            "prompt_used": prompt_base,
         }
+        if part_facts_context_lines:
+            request_artifact["part_facts_prompt_context"] = part_facts_context_lines
         (report_dir / "request.json").write_text(
             json.dumps(request_artifact, indent=2),
             encoding="utf-8",
@@ -548,6 +607,16 @@ class VisionAnalysisService:
                 ),
                 criteria=criteria,
             )
+            report_confidence = _normalize_confidence_label(
+                merged.get("confidence"),
+                fallback="medium",
+            )
+            general_observations = str(merged.get("general_observations") or "").strip()
+            customer_payload = _build_customer_output(
+                findings=filtered_findings,
+                report_confidence=report_confidence,
+                general_observations=general_observations,
+            )
 
             result_payload = {
                 "report_id": report_id,
@@ -556,14 +625,14 @@ class VisionAnalysisService:
                 "view_set_id": view_set_id,
                 "summary": {
                     "flagged_count": len(filtered_findings),
-                    "confidence": _normalize_confidence_label(
-                        merged.get("confidence"),
-                        fallback="medium",
-                    ),
+                    "confidence": report_confidence,
                 },
                 "findings": filtered_findings,
-                "general_observations": str(merged.get("general_observations") or "").strip(),
+                "general_observations": general_observations,
                 "raw_output_text": raw_output_text,
+                "prompt_used": prompt_base,
+                "customer_summary": customer_payload["summary"],
+                "customer_findings": customer_payload["findings"],
                 "criteria_applied": criteria.to_dict(),
                 "provider_applied": {
                     "route_requested": route_requested,
@@ -729,7 +798,13 @@ class VisionAnalysisService:
         )
 
 
-def _build_prompt(*, criteria: VisionCriteria, component_node_name: str | None) -> str:
+def _build_prompt(
+    *,
+    criteria: VisionCriteria,
+    component_node_name: str | None,
+    selected_image_labels: list[str],
+    part_facts_context_lines: list[str],
+) -> str:
     focus_checks: list[str] = []
     if criteria.check_internal_pocket_tight_corners:
         focus_checks.append("internal pocket/slot corners that appear sharp or very tight")
@@ -748,14 +823,30 @@ def _build_prompt(*, criteria: VisionCriteria, component_node_name: str | None) 
     )
 
     focus_text = "\n".join(f"- {item}" for item in focus_checks)
+    image_labels = [label for label in selected_image_labels if isinstance(label, str) and label.strip()]
+    image_manifest_text = "\n".join(f"- {label}" for label in image_labels) if image_labels else "- (no labels)"
+    part_facts_text = (
+        "\n".join(f"- {line}" for line in part_facts_context_lines)
+        if part_facts_context_lines
+        else "- unavailable"
+    )
 
     return (
-        "You are a manufacturing engineer reviewing CNC orthographic views.\n"
+        "You are a manufacturing engineer reviewing manufacturing images.\n"
+        "Image sets can include orthographic, isometric, section, or screenshot captures.\n"
         f"{component_line}\n"
         f"Sensitivity level: {criteria.sensitivity}.\n"
         "Analyze only what is visible in the provided images.\n"
         "Focus checks:\n"
         f"{focus_text}\n\n"
+        "Image labels provided for this run:\n"
+        f"{image_manifest_text}\n\n"
+        "PartFacts context (use as priors, not direct visual evidence):\n"
+        f"{part_facts_text}\n\n"
+        "Evidence rules:\n"
+        "- Use only provided image labels in source_views.\n"
+        "- If a claim is not visible, lower confidence and use low evidence_quality.\n"
+        "- If PartFacts and image evidence conflict, call out the contradiction in general_observations.\n\n"
         "Return JSON only with this schema:\n"
         "{\n"
         '  "flagged_features": [\n'
@@ -764,13 +855,141 @@ def _build_prompt(*, criteria: VisionCriteria, component_node_name: str | None) 
         '      "description": "short finding",\n'
         '      "severity": "critical|warning|caution|info",\n'
         '      "confidence": "low|medium|high",\n'
-        '      "source_views": ["x", "y", "z"]\n'
+        '      "source_views": ["x", "y", "z"],\n'
+        '      "refs": ["REF-CNC-2"],\n'
+        '      "geometry_anchor": {"feature": "pocket", "view": "x"},\n'
+        '      "evidence_quality": "low|medium|high"\n'
         "    }\n"
         "  ],\n"
         '  "general_observations": "short paragraph",\n'
         '  "confidence": "low|medium|high"\n'
         "}"
     )
+
+
+def _build_part_facts_prompt_context(part_facts_payload: dict[str, Any] | None) -> list[str]:
+    if not isinstance(part_facts_payload, dict):
+        return []
+
+    lines: list[str] = []
+
+    declared_bits: list[str] = []
+    for key, label in (
+        ("material", "material"),
+        ("manufacturing_process", "process"),
+        ("industry", "industry"),
+    ):
+        value_text = _part_fact_metric_value_text(
+            part_facts_payload=part_facts_payload,
+            section_name="declared_context",
+            metric_key=key,
+        )
+        if value_text:
+            declared_bits.append(f"{label}={value_text}")
+    if declared_bits:
+        lines.append("Declared context: " + ", ".join(declared_bits))
+
+    geometry_bits: list[str] = []
+    for section_name, metric_key, label in (
+        ("manufacturing_signals", "min_internal_radius_mm", "min_internal_radius"),
+        ("manufacturing_signals", "count_radius_below_1_5_mm", "count_radius_below_1.5mm"),
+        ("manufacturing_signals", "max_pocket_depth_mm", "max_pocket_depth"),
+        ("manufacturing_signals", "max_depth_to_radius_ratio", "max_depth_radius_ratio"),
+        ("manufacturing_signals", "pockets_present", "pockets_present"),
+        ("manufacturing_signals", "hole_features", "hole_features"),
+        ("manufacturing_signals", "min_hole_diameter_mm", "min_hole_diameter"),
+        ("manufacturing_signals", "max_hole_depth_mm", "max_hole_depth"),
+    ):
+        value_text = _part_fact_metric_value_text(
+            part_facts_payload=part_facts_payload,
+            section_name=section_name,
+            metric_key=metric_key,
+        )
+        if value_text:
+            geometry_bits.append(f"{label}={value_text}")
+    if geometry_bits:
+        lines.append("Geometry/manufacturing signals: " + ", ".join(geometry_bits))
+
+    coverage = part_facts_payload.get("coverage")
+    full_readiness_coverage = (
+        coverage.get("full_rule_readiness_coverage")
+        if isinstance(coverage, dict)
+        else None
+    )
+    readiness_percent = (
+        _safe_float(full_readiness_coverage.get("percent"))
+        if isinstance(full_readiness_coverage, dict)
+        else None
+    )
+    overall_confidence = part_facts_payload.get("overall_confidence")
+    confidence_text = (
+        str(overall_confidence).strip().lower()
+        if isinstance(overall_confidence, str) and overall_confidence.strip()
+        else None
+    )
+    if readiness_percent is not None or confidence_text is not None:
+        readiness_fragment = (
+            f"{round(readiness_percent, 1)}%"
+            if readiness_percent is not None
+            else "unknown"
+        )
+        confidence_fragment = confidence_text or "unknown"
+        lines.append(
+            f"PartFacts quality: overall_confidence={confidence_fragment}, readiness_coverage={readiness_fragment}"
+        )
+
+    return lines
+
+
+def _part_fact_metric_value_text(
+    *,
+    part_facts_payload: dict[str, Any],
+    section_name: str,
+    metric_key: str,
+) -> str | None:
+    sections = part_facts_payload.get("sections")
+    if not isinstance(sections, dict):
+        return None
+    section = sections.get(section_name)
+    if not isinstance(section, dict):
+        return None
+    metric = section.get(metric_key)
+    if not isinstance(metric, dict):
+        return None
+
+    state = str(metric.get("state") or "").strip().lower()
+    if state in {"", "unknown", "failed", "not_applicable"}:
+        return None
+
+    value = metric.get("value")
+    value_text = _part_fact_value_to_text(value)
+    if value_text is None:
+        return None
+
+    unit = metric.get("unit")
+    if isinstance(unit, str) and unit.strip():
+        return f"{value_text} {unit.strip()}"
+    return value_text
+
+
+def _part_fact_value_to_text(value: Any) -> str | None:
+    if isinstance(value, bool):
+        return "yes" if value else "no"
+    if isinstance(value, (int, float)):
+        number = float(value)
+        if abs(number) >= 1000:
+            return f"{number:,.2f}".rstrip("0").rstrip(".")
+        return f"{number:.4g}"
+    if isinstance(value, str):
+        text = value.strip()
+        return text if text else None
+    return None
+
+
+def _safe_float(value: Any) -> float | None:
+    if isinstance(value, (int, float)):
+        return float(value)
+    return None
 
 
 def _parse_model_output_as_json(text: str) -> dict[str, Any]:
@@ -866,21 +1085,30 @@ def _filter_findings_by_criteria(
 
         severity = _normalize_severity(item.get("severity"))
         source_views = item.get("source_views")
+        refs = _normalize_refs(item.get("refs"))
+        geometry_anchor = _normalize_geometry_anchor(item.get("geometry_anchor"))
+        evidence_quality = _normalize_optional_evidence_quality(item.get("evidence_quality"))
         views: list[str] = []
         if isinstance(source_views, list):
             for source in source_views:
                 if isinstance(source, str) and source.strip():
                     views.append(source.strip().lower())
 
-        normalized.append(
-            {
-                "feature_id": str(item.get("feature_id") or ""),
-                "description": str(item.get("description") or "").strip(),
-                "severity": severity,
-                "confidence": confidence,
-                "source_views": sorted(set(views)),
-            }
-        )
+        finding_payload = {
+            "feature_id": str(item.get("feature_id") or ""),
+            "description": str(item.get("description") or "").strip(),
+            "severity": severity,
+            "confidence": confidence,
+            "source_views": sorted(set(views)),
+        }
+        if refs:
+            finding_payload["refs"] = refs
+        if geometry_anchor is not None:
+            finding_payload["geometry_anchor"] = geometry_anchor
+        if evidence_quality is not None:
+            finding_payload["evidence_quality"] = evidence_quality
+
+        normalized.append(finding_payload)
 
     normalized = [item for item in normalized if item["description"]]
     normalized.sort(
@@ -895,6 +1123,184 @@ def _filter_findings_by_criteria(
     for index, item in enumerate(limited, start=1):
         item["feature_id"] = f"V{index}"
     return limited
+
+
+def _build_customer_output(
+    *,
+    findings: list[dict[str, Any]],
+    report_confidence: str,
+    general_observations: str,
+) -> dict[str, Any]:
+    return {
+        "summary": _build_customer_summary(
+            findings=findings,
+            report_confidence=report_confidence,
+            general_observations=general_observations,
+        ),
+        "findings": _build_customer_findings(findings=findings),
+    }
+
+
+def _build_customer_summary(
+    *,
+    findings: list[dict[str, Any]],
+    report_confidence: str,
+    general_observations: str,
+) -> dict[str, Any]:
+    severity_counts = {
+        "critical": 0,
+        "warning": 0,
+        "caution": 0,
+        "info": 0,
+    }
+    for item in findings:
+        if not isinstance(item, dict):
+            continue
+        severity = _normalize_severity(item.get("severity"))
+        severity_counts[severity] += 1
+
+    total_findings = sum(severity_counts.values())
+    top_risks = [
+        str(item.get("description") or "").strip()
+        for item in findings[:3]
+        if isinstance(item, dict) and str(item.get("description") or "").strip()
+    ]
+
+    if total_findings == 0:
+        status = "clear"
+        headline = "No manufacturability issues were flagged with the current criteria and confidence threshold."
+        recommended_next_step = (
+            "Proceed with quote/release review, and confirm with full DFM/Fusion checks before final sign-off."
+        )
+    elif severity_counts["critical"] > 0:
+        status = "critical"
+        headline = (
+            f"{total_findings} issue(s) flagged, including {severity_counts['critical']} critical risk(s) "
+            "that can affect manufacturability."
+        )
+        recommended_next_step = (
+            "Resolve critical geometry risks first, then re-run Vision and Fusion before quoting."
+        )
+    elif severity_counts["warning"] > 0:
+        status = "attention"
+        headline = (
+            f"{total_findings} issue(s) flagged with warning-level risk that may increase cost or lead time."
+        )
+        recommended_next_step = (
+            "Apply recommended geometry/drawing updates and re-run analysis to confirm risk reduction."
+        )
+    else:
+        status = "watch"
+        headline = f"{total_findings} low-to-moderate issue(s) flagged for engineering review."
+        recommended_next_step = (
+            "Review cautionary items and confirm acceptance criteria with manufacturing before release."
+        )
+
+    summary = {
+        "status": status,
+        "headline": headline,
+        "confidence": report_confidence,
+        "risk_counts": severity_counts,
+        "top_risks": top_risks,
+        "recommended_next_step": recommended_next_step,
+    }
+    observations = general_observations.strip()
+    if observations:
+        summary["analysis_note"] = observations
+    return summary
+
+
+def _build_customer_findings(*, findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    customer_findings: list[dict[str, Any]] = []
+
+    for index, item in enumerate(findings, start=1):
+        if not isinstance(item, dict):
+            continue
+
+        description = str(item.get("description") or "").strip()
+        if not description:
+            continue
+        severity = _normalize_severity(item.get("severity"))
+        confidence = _normalize_confidence_label(item.get("confidence"), fallback="medium")
+        finding_id = str(item.get("feature_id") or f"V{index}").strip() or f"V{index}"
+
+        views: list[str] = []
+        source_views = item.get("source_views")
+        if isinstance(source_views, list):
+            for source in source_views:
+                if isinstance(source, str) and source.strip():
+                    views.append(source.strip().lower())
+
+        payload = {
+            "finding_id": finding_id,
+            "title": _to_customer_title(description),
+            "severity": severity,
+            "confidence": confidence,
+            "why_it_matters": _infer_customer_impact_text(description=description, severity=severity),
+            "recommended_action": _infer_customer_action_text(description=description, severity=severity),
+            "source_views": sorted(set(views)),
+        }
+        refs = _normalize_refs(item.get("refs"))
+        if refs:
+            payload["refs"] = refs
+
+        customer_findings.append(payload)
+
+    return customer_findings
+
+
+def _to_customer_title(text: str) -> str:
+    clean_text = re.sub(r"\s+", " ", text.strip())
+    if not clean_text:
+        return "Manufacturability finding"
+    if len(clean_text) > 120:
+        clean_text = f"{clean_text[:117].rstrip()}..."
+    return clean_text[:1].upper() + clean_text[1:]
+
+
+def _infer_customer_impact_text(*, description: str, severity: str) -> str:
+    lowered = description.lower()
+
+    if any(token in lowered for token in ("corner", "radius", "fillet", "sharp")):
+        return (
+            "Tight internal corners can require smaller tools, slower machining, and possible redesign, "
+            "which increases cost and schedule risk."
+        )
+    if any(token in lowered for token in ("deep", "depth", "access", "reach", "narrow slot")):
+        return (
+            "Hard-to-reach geometry can reduce tool life and stability, increasing cycle time and quality risk."
+        )
+    if any(token in lowered for token in ("annotation", "note", "callout", "drawing", "dimension")):
+        return (
+            "Unclear drawing intent can create quoting ambiguity and downstream manufacturing errors."
+        )
+
+    if severity == "critical":
+        return "This issue can materially affect manufacturability, cost, and delivery risk."
+    if severity == "warning":
+        return "This issue can increase machining cost or lead time if left unresolved."
+    if severity == "caution":
+        return "This issue is moderate but should be reviewed before release."
+    return "This item should be verified during final engineering review."
+
+
+def _infer_customer_action_text(*, description: str, severity: str) -> str:
+    lowered = description.lower()
+
+    if any(token in lowered for token in ("corner", "radius", "fillet", "sharp")):
+        return "Increase internal radii where possible and align drawing callouts with tool capability."
+    if any(token in lowered for token in ("deep", "depth", "access", "reach", "narrow slot")):
+        return "Reduce depth-to-tool ratio or add access relief to support standard tooling."
+    if any(token in lowered for token in ("annotation", "note", "callout", "drawing", "dimension")):
+        return "Add explicit drawing notes and critical dimensions for manufacturability intent."
+
+    if severity == "critical":
+        return "Escalate for immediate design update and re-run manufacturability checks."
+    if severity == "warning":
+        return "Review with manufacturing engineer and update geometry or process assumptions."
+    if severity == "caution":
+        return "Confirm this condition is acceptable for the selected process and quality targets."
+    return "Track this item in release notes and verify during design review."
 
 
 def _normalize_description_key(text: str) -> str:
@@ -937,6 +1343,86 @@ def _clean_optional_str(raw_value: Any) -> str | None:
         return None
     value = raw_value.strip()
     return value if value else None
+
+
+def _normalize_refs(raw_value: Any) -> list[str]:
+    if not isinstance(raw_value, list):
+        return []
+    refs: list[str] = []
+    seen: set[str] = set()
+    for entry in raw_value:
+        if not isinstance(entry, str):
+            continue
+        value = entry.strip()
+        if not value or value in seen:
+            continue
+        seen.add(value)
+        refs.append(value)
+    return refs
+
+
+def _normalize_geometry_anchor(raw_value: Any) -> dict[str, Any] | None:
+    if not isinstance(raw_value, dict):
+        return None
+
+    normalized: dict[str, Any] = {}
+    for raw_key, raw_entry in raw_value.items():
+        if not isinstance(raw_key, str):
+            continue
+        key = raw_key.strip()
+        if not key:
+            continue
+
+        if isinstance(raw_entry, str):
+            value = raw_entry.strip()
+            if value:
+                normalized[key] = value
+            continue
+
+        if isinstance(raw_entry, (bool, int, float)):
+            normalized[key] = raw_entry
+            continue
+
+        if isinstance(raw_entry, list):
+            values: list[Any] = []
+            for item in raw_entry:
+                if isinstance(item, str):
+                    text = item.strip()
+                    if text:
+                        values.append(text)
+                elif isinstance(item, (bool, int, float)):
+                    values.append(item)
+            if values:
+                normalized[key] = values
+            continue
+
+        if isinstance(raw_entry, dict):
+            nested: dict[str, Any] = {}
+            for nested_raw_key, nested_raw_value in raw_entry.items():
+                if not isinstance(nested_raw_key, str):
+                    continue
+                nested_key = nested_raw_key.strip()
+                if not nested_key:
+                    continue
+                if isinstance(nested_raw_value, str):
+                    nested_text = nested_raw_value.strip()
+                    if nested_text:
+                        nested[nested_key] = nested_text
+                elif isinstance(nested_raw_value, (bool, int, float)):
+                    nested[nested_key] = nested_raw_value
+            if nested:
+                normalized[key] = nested
+
+    return normalized or None
+
+
+def _normalize_optional_evidence_quality(raw_value: Any) -> str | None:
+    if not isinstance(raw_value, str):
+        return None
+    value = raw_value.strip().lower()
+    if value in VALID_CONFIDENCE:
+        return value
+    return None
 
 
 def _sanitize_view_label(raw_value: str, *, fallback: str) -> str:

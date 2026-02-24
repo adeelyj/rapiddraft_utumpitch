@@ -73,6 +73,34 @@ export type VisionFinding = {
   severity: VisionSeverity;
   confidence: VisionConfidence;
   source_views: string[];
+  refs?: string[];
+  evidence_quality?: VisionConfidence;
+};
+
+export type VisionCustomerSummary = {
+  status: "clear" | "watch" | "attention" | "critical";
+  headline: string;
+  confidence: VisionConfidence;
+  risk_counts: {
+    critical: number;
+    warning: number;
+    caution: number;
+    info: number;
+  };
+  top_risks: string[];
+  recommended_next_step: string;
+  analysis_note?: string;
+};
+
+export type VisionCustomerFinding = {
+  finding_id: string;
+  title: string;
+  severity: VisionSeverity;
+  confidence: VisionConfidence;
+  why_it_matters: string;
+  recommended_action: string;
+  source_views: string[];
+  refs?: string[];
 };
 
 export type VisionReportResponse = {
@@ -85,8 +113,11 @@ export type VisionReportResponse = {
     confidence: VisionConfidence;
   };
   findings: VisionFinding[];
+  customer_summary?: VisionCustomerSummary;
+  customer_findings?: VisionCustomerFinding[];
   general_observations: string;
   raw_output_text?: string;
+  prompt_used?: string;
   criteria_applied: VisionCriteria;
   provider_applied: {
     route_requested: VisionProviderRoute;
@@ -102,6 +133,7 @@ export type VisionReportRequest = {
   view_set_id: string;
   selected_view_names?: string[];
   pasted_images?: VisionPastedImageRequest[];
+  prompt_override?: string | null;
   criteria?: VisionCriteria;
   provider: VisionProviderRequest;
 };

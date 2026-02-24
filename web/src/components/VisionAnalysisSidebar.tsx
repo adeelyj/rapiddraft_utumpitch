@@ -1,4 +1,5 @@
-﻿import { type ClipboardEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { AnalysisFocusPayload } from "../types/analysis";
 import type {
   VisionCriteria,
   VisionFinding,
@@ -8,25 +9,23 @@ import type {
   VisionViewSetResponse,
 } from "../types/vision";
 
+type VisionInputSource = {
+  id: string;
+  label: string;
+  src: string;
+};
+
 type VisionAnalysisSidebarProps = {
   open: boolean;
   apiBase: string;
   modelId: string | null;
   selectedComponent: { nodeName: string; displayName: string } | null;
+  selectedInputSources: VisionInputSource[];
+  onFocusInModel?: (payload: AnalysisFocusPayload) => void;
   onClose: () => void;
 };
 
 type CriteriaProfile = "default" | "custom";
-type GeneratedViewName = "x" | "y" | "z";
-
-type PastedVisionImage = {
-  id: string;
-  label: string;
-  dataUrl: string;
-  selected: boolean;
-};
-
-const GENERATED_VIEW_NAMES: GeneratedViewName[] = ["x", "y", "z"];
 
 const DEFAULT_CRITERIA: VisionCriteria = {
   checks: {
@@ -60,11 +59,34 @@ const severityClass = (severity: VisionFinding["severity"]): string => {
   return "vision-sidebar__status vision-sidebar__status--info";
 };
 
+const customerStatusClass = (status: string | undefined): string => {
+  if (status === "critical") return "vision-sidebar__status vision-sidebar__status--critical";
+  if (status === "attention") return "vision-sidebar__status vision-sidebar__status--warning";
+  if (status === "watch") return "vision-sidebar__status vision-sidebar__status--caution";
+  return "vision-sidebar__status vision-sidebar__status--info";
+};
+
+const blobToDataUrl = (blob: Blob): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+      } else {
+        reject(new Error("Failed to convert image blob to data URL."));
+      }
+    };
+    reader.onerror = () => reject(new Error("Failed to read image blob."));
+    reader.readAsDataURL(blob);
+  });
+
 const VisionAnalysisSidebar = ({
   open,
   apiBase,
   modelId,
   selectedComponent,
+  selectedInputSources,
+  onFocusInModel,
   onClose,
 }: VisionAnalysisSidebarProps) => {
   const [criteriaProfile, setCriteriaProfile] = useState<CriteriaProfile>("default");
@@ -77,17 +99,11 @@ const VisionAnalysisSidebar = ({
   const [modelOverride, setModelOverride] = useState("");
   const [baseUrlOverride, setBaseUrlOverride] = useState("");
   const [apiKeyOverride, setApiKeyOverride] = useState("");
-  const [selectedGeneratedViews, setSelectedGeneratedViews] = useState<Record<GeneratedViewName, boolean>>({
-    x: true,
-    y: true,
-    z: true,
-  });
-  const [pastedImages, setPastedImages] = useState<PastedVisionImage[]>([]);
+  const [promptOverride, setPromptOverride] = useState("");
+  const [promptEditorOpen, setPromptEditorOpen] = useState(false);
+  const [promptEditorDraft, setPromptEditorDraft] = useState("");
 
-  const [viewSet, setViewSet] = useState<VisionViewSetResponse | null>(null);
   const [report, setReport] = useState<VisionReportResponse | null>(null);
-
-  const [generatingViews, setGeneratingViews] = useState(false);
   const [runningAnalysis, setRunningAnalysis] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeApiBase, setActiveApiBase] = useState<string>(apiBase);
@@ -97,11 +113,8 @@ const VisionAnalysisSidebar = ({
   }, [apiBase]);
 
   useEffect(() => {
-    setViewSet(null);
     setReport(null);
     setError(null);
-    setSelectedGeneratedViews({ x: true, y: true, z: true });
-    setPastedImages([]);
   }, [modelId, selectedComponent?.nodeName]);
 
   useEffect(() => {
@@ -109,6 +122,19 @@ const VisionAnalysisSidebar = ({
       setCriteria(cloneDefaultCriteria());
     }
   }, [criteriaProfile]);
+
+  useEffect(() => {
+    if (!promptEditorOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setPromptEditorOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [promptEditorOpen]);
 
   useEffect(() => {
     if (!open || !modelId) return;
@@ -128,7 +154,6 @@ const VisionAnalysisSidebar = ({
         }
         const payload = (await response.json()) as VisionProvidersResponse;
         if (cancelled) return;
-
         setProviders(payload);
         setRoute(payload.default_provider);
       } catch (err) {
@@ -166,15 +191,6 @@ const VisionAnalysisSidebar = ({
     }
   };
 
-  const viewUrls = useMemo(() => {
-    if (!viewSet) return null;
-    return {
-      x: joinApiUrl(activeApiBase, viewSet.views.x),
-      y: joinApiUrl(activeApiBase, viewSet.views.y),
-      z: joinApiUrl(activeApiBase, viewSet.views.z),
-    };
-  }, [activeApiBase, viewSet]);
-
   const routeConfigured = useMemo(() => {
     if (!providers) return true;
     const found = providers.providers.find((entry) => entry.id === route);
@@ -191,87 +207,6 @@ const VisionAnalysisSidebar = ({
     if (route === "local") return providers?.local_defaults?.base_url ?? "http://127.0.0.1:1234/v1";
     return "";
   }, [providers, route]);
-  const selectedGeneratedViewNames = useMemo(
-    () => GENERATED_VIEW_NAMES.filter((viewName) => selectedGeneratedViews[viewName]),
-    [selectedGeneratedViews],
-  );
-  const selectedPastedImages = useMemo(
-    () => pastedImages.filter((image) => image.selected),
-    [pastedImages],
-  );
-  const hasAnySelectedImages = selectedGeneratedViewNames.length > 0 || selectedPastedImages.length > 0;
-
-  const toggleGeneratedView = (viewName: GeneratedViewName, checked: boolean) => {
-    setSelectedGeneratedViews((prev) => ({ ...prev, [viewName]: checked }));
-  };
-
-  const togglePastedImage = (id: string, checked: boolean) => {
-    setPastedImages((prev) =>
-      prev.map((image) =>
-        image.id === id
-          ? {
-              ...image,
-              selected: checked,
-            }
-          : image,
-      ),
-    );
-  };
-
-  const removePastedImage = (id: string) => {
-    setPastedImages((prev) => prev.filter((image) => image.id !== id));
-  };
-
-  const appendPastedImage = (dataUrl: string, fileNameHint?: string) => {
-    if (!dataUrl.startsWith("data:image/")) {
-      setError("Clipboard data is not a supported image.");
-      return;
-    }
-    setPastedImages((prev) => {
-      const nextIndex = prev.length + 1;
-      const fallbackLabel = `Screenshot ${nextIndex}`;
-      const trimmedName = (fileNameHint ?? "").trim();
-      const label = trimmedName ? trimmedName : fallbackLabel;
-      const id =
-        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-          ? crypto.randomUUID()
-          : `shot_${Date.now()}_${nextIndex}`;
-      return [
-        ...prev,
-        {
-          id,
-          label,
-          dataUrl,
-          selected: true,
-        },
-      ];
-    });
-  };
-
-  const handlePasteScreenshot = (event: ClipboardEvent<HTMLTextAreaElement>) => {
-    const items = Array.from(event.clipboardData?.items ?? []);
-    const imageItem = items.find((item) => item.type.startsWith("image/"));
-    if (!imageItem) return;
-
-    const file = imageItem.getAsFile();
-    if (!file) return;
-    event.preventDefault();
-    setError(null);
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result;
-      if (typeof result !== "string") {
-        setError("Failed to read pasted image.");
-        return;
-      }
-      appendPastedImage(result, file.name);
-    };
-    reader.onerror = () => {
-      setError("Failed to read pasted image.");
-    };
-    reader.readAsDataURL(file);
-  };
 
   const setCheck = (key: keyof VisionCriteria["checks"], checked: boolean) => {
     setCriteria((prev) => ({
@@ -294,48 +229,52 @@ const VisionAnalysisSidebar = ({
   };
 
   const criteriaEditable = criteriaProfile === "custom";
+  const hasAnySelectedImages = selectedInputSources.length > 0;
+  const hasPromptOverride = promptOverride.trim().length > 0;
 
-  const handleGenerateViews = async () => {
-    if (!modelId) {
-      setError("Load a model before generating vision views.");
-      return;
+  const focusFindingInModel = (payload: {
+    id: string;
+    title: string;
+    details?: string;
+    severity?: string;
+  }) => {
+    if (!onFocusInModel) return;
+    onFocusInModel({
+      id: payload.id,
+      source: "vision",
+      title: payload.title,
+      details: payload.details,
+      severity: payload.severity,
+      component_node_name: selectedComponent?.nodeName ?? report?.component_node_name ?? null,
+    });
+  };
+
+  const resolveInputDataUrl = async (source: VisionInputSource): Promise<string> => {
+    if (source.src.startsWith("data:image/")) {
+      return source.src;
     }
-    if (!selectedComponent) {
-      setError("Select a part from the assembly tree before generating vision views.");
-      return;
+    const response = await fetch(source.src);
+    if (!response.ok) {
+      throw new Error(`Failed to read selected input '${source.label}' (HTTP ${response.status}).`);
     }
+    const blob = await response.blob();
+    return blobToDataUrl(blob);
+  };
 
-    setGeneratingViews(true);
-    setError(null);
-    setReport(null);
+  const handleOpenPromptEditor = () => {
+    setPromptEditorDraft(promptOverride || report?.prompt_used || "");
+    setPromptEditorOpen(true);
+  };
 
-    try {
-      const path = `/api/models/${modelId}/vision/view-sets`;
-      const response = await runWithFallback(path, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ component_node_name: selectedComponent.nodeName }),
-      });
+  const handleSavePromptEditor = () => {
+    setPromptOverride(promptEditorDraft);
+    setPromptEditorOpen(false);
+  };
 
-      if (!response.ok) {
-        const detail = await readErrorText(response, "Failed to generate vision view set");
-        throw new Error(`${detail} (HTTP ${response.status})`);
-      }
-
-      const payload = (await response.json()) as VisionViewSetResponse;
-      setViewSet(payload);
-      setSelectedGeneratedViews({ x: true, y: true, z: true });
-    } catch (err) {
-      if (err instanceof TypeError) {
-        setError(
-          `Network error contacting API. Verify backend reachability and VITE_API_BASE_URL (current: ${apiBase || "same-origin"}).`,
-        );
-      } else {
-        setError(err instanceof Error ? err.message : "Unexpected error while generating view set");
-      }
-    } finally {
-      setGeneratingViews(false);
-    }
+  const handleResetPromptEditor = () => {
+    setPromptOverride("");
+    setPromptEditorDraft("");
+    setPromptEditorOpen(false);
   };
 
   const handleConductAnalysis = async () => {
@@ -347,12 +286,8 @@ const VisionAnalysisSidebar = ({
       setError("Select a part from the assembly tree before running vision analysis.");
       return;
     }
-    if (!viewSet) {
-      setError("Generate views first before conducting analysis.");
-      return;
-    }
     if (!hasAnySelectedImages) {
-      setError("Select at least one generated or pasted image before conducting analysis.");
+      setError("Select at least one view/screenshot from the left Views panel.");
       return;
     }
 
@@ -375,20 +310,38 @@ const VisionAnalysisSidebar = ({
       if (apiKeyOverride.trim()) providerPayload.api_key_override = apiKeyOverride.trim();
       if (route === "local" && baseUrlOverride.trim()) providerPayload.local_base_url = baseUrlOverride.trim();
 
+      const createViewSetPath = `/api/models/${modelId}/vision/view-sets`;
+      const viewSetResponse = await runWithFallback(createViewSetPath, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ component_node_name: selectedComponent.nodeName }),
+      });
+      if (!viewSetResponse.ok) {
+        const detail = await readErrorText(viewSetResponse, "Failed to prepare vision view set");
+        throw new Error(`${detail} (HTTP ${viewSetResponse.status})`);
+      }
+      const viewSetPayload = (await viewSetResponse.json()) as VisionViewSetResponse;
+
+      const pastedImages = await Promise.all(
+        selectedInputSources.map(async (source, index) => ({
+          name: source.label || `Selected image ${index + 1}`,
+          data_url: await resolveInputDataUrl(source),
+        })),
+      );
+
       const path = `/api/models/${modelId}/vision/reports`;
+      const promptOverrideForRequest = promptOverride.trim() ? promptOverride : undefined;
       const response = await runWithFallback(path, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           component_node_name: selectedComponent.nodeName,
-          view_set_id: viewSet.view_set_id,
-          selected_view_names: selectedGeneratedViewNames,
-          pasted_images: selectedPastedImages.map((image) => ({
-            name: image.label,
-            data_url: image.dataUrl,
-          })),
+          view_set_id: viewSetPayload.view_set_id,
+          selected_view_names: [],
+          pasted_images: pastedImages,
           criteria,
           provider: providerPayload,
+          prompt_override: promptOverrideForRequest,
         }),
       });
 
@@ -427,72 +380,29 @@ const VisionAnalysisSidebar = ({
           <div className="vision-sidebar__readonly">{selectedComponent?.displayName ?? "No part selected"}</div>
         </div>
 
-        <button
-          type="button"
-          className="vision-sidebar__submit"
-          onClick={handleGenerateViews}
-          disabled={generatingViews || runningAnalysis || !modelId || !selectedComponent}
-        >
-          {generatingViews ? "Generating views..." : "Generate Views"}
-        </button>
+        <div className="vision-sidebar__assumptions">
+          <h3>Selected Inputs (Views panel)</h3>
+          <p>{selectedInputSources.length} image(s) selected for analysis.</p>
+          {selectedInputSources.length ? (
+            <ul>
+              {selectedInputSources.map((source) => (
+                <li key={source.id}>{source.label}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="vision-sidebar__hint">Open left Views tab and tick V on the views/screenshots to use.</p>
+          )}
+        </div>
 
-        {viewUrls ? (
-          <div className="vision-sidebar__thumb-grid">
-            {GENERATED_VIEW_NAMES.map((viewName) => (
-              <div className="vision-sidebar__thumb-card" key={viewName}>
-                <label className="vision-sidebar__thumb-select">
-                  <input
-                    type="checkbox"
-                    checked={selectedGeneratedViews[viewName]}
-                    onChange={(event) => toggleGeneratedView(viewName, event.target.checked)}
-                  />
-                  <span>{viewName.toUpperCase()}</span>
-                </label>
-                <img src={viewUrls[viewName]} alt={`Vision ${viewName.toUpperCase()} view`} />
-              </div>
-            ))}
+        <div className="vision-sidebar__field">
+          <span>Prompt</span>
+          <div className="vision-sidebar__prompt-row">
+            <button type="button" className="vision-sidebar__prompt-button" onClick={handleOpenPromptEditor}>
+              Edit prompt
+            </button>
+            <span className="vision-sidebar__prompt-state">{hasPromptOverride ? "Custom" : "Default"}</span>
           </div>
-        ) : (
-          <p className="vision-sidebar__hint">Generate a frozen x/y/z view set first.</p>
-        )}
-
-        <label className="vision-sidebar__field">
-          <span>Paste screenshot (optional)</span>
-          <textarea
-            className="vision-sidebar__criteria-input vision-sidebar__paste-target"
-            rows={3}
-            onPaste={handlePasteScreenshot}
-            placeholder="Click here and paste image from clipboard (Ctrl+V)."
-          />
-          <p className="vision-sidebar__hint">
-            Paste one or more screenshots, then check which generated/pasted images to send to the model.
-          </p>
-        </label>
-
-        {pastedImages.length ? (
-          <div className="vision-sidebar__thumb-grid vision-sidebar__thumb-grid--pasted">
-            {pastedImages.map((image) => (
-              <div className="vision-sidebar__thumb-card" key={image.id}>
-                <label className="vision-sidebar__thumb-select">
-                  <input
-                    type="checkbox"
-                    checked={image.selected}
-                    onChange={(event) => togglePastedImage(image.id, event.target.checked)}
-                  />
-                  <span>{image.label}</span>
-                </label>
-                <button
-                  type="button"
-                  className="vision-sidebar__thumb-remove"
-                  onClick={() => removePastedImage(image.id)}
-                >
-                  Remove
-                </button>
-                <img src={image.dataUrl} alt={`Pasted screenshot ${image.label}`} />
-              </div>
-            ))}
-          </div>
-        ) : null}
+        </div>
 
         <label className="vision-sidebar__field">
           <span>Criteria profile</span>
@@ -651,15 +561,7 @@ const VisionAnalysisSidebar = ({
           type="button"
           className="vision-sidebar__submit"
           onClick={handleConductAnalysis}
-          disabled={
-            runningAnalysis ||
-            generatingViews ||
-            !viewSet ||
-            !modelId ||
-            !selectedComponent ||
-            !routeCanRun ||
-            !hasAnySelectedImages
-          }
+          disabled={runningAnalysis || !modelId || !selectedComponent || !routeCanRun || !hasAnySelectedImages}
         >
           {runningAnalysis ? "Conducting analysis..." : "Conduct Analysis"}
         </button>
@@ -673,76 +575,210 @@ const VisionAnalysisSidebar = ({
               <div className="vision-sidebar__chip">Model: {report.provider_applied.model_used}</div>
             </div>
 
-            <div className="vision-sidebar__table-wrap">
-              <table className="vision-sidebar__table">
-                <thead>
-                  <tr>
-                    <th>Feature</th>
-                    <th>Severity</th>
-                    <th>Confidence</th>
-                    <th>Views</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {report.findings.length ? (
-                    report.findings.map((finding) => (
-                      <tr key={finding.feature_id}>
-                        <td title={finding.description}>{finding.description}</td>
-                        <td>
-                          <span className={severityClass(finding.severity)}>{finding.severity}</span>
-                        </td>
-                        <td>{finding.confidence}</td>
-                        <td>{finding.source_views.join(", ") || "-"}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={4}>No findings passed current criteria filters.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {report.general_observations ? (
-              <div className="vision-sidebar__assumptions">
-                <h3>General Observations</h3>
-                <p>{report.general_observations}</p>
+            {report.customer_summary ? (
+              <div className="vision-sidebar__customer-summary">
+                <h3>Customer Summary</h3>
+                <div className="vision-sidebar__customer-topline">
+                  <span className={customerStatusClass(report.customer_summary.status)}>
+                    {report.customer_summary.status}
+                  </span>
+                  <span className="vision-sidebar__chip">Confidence: {report.customer_summary.confidence}</span>
+                </div>
+                <p className="vision-sidebar__customer-headline">{report.customer_summary.headline}</p>
+                {report.customer_summary.top_risks.length ? (
+                  <div className="vision-sidebar__customer-risks">
+                    <h4>Top risks</h4>
+                    <ul>
+                      {report.customer_summary.top_risks.map((risk, index) => (
+                        <li key={`${index}_${risk}`}>{risk}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                <p className="vision-sidebar__customer-next">
+                  <strong>Recommended next step:</strong> {report.customer_summary.recommended_next_step}
+                </p>
               </div>
             ) : null}
 
-            <div className="vision-sidebar__assumptions">
-              <h3>Applied Criteria (Engine Echo)</h3>
-              <ul>
-                <li>Internal pocket tight corners: {report.criteria_applied.checks.internal_pocket_tight_corners ? "on" : "off"}</li>
-                <li>Tool access risk: {report.criteria_applied.checks.tool_access_risk ? "on" : "off"}</li>
-                <li>Annotation scan: {report.criteria_applied.checks.annotation_note_scan ? "on" : "off"}</li>
-                <li>Sensitivity: {report.criteria_applied.sensitivity}</li>
-                <li>Confidence threshold: {report.criteria_applied.confidence_threshold}</li>
-                <li>Max findings: {report.criteria_applied.max_flagged_features}</li>
-              </ul>
-            </div>
+            {(report.customer_findings ?? []).length ? (
+              <div className="vision-sidebar__customer-actions">
+                <h3>Recommended Actions</h3>
+                <div className="vision-sidebar__customer-cards">
+                  {(report.customer_findings ?? []).map((item) => (
+                    <article key={item.finding_id} className="vision-sidebar__customer-card">
+                      <div className="vision-sidebar__customer-card-header">
+                        <strong>{item.title}</strong>
+                        <span className={severityClass(item.severity)}>{item.severity}</span>
+                      </div>
+                      <p>
+                        <strong>Why it matters:</strong> {item.why_it_matters}
+                      </p>
+                      <p>
+                        <strong>Action:</strong> {item.recommended_action}
+                      </p>
+                      <p>
+                        <strong>Views:</strong> {item.source_views.join(", ") || "-"}
+                      </p>
+                      {item.refs?.length ? (
+                        <p>
+                          <strong>Standards:</strong> {item.refs.join(", ")}
+                        </p>
+                      ) : null}
+                      <button
+                        type="button"
+                        className="analysis-focus-action"
+                        onClick={() =>
+                          focusFindingInModel({
+                            id: item.finding_id,
+                            title: item.title,
+                            details: item.recommended_action,
+                            severity: item.severity,
+                          })
+                        }
+                      >
+                        Show in model
+                      </button>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            ) : null}
 
-            <div className="vision-sidebar__assumptions">
-              <h3>Provider Echo</h3>
-              <ul>
-                <li>Requested route: {report.provider_applied.route_requested}</li>
-                <li>Used route: {report.provider_applied.route_used}</li>
-                <li>Model: {report.provider_applied.model_used}</li>
-                <li>Base URL: {report.provider_applied.base_url_used}</li>
-              </ul>
-            </div>
+            <details className="vision-sidebar__assumptions">
+              <summary>Technical details</summary>
 
-            <div className="vision-sidebar__assumptions">
-              <h3>Raw Model Output</h3>
-              <pre className="vision-sidebar__raw-output">
-                {report.raw_output_text?.trim() || "No raw provider output captured for this run."}
-              </pre>
-            </div>
+              <div className="vision-sidebar__table-wrap">
+                <table className="vision-sidebar__table">
+                  <thead>
+                    <tr>
+                      <th>Feature</th>
+                      <th>Severity</th>
+                      <th>Confidence</th>
+                      <th>Views</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {report.findings.length ? (
+                      report.findings.map((finding) => (
+                        <tr key={finding.feature_id}>
+                          <td title={finding.description}>
+                            <div className="vision-sidebar__finding-cell">
+                              <span>{finding.description}</span>
+                              <button
+                                type="button"
+                                className="analysis-focus-action"
+                                onClick={() =>
+                                  focusFindingInModel({
+                                    id: finding.feature_id,
+                                    title: finding.description,
+                                    details: report.general_observations,
+                                    severity: finding.severity,
+                                  })
+                                }
+                              >
+                                Show
+                              </button>
+                            </div>
+                          </td>
+                          <td>
+                            <span className={severityClass(finding.severity)}>{finding.severity}</span>
+                          </td>
+                          <td>{finding.confidence}</td>
+                          <td>{finding.source_views.join(", ") || "-"}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4}>No findings passed current criteria filters.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {report.general_observations ? (
+                <div className="vision-sidebar__assumptions">
+                  <h3>General Observations</h3>
+                  <p>{report.general_observations}</p>
+                </div>
+              ) : null}
+
+              <div className="vision-sidebar__assumptions">
+                <h3>Applied Criteria (Engine Echo)</h3>
+                <ul>
+                  <li>Internal pocket tight corners: {report.criteria_applied.checks.internal_pocket_tight_corners ? "on" : "off"}</li>
+                  <li>Tool access risk: {report.criteria_applied.checks.tool_access_risk ? "on" : "off"}</li>
+                  <li>Annotation scan: {report.criteria_applied.checks.annotation_note_scan ? "on" : "off"}</li>
+                  <li>Sensitivity: {report.criteria_applied.sensitivity}</li>
+                  <li>Confidence threshold: {report.criteria_applied.confidence_threshold}</li>
+                  <li>Max findings: {report.criteria_applied.max_flagged_features}</li>
+                </ul>
+              </div>
+
+              <div className="vision-sidebar__assumptions">
+                <h3>Provider Echo</h3>
+                <ul>
+                  <li>Requested route: {report.provider_applied.route_requested}</li>
+                  <li>Used route: {report.provider_applied.route_used}</li>
+                  <li>Model: {report.provider_applied.model_used}</li>
+                  <li>Base URL: {report.provider_applied.base_url_used}</li>
+                </ul>
+              </div>
+
+              <div className="vision-sidebar__assumptions">
+                <h3>Raw Model Output</h3>
+                <pre className="vision-sidebar__raw-output">
+                  {report.raw_output_text?.trim() || "No raw provider output captured for this run."}
+                </pre>
+              </div>
+            </details>
           </>
         ) : (
-          <p className="vision-sidebar__hint">Generate a view set, then conduct vision analysis.</p>
+          <p className="vision-sidebar__hint">Select inputs in left Views panel, then run analysis here.</p>
         )}
+
+        {promptEditorOpen ? (
+          <div className="vision-sidebar__prompt-backdrop" role="dialog" aria-modal="true" aria-label="Vision prompt editor">
+            <div className="vision-sidebar__prompt-modal">
+              <div className="vision-sidebar__prompt-header">
+                <h3>Vision Prompt Editor</h3>
+                <button
+                  type="button"
+                  className="vision-sidebar__close"
+                  onClick={() => setPromptEditorOpen(false)}
+                  aria-label="Close prompt editor"
+                >
+                  x
+                </button>
+              </div>
+              <p className="vision-sidebar__hint">
+                Save a custom prompt override for this session. Leave empty to use the backend default prompt.
+              </p>
+              <textarea
+                className="vision-sidebar__prompt-textarea"
+                value={promptEditorDraft}
+                onChange={(event) => setPromptEditorDraft(event.target.value)}
+                placeholder="Using backend default prompt. Paste or edit custom prompt here."
+              />
+              <div className="vision-sidebar__prompt-actions">
+                <button type="button" className="vision-sidebar__prompt-action" onClick={handleResetPromptEditor}>
+                  Reset default
+                </button>
+                <button
+                  type="button"
+                  className="vision-sidebar__prompt-action"
+                  onClick={() => setPromptEditorOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button type="button" className="vision-sidebar__prompt-action vision-sidebar__prompt-action--primary" onClick={handleSavePromptEditor}>
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         {error ? <p className="vision-sidebar__error">{error}</p> : null}
       </div>
@@ -751,5 +787,3 @@ const VisionAnalysisSidebar = ({
 };
 
 export default VisionAnalysisSidebar;
-
-
