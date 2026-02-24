@@ -301,7 +301,7 @@ const DfmReviewSidebar = ({
   const [dfmConfig, setDfmConfig] = useState<DfmConfigResponse | null>(null);
   const [loadingConfig, setLoadingConfig] = useState(false);
   const [analysisMode, setAnalysisMode] = useState<AnalysisMode>("geometry_dfm");
-  const [processOverrideMode, setProcessOverrideMode] = useState<ProcessOverrideMode>("profile");
+  const [processOverrideMode, setProcessOverrideMode] = useState<ProcessOverrideMode>("auto");
   const [forcedProcessId, setForcedProcessId] = useState("");
   const [overlayOverrideMode, setOverlayOverrideMode] = useState<OverlayOverrideMode>("pilot");
   const [forcedOverlayId, setForcedOverlayId] = useState("");
@@ -338,9 +338,7 @@ const DfmReviewSidebar = ({
       flowOrder.filter((controlId) =>
         [
           "analysis_mode",
-          "manufacturing_process",
           "industry_overlay",
-          "run_both_if_mismatch",
           "generate_review",
         ].includes(controlId)
       ),
@@ -350,7 +348,13 @@ const DfmReviewSidebar = ({
   const secondaryControlIds = useMemo(
     () =>
       flowOrder.filter((controlId) =>
-        ["role_lens", "report_template", "advanced_llm_model"].includes(controlId)
+        [
+          "manufacturing_process",
+          "run_both_if_mismatch",
+          "role_lens",
+          "report_template",
+          "advanced_llm_model",
+        ].includes(controlId)
       ),
     [flowOrder]
   );
@@ -475,6 +479,13 @@ const DfmReviewSidebar = ({
       (analysisModeDefault === "geometry_dfm" || analysisModeDefault === "drawing_spec" || analysisModeDefault === "full")
     ) {
       setAnalysisMode(analysisModeDefault as AnalysisMode);
+    }
+    const processDefaultMode = controlsById.get("manufacturing_process")?.default_mode;
+    if (
+      typeof processDefaultMode === "string" &&
+      (processDefaultMode === "auto" || processDefaultMode === "profile" || processDefaultMode === "force")
+    ) {
+      setProcessOverrideMode(processDefaultMode as ProcessOverrideMode);
     }
 
     if (!selectedAdvancedModel && advancedModelOptions.length) {
@@ -829,12 +840,16 @@ const DfmReviewSidebar = ({
 
         <div className="dfm-sidebar__flow">
           <h3>Analysis controls</h3>
+          <p className="dfm-sidebar__hint">
+            Simplified mode: choose analysis mode and standards profile. Process override and mismatch settings are in
+            Advanced controls.
+          </p>
           <div className="dfm-sidebar__flow-controls">
             {primaryControlIds.map((controlId) => renderFlowControl(controlId))}
           </div>
           {secondaryControlIds.length ? (
             <details className="dfm-sidebar__details">
-              <summary>Advanced report options</summary>
+              <summary>Advanced controls</summary>
               <div className="dfm-sidebar__flow-controls">
                 {secondaryControlIds.map((controlId) => renderFlowControl(controlId))}
               </div>
