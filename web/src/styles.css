@@ -646,6 +646,31 @@ h4 {
   color: var(--text-1);
 }
 
+.dfm-sidebar__plan-summary > summary {
+  cursor: pointer;
+  color: var(--text-1);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.dfm-sidebar__plan-summary[open] > summary {
+  margin-bottom: 8px;
+}
+
+.dfm-sidebar__part-context[open] > summary {
+  margin-bottom: 4px;
+}
+
+.dfm-sidebar__compact-meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.dfm-sidebar__compact-meta-list .dfm-sidebar__meta {
+  margin: 0;
+}
+
 .dfm-sidebar__flow-controls {
   display: flex;
   flex-direction: column;

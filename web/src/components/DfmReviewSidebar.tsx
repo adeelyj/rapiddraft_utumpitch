@@ -314,6 +314,7 @@ const DfmReviewSidebar = ({
   const [selectedAdvancedModel, setSelectedAdvancedModel] = useState("");
   const [runBothIfMismatch, setRunBothIfMismatch] = useState(true);
   const [reviewV2Result, setReviewV2Result] = useState<DfmReviewV2Response | null>(null);
+  const [detailsDefaultVersion, setDetailsDefaultVersion] = useState(0);
 
   const panelBindings = useMemo(() => {
     return dfmConfig?.ui_bindings?.screens?.dfm_review_panel ?? null;
@@ -366,14 +367,6 @@ const DfmReviewSidebar = ({
     return values.filter((value): value is string => typeof value === "string" && value.trim().length > 0);
   }, [controlsById]);
 
-  const standardsLabel = useMemo(() => {
-    return panelBindings?.standards_used_auto?.label ?? "Standards used (auto)";
-  }, [panelBindings]);
-
-  const costLabel = useMemo(() => {
-    return panelBindings?.cost_outputs?.label ?? "Should-cost (auto)";
-  }, [panelBindings]);
-
   const pilotOverlay = useMemo(() => {
     return dfmConfig?.overlays.find((overlay) => overlay.overlay_id === PILOT_OVERLAY_ID) ?? null;
   }, [dfmConfig]);
@@ -411,6 +404,7 @@ const DfmReviewSidebar = ({
   useEffect(() => {
     setError(null);
     setReviewV2Result(null);
+    setDetailsDefaultVersion((current) => current + 1);
   }, [modelId, selectedComponent?.nodeName]);
 
   useEffect(() => {
@@ -581,6 +575,7 @@ const DfmReviewSidebar = ({
       }
       const reviewPayload = (await reviewResponse.json()) as DfmReviewV2Response;
       setReviewV2Result(reviewPayload);
+      setDetailsDefaultVersion((current) => current + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unexpected error while generating DFM review");
     } finally {
@@ -615,9 +610,7 @@ const DfmReviewSidebar = ({
                 </option>
               ))}
             </select>
-          ) : (
-            <p className="dfm-sidebar__meta">Profile process: {selectedProfile?.manufacturingProcess || "-"}</p>
-          )}
+          ) : null}
         </label>
       );
     }
@@ -631,13 +624,6 @@ const DfmReviewSidebar = ({
             <option value="drawing_spec">Drawing/spec completeness</option>
             <option value="full">Full</option>
           </select>
-          <p className="dfm-sidebar__meta">
-            {analysisMode === "geometry_dfm"
-              ? "Designer-first mode. Excludes drawing-only checks."
-              : analysisMode === "drawing_spec"
-              ? "Documentation-focused mode. Highlights drawing/spec gaps."
-              : "Full mode. Includes geometry and documentation checks."}
-          </p>
         </label>
       );
     }
@@ -662,19 +648,6 @@ const DfmReviewSidebar = ({
               </option>
             ))}
           </select>
-          <p className="dfm-sidebar__meta">
-            {standardsProfileSelection === "profile_auto"
-              ? `Profile industry mapping: ${selectedProfile?.industry || "-"}`
-              : standardsProfileSelection === "none"
-              ? "No overlay selected."
-              : standardsProfileSelection === "pilot"
-              ? `Pilots: ${pilotOverlay?.label ?? "Overlay not available in bundle"}`
-              : `Custom overlay: ${
-                  standardsProfileSelection.slice("overlay:".length) === allStandardsOverlayId
-                    ? "All standards"
-                    : overlayLabelById(dfmConfig?.overlays ?? [], standardsProfileSelection.slice("overlay:".length) || null)
-                }`}
-          </p>
         </label>
       );
     }
@@ -754,7 +727,6 @@ const DfmReviewSidebar = ({
     if (controlId === "generate_review") {
       return (
         <div key={controlId} className="dfm-sidebar__field dfm-sidebar__flow-step">
-          <span>{label}</span>
           <button
             type="button"
             className="dfm-sidebar__submit"
@@ -856,19 +828,17 @@ const DfmReviewSidebar = ({
           <div className="dfm-sidebar__readonly">{selectedComponent?.displayName ?? "No part selected"}</div>
         </div>
 
-        <div className="dfm-sidebar__plan-summary">
-          <h3>Part context (from profile)</h3>
-          <p className="dfm-sidebar__meta">Manufacturing process: {selectedProfile?.manufacturingProcess || "-"}</p>
-          <p className="dfm-sidebar__meta">Material: {selectedProfile?.material || "-"}</p>
-          <p className="dfm-sidebar__meta">Industry: {selectedProfile?.industry || "-"}</p>
-        </div>
+        <details open className="dfm-sidebar__plan-summary dfm-sidebar__part-context">
+          <summary>Part context (from profile)</summary>
+          <div className="dfm-sidebar__compact-meta-list">
+            <p className="dfm-sidebar__meta">Manufacturing process: {selectedProfile?.manufacturingProcess || "-"}</p>
+            <p className="dfm-sidebar__meta">Material: {selectedProfile?.material || "-"}</p>
+            <p className="dfm-sidebar__meta">Industry: {selectedProfile?.industry || "-"}</p>
+          </div>
+        </details>
 
         <div className="dfm-sidebar__flow">
           <h3>Analysis controls</h3>
-          <p className="dfm-sidebar__hint">
-            Simplified mode: choose input scope and standards profile. Process override and mismatch settings are in
-            Advanced controls.
-          </p>
           <div className="dfm-sidebar__flow-controls">
             {primaryControlIds.map((controlId) => renderFlowControl(controlId))}
           </div>
@@ -882,95 +852,193 @@ const DfmReviewSidebar = ({
           ) : null}
         </div>
 
-        <div className="dfm-sidebar__plan-summary">
-          <h3>Effective analysis context</h3>
-          <p className="dfm-sidebar__meta">
-            Input scope:{" "}
-            {reviewV2Result?.effective_context?.analysis_mode
-              ? reviewV2Result.effective_context.analysis_mode.selected_mode
-              : analysisMode}{" "}
-            (source: {reviewV2Result?.effective_context?.analysis_mode?.source ?? "ui_selection"})
-          </p>
-          {reviewV2Result?.effective_context?.process ? (
-            <p className="dfm-sidebar__meta">
-              Process: {reviewV2Result.effective_context.process.effective_process_label || "Auto (AI recommendation)"}{" "}
-              (source: {reviewV2Result.effective_context.process.source})
-            </p>
-          ) : (
-            <p className="dfm-sidebar__meta">
-              Process:{" "}
-              {processOverrideMode === "force"
-                ? processLabelById(dfmConfig?.processes ?? [], forcedProcessId || null) || "None"
-                : processOverrideMode === "auto"
-                ? "Auto (AI recommendation)"
-                : "Profile value"}{" "}
-              (source: pending backend resolution)
-            </p>
-          )}
-          {reviewV2Result?.effective_context?.overlay ? (
-            <p className="dfm-sidebar__meta">
-              Rule set:{" "}
-              {reviewV2Result.effective_context.overlay.effective_overlay_id === allStandardsOverlayId
-                ? "All standards"
-                : reviewV2Result.effective_context.overlay.effective_overlay_label || "None"}{" "}
-              (source:{" "}
-              {reviewV2Result.effective_context.overlay.source})
-            </p>
-          ) : (
-            <p className="dfm-sidebar__meta">
-              Rule set:{" "}
-              {standardsProfileSelection === "profile_auto"
-                ? "Profile mapping"
-                : standardsProfileSelection === "none"
-                ? "None"
-                : standardsProfileSelection === "pilot"
-                ? overlayLabelById(dfmConfig?.overlays ?? [], pilotOverlay?.overlay_id ?? null)
-                : overlayLabelById(
-                    dfmConfig?.overlays ?? [],
-                    standardsProfileSelection.slice("overlay:".length) || null
-                  )}{" "}
-              (source: pending backend resolution)
-            </p>
-          )}
-          <p className="dfm-sidebar__meta">Part facts: Auto-loaded from selected part</p>
-        </div>
-
-        {reviewV2Result ? (
-          <div className="dfm-sidebar__plan-summary">
-            <h3>Plan summary</h3>
-            <p className="dfm-sidebar__meta">
-              AI recommendation:{" "}
-              {reviewV2Result.ai_recommendation
-                ? `${reviewV2Result.ai_recommendation.process_label} (${reviewV2Result.ai_recommendation.confidence_level}, ${reviewV2Result.ai_recommendation.confidence.toFixed(2)})`
-                : "Not available"}
-            </p>
-            <p className="dfm-sidebar__meta">
-              Selected packs:{" "}
-              {reviewV2Result.routes[0]?.pack_ids?.length
-                ? reviewV2Result.routes[0].pack_ids.join(", ")
-                : "None"}
-            </p>
-            <p className="dfm-sidebar__meta">
-              Route count: {reviewV2Result.route_count}{" "}
-              {reviewV2Result.mismatch.run_both_executed ? "(run-both)" : ""}
-            </p>
-          </div>
-        ) : null}
-
         {mismatchBanner ? <p className="dfm-sidebar__banner">{mismatchBanner}</p> : null}
 
         {reviewV2Result ? (
-          <>
-            <div className="dfm-sidebar__standards">
-              <h3>{standardsLabel}</h3>
-              <p className="dfm-sidebar__hint">Read-only. Derived from findings references only.</p>
-              <details className="dfm-sidebar__standards-toggle">
-                <summary>Standards list ({reviewV2Result.standards_used_auto_union.length})</summary>
-                {reviewV2Result.standards_used_auto_union.length ? (
-                  <ul className="dfm-sidebar__standards-list">
-                    {reviewV2Result.standards_used_auto_union.map((standard) => (
-                      <li key={standard.ref_id}>
-                        <strong>{standard.ref_id}</strong>
+          <div className="dfm-sidebar__report">
+            <h3>Review output</h3>
+            <p className="dfm-sidebar__meta">
+              Routes: {reviewV2Result.route_count} | Findings: {reviewV2Result.finding_count_total}
+            </p>
+            {reviewV2Result.cost_estimate ? (
+              <article className="dfm-sidebar__route">
+                <header className="dfm-sidebar__route-header">
+                  <strong>Cost</strong>
+                </header>
+                <p className="dfm-sidebar__meta">
+                  {reviewV2Result.cost_estimate.unit_cost.toFixed(2)} {reviewV2Result.cost_estimate.currency}
+                </p>
+              </article>
+            ) : (
+              <article className="dfm-sidebar__route">
+                <header className="dfm-sidebar__route-header">
+                  <strong>Cost</strong>
+                </header>
+                <p className="dfm-sidebar__meta">Not available</p>
+              </article>
+            )}
+            {reviewV2Result.cost_compare_routes ? (
+              <p className="dfm-sidebar__cost-delta">
+                Route delta: {reviewV2Result.cost_compare_routes.currency}{" "}
+                {reviewV2Result.cost_compare_routes.unit_cost_delta.toFixed(2)} per unit (
+                {reviewV2Result.cost_compare_routes.unit_cost_delta_percent.toFixed(2)}%).
+              </p>
+            ) : null}
+            {reviewV2Result.routes.map((route) => {
+              const designRiskFindings = route.findings.filter((finding) => finding.finding_type === "rule_violation");
+              const evidenceGapFindings = route.findings.filter((finding) => finding.finding_type !== "rule_violation");
+              const shownFindingCount = designRiskFindings.length + evidenceGapFindings.length;
+              return (
+                <article key={`${route.plan_id}-${route.process_id}`} className="dfm-sidebar__route">
+                  <header className="dfm-sidebar__route-header">
+                    <strong>{route.process_label}</strong>
+                    <span>
+                      {shownFindingCount} shown
+                      {shownFindingCount !== route.finding_count ? ` / ${route.finding_count} total` : ""}
+                    </span>
+                  </header>
+                  <p className="dfm-sidebar__meta">
+                    Packs:{" "}
+                    {route.pack_labels.filter((label): label is string => Boolean(label)).join(", ") || route.pack_ids.join(", ")}
+                  </p>
+                  <p className="dfm-sidebar__meta">
+                    Design risks: {designRiskFindings.length} | Drawing/spec evidence gaps: {evidenceGapFindings.length}
+                  </p>
+                  {route.findings.length ? (
+                    <div className="dfm-sidebar__findings-groups">
+                      <details className="dfm-sidebar__finding-group">
+                        <summary>Design risks ({designRiskFindings.length})</summary>
+                        {designRiskFindings.length ? (
+                          <ul className="dfm-sidebar__findings">
+                            {designRiskFindings.slice(0, 20).map((finding) => renderFindingItem(route, finding))}
+                          </ul>
+                        ) : (
+                          <p className="dfm-sidebar__hint">No design risk findings in this route.</p>
+                        )}
+                      </details>
+                      <details className="dfm-sidebar__finding-group">
+                        <summary>Drawing/spec evidence gaps ({evidenceGapFindings.length})</summary>
+                        {evidenceGapFindings.length ? (
+                          <ul className="dfm-sidebar__findings">
+                            {evidenceGapFindings.slice(0, 20).map((finding) => renderFindingItem(route, finding))}
+                          </ul>
+                        ) : (
+                          <p className="dfm-sidebar__hint">No evidence gaps in this route.</p>
+                        )}
+                      </details>
+                    </div>
+                  ) : (
+                    <p className="dfm-sidebar__hint">No findings for this route.</p>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        ) : null}
+
+        {reviewV2Result ? (
+          <div className="dfm-sidebar__standards">
+            <h3>Analysis Information</h3>
+            <p className="dfm-sidebar__hint">Read-only run context and standards outputs.</p>
+            <details key={`effective-context-${detailsDefaultVersion}`} className="dfm-sidebar__standards-toggle">
+              <summary>Effective analysis context</summary>
+              <p className="dfm-sidebar__meta">
+                Input scope:{" "}
+                {reviewV2Result.effective_context?.analysis_mode
+                  ? reviewV2Result.effective_context.analysis_mode.selected_mode
+                  : analysisMode}{" "}
+                (source: {reviewV2Result.effective_context?.analysis_mode?.source ?? "ui_selection"})
+              </p>
+              {reviewV2Result.effective_context?.process ? (
+                <p className="dfm-sidebar__meta">
+                  Process: {reviewV2Result.effective_context.process.effective_process_label || "Auto (AI recommendation)"}{" "}
+                  (source: {reviewV2Result.effective_context.process.source})
+                </p>
+              ) : (
+                <p className="dfm-sidebar__meta">
+                  Process:{" "}
+                  {processOverrideMode === "force"
+                    ? processLabelById(dfmConfig?.processes ?? [], forcedProcessId || null) || "None"
+                    : processOverrideMode === "auto"
+                    ? "Auto (AI recommendation)"
+                    : "Profile value"}{" "}
+                  (source: pending backend resolution)
+                </p>
+              )}
+              {reviewV2Result.effective_context?.overlay ? (
+                <p className="dfm-sidebar__meta">
+                  Rule set:{" "}
+                  {reviewV2Result.effective_context.overlay.effective_overlay_id === allStandardsOverlayId
+                    ? "All standards"
+                    : reviewV2Result.effective_context.overlay.effective_overlay_label || "None"}{" "}
+                  (source: {reviewV2Result.effective_context.overlay.source})
+                </p>
+              ) : (
+                <p className="dfm-sidebar__meta">
+                  Rule set:{" "}
+                  {standardsProfileSelection === "profile_auto"
+                    ? "Profile mapping"
+                    : standardsProfileSelection === "none"
+                    ? "None"
+                    : standardsProfileSelection === "pilot"
+                    ? overlayLabelById(dfmConfig?.overlays ?? [], pilotOverlay?.overlay_id ?? null)
+                    : overlayLabelById(
+                        dfmConfig?.overlays ?? [],
+                        standardsProfileSelection.slice("overlay:".length) || null
+                      )}{" "}
+                  (source: pending backend resolution)
+                </p>
+              )}
+              <p className="dfm-sidebar__meta">Part facts: Auto-loaded from selected part</p>
+            </details>
+            <details key={`plan-summary-${detailsDefaultVersion}`} className="dfm-sidebar__standards-toggle">
+              <summary>Plan summary</summary>
+              <p className="dfm-sidebar__meta">
+                AI recommendation:{" "}
+                {reviewV2Result.ai_recommendation
+                  ? `${reviewV2Result.ai_recommendation.process_label} (${reviewV2Result.ai_recommendation.confidence_level}, ${reviewV2Result.ai_recommendation.confidence.toFixed(2)})`
+                  : "Not available"}
+              </p>
+              <p className="dfm-sidebar__meta">
+                Selected packs:{" "}
+                {reviewV2Result.routes[0]?.pack_ids?.length
+                  ? reviewV2Result.routes[0].pack_ids.join(", ")
+                  : "None"}
+              </p>
+              <p className="dfm-sidebar__meta">
+                Route count: {reviewV2Result.route_count}{" "}
+                {reviewV2Result.mismatch.run_both_executed ? "(run-both)" : ""}
+              </p>
+            </details>
+            <details key={`standards-list-${detailsDefaultVersion}`} className="dfm-sidebar__standards-toggle">
+              <summary>Standards list ({reviewV2Result.standards_used_auto_union.length})</summary>
+              {reviewV2Result.standards_used_auto_union.length ? (
+                <ul className="dfm-sidebar__standards-list">
+                  {reviewV2Result.standards_used_auto_union.map((standard) => (
+                    <li key={standard.ref_id}>
+                      <strong>{standard.ref_id}</strong>
+                      {standard.url ? (
+                        <a href={standard.url} target="_blank" rel="noreferrer">
+                          {standard.title ?? standard.ref_id}
+                        </a>
+                      ) : (
+                        <span>{standard.title ?? standard.ref_id}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="dfm-sidebar__hint">No standards fired from current findings.</p>
+              )}
+            </details>
+            <details key={`standards-trace-${detailsDefaultVersion}`} className="dfm-sidebar__standards-toggle">
+              <summary>Standards trace (all in scope) ({reviewV2Result.standards_trace_union?.length ?? 0})</summary>
+              {reviewV2Result.standards_trace_union?.length ? (
+                <ul className="dfm-sidebar__standards-list dfm-sidebar__standards-trace">
+                  {reviewV2Result.standards_trace_union.map((standard) => (
+                    <li key={`trace-${standard.ref_id}`}>
+                      <strong>{standard.ref_id}</strong>
+                      <span>
                         {standard.url ? (
                           <a href={standard.url} target="_blank" rel="noreferrer">
                             {standard.title ?? standard.ref_id}
@@ -978,132 +1046,20 @@ const DfmReviewSidebar = ({
                         ) : (
                           <span>{standard.title ?? standard.ref_id}</span>
                         )}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="dfm-sidebar__hint">No standards fired from current findings.</p>
-                )}
-              </details>
-              <details className="dfm-sidebar__standards-toggle">
-                <summary>Standards trace (all in scope) ({reviewV2Result.standards_trace_union?.length ?? 0})</summary>
-                {reviewV2Result.standards_trace_union?.length ? (
-                  <ul className="dfm-sidebar__standards-list dfm-sidebar__standards-trace">
-                    {reviewV2Result.standards_trace_union.map((standard) => (
-                      <li key={`trace-${standard.ref_id}`}>
-                        <strong>{standard.ref_id}</strong>
-                        <span>
-                          {standard.url ? (
-                            <a href={standard.url} target="_blank" rel="noreferrer">
-                              {standard.title ?? standard.ref_id}
-                            </a>
-                          ) : (
-                            <span>{standard.title ?? standard.ref_id}</span>
-                          )}
-                        </span>
-                        <span className="dfm-sidebar__trace-status">Status: {standardsTraceStatus(standard)}</span>
-                        <span className="dfm-sidebar__trace-meta">
-                          Rules considered: {standard.rules_considered} | Missing-evidence blocks:{" "}
-                          {standard.blocked_by_missing_inputs}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="dfm-sidebar__hint">No standards trace available for this run.</p>
-                )}
-              </details>
-            </div>
-
-            <div className="dfm-sidebar__cost">
-              <details className="dfm-sidebar__cost-toggle">
-                <summary>{costLabel}</summary>
-                <p className="dfm-sidebar__hint">Read-only. System-derived should-cost estimate.</p>
-                {reviewV2Result.cost_estimate ? (
-                  <>
-                    <p className="dfm-sidebar__meta">
-                      Unit: {reviewV2Result.cost_estimate.currency} {reviewV2Result.cost_estimate.unit_cost.toFixed(2)} | Total:{" "}
-                      {reviewV2Result.cost_estimate.currency} {reviewV2Result.cost_estimate.total_cost.toFixed(2)}
-                    </p>
-                    <p className="dfm-sidebar__meta">
-                      Confidence: {reviewV2Result.cost_estimate.confidence_level} ({reviewV2Result.cost_estimate.confidence.toFixed(2)})
-                    </p>
-                  </>
-                ) : (
-                  <p className="dfm-sidebar__hint">Cost estimation is disabled.</p>
-                )}
-                {reviewV2Result.cost_compare_routes ? (
-                  <p className="dfm-sidebar__cost-delta">
-                    Route delta: {reviewV2Result.cost_compare_routes.currency}{" "}
-                    {reviewV2Result.cost_compare_routes.unit_cost_delta.toFixed(2)} per unit (
-                    {reviewV2Result.cost_compare_routes.unit_cost_delta_percent.toFixed(2)}%).
-                  </p>
-                ) : null}
-              </details>
-            </div>
-
-            <div className="dfm-sidebar__report">
-              <h3>Review output</h3>
-              <p className="dfm-sidebar__meta">
-                Routes: {reviewV2Result.route_count} | Findings: {reviewV2Result.finding_count_total}
-              </p>
-              {reviewV2Result.routes.map((route) => {
-                const designRiskFindings = route.findings.filter((finding) => finding.finding_type === "rule_violation");
-                const evidenceGapFindings = route.findings.filter((finding) => finding.finding_type !== "rule_violation");
-                const shownFindingCount = designRiskFindings.length + evidenceGapFindings.length;
-                return (
-                  <article key={`${route.plan_id}-${route.process_id}`} className="dfm-sidebar__route">
-                    <header className="dfm-sidebar__route-header">
-                      <strong>{route.process_label}</strong>
-                      <span>
-                        {shownFindingCount} shown
-                        {shownFindingCount !== route.finding_count ? ` / ${route.finding_count} total` : ""}
                       </span>
-                    </header>
-                    <p className="dfm-sidebar__meta">
-                      Packs:{" "}
-                      {route.pack_labels.filter((label): label is string => Boolean(label)).join(", ") || route.pack_ids.join(", ")}
-                    </p>
-                    <p className="dfm-sidebar__meta">
-                      Design risks: {designRiskFindings.length} | Drawing/spec evidence gaps: {evidenceGapFindings.length}
-                    </p>
-                    {route.cost_estimate ? (
-                      <p className="dfm-sidebar__meta">
-                        Cost: {route.cost_estimate.currency} {route.cost_estimate.unit_cost.toFixed(2)} / unit (
-                        {route.cost_estimate.confidence_level})
-                      </p>
-                    ) : null}
-                    {route.findings.length ? (
-                      <div className="dfm-sidebar__findings-groups">
-                        <details className="dfm-sidebar__finding-group">
-                          <summary>Design risks ({designRiskFindings.length})</summary>
-                          {designRiskFindings.length ? (
-                            <ul className="dfm-sidebar__findings">
-                              {designRiskFindings.slice(0, 20).map((finding) => renderFindingItem(route, finding))}
-                            </ul>
-                          ) : (
-                            <p className="dfm-sidebar__hint">No design risk findings in this route.</p>
-                          )}
-                        </details>
-                        <details className="dfm-sidebar__finding-group">
-                          <summary>Drawing/spec evidence gaps ({evidenceGapFindings.length})</summary>
-                          {evidenceGapFindings.length ? (
-                            <ul className="dfm-sidebar__findings">
-                              {evidenceGapFindings.slice(0, 20).map((finding) => renderFindingItem(route, finding))}
-                            </ul>
-                          ) : (
-                            <p className="dfm-sidebar__hint">No evidence gaps in this route.</p>
-                          )}
-                        </details>
-                      </div>
-                    ) : (
-                      <p className="dfm-sidebar__hint">No findings for this route.</p>
-                    )}
-                  </article>
-                );
-              })}
-            </div>
-          </>
+                      <span className="dfm-sidebar__trace-status">Status: {standardsTraceStatus(standard)}</span>
+                      <span className="dfm-sidebar__trace-meta">
+                        Rules considered: {standard.rules_considered} | Missing-evidence blocks:{" "}
+                        {standard.blocked_by_missing_inputs}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="dfm-sidebar__hint">No standards trace available for this run.</p>
+              )}
+            </details>
+          </div>
         ) : null}
 
         {error ? <p className="dfm-sidebar__error">{error}</p> : null}
