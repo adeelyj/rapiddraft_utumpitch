@@ -27,6 +27,18 @@ def test_bridge_maps_known_metrics_derives_fields_and_tracks_not_applicable():
                     "state": "measured",
                     "value": 3,
                 },
+                "critical_corner_count": {
+                    "state": "measured",
+                    "value": 2,
+                },
+                "count_radius_below_3_0_mm": {
+                    "state": "inferred",
+                    "value": 4,
+                },
+                "long_reach_tool_risk_count": {
+                    "state": "inferred",
+                    "value": 1,
+                },
                 "min_wall_thickness_mm": {
                     "state": "measured",
                     "value": 1.2,
@@ -40,6 +52,14 @@ def test_bridge_maps_known_metrics_derives_fields_and_tracks_not_applicable():
                 "material_spec": {
                     "state": "declared",
                     "value": "Steel",
+                },
+                "iso9409_1_robot_interface_candidate": {
+                    "state": "inferred",
+                    "value": True,
+                },
+                "iso228_1_thread_standard_candidate": {
+                    "state": "inferred",
+                    "value": True,
                 },
             },
             "process_inputs": {
@@ -85,6 +105,11 @@ def test_bridge_maps_known_metrics_derives_fields_and_tracks_not_applicable():
     assert facts["material_spec"] == "Aluminum"
     assert facts["manufacturing_process"] == "CNC Milling"
     assert facts["industry"] == "Medical Devices"
+    assert facts["cad.robot_interface.conformance_flag"] is True
+    assert facts["cad.threads.iso228_all_conformant"] is True
+    assert facts["cad.hygienic_design.crevice_count"] == 2.0
+    assert facts["cad.hygienic_design.enclosed_voids_in_product_zone_count"] == 4.0
+    assert facts["cad.hygienic_design.trapped_volume_count"] == 1.0
 
     assert facts["manual_context"] is True
     assert "drawing_notes" not in facts

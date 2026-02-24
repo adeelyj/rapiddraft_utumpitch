@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rapiddraft/schemas/part_facts.schema.json",
+  "title": "Part Facts",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "model_id",
+    "component_node_name",
+    "component_display_name",
+    "generated_at",
+    "coverage",
+    "overall_confidence",
+    "missing_inputs",
+    "assumptions",
+    "errors",
+    "sections"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "model_id": {
+      "type": "string"
+    },
+    "component_node_name": {
+      "type": "string"
+    },
+    "component_display_name": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "coverage": {
+      "type": "object",
+      "required": [
+        "core_extraction_coverage",
+        "full_rule_readiness_coverage"
+      ],
+      "properties": {
+        "core_extraction_coverage": {
+          "$ref": "#/$defs/coverageBlock"
+        },
+        "full_rule_readiness_coverage": {
+          "$ref": "#/$defs/coverageBlock"
+        }
+      },
+      "additionalProperties": false
+    },
+    "overall_confidence": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "missing_inputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "sections": {
+      "type": "object",
+      "required": [
+        "geometry",
+        "manufacturing_signals",
+        "declared_context",
+        "process_inputs",
+        "rule_inputs"
+      ],
+      "properties": {
+        "geometry": {
+          "$ref": "#/$defs/metricMap"
+        },
+        "manufacturing_signals": {
+          "$ref": "#/$defs/metricMap"
+        },
+        "declared_context": {
+          "$ref": "#/$defs/metricMap"
+        },
+        "process_inputs": {
+          "$ref": "#/$defs/metricMap"
+        },
+        "rule_inputs": {
+          "$ref": "#/$defs/metricMap"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "coverageBlock": {
+      "type": "object",
+      "required": [
+        "known_metrics",
+        "applicable_metrics",
+        "not_applicable_metrics",
+        "total_metrics",
+        "percent"
+      ],
+      "properties": {
+        "known_metrics": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "applicable_metrics": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "not_applicable_metrics": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_metrics": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "additionalProperties": false
+    },
+    "metricMap": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/metric"
+      }
+    },
+    "metric": {
+      "type": "object",
+      "required": [
+        "label",
+        "value",
+        "unit",
+        "state",
+        "confidence",
+        "source"
+      ],
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "value": {},
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "measured",
+            "inferred",
+            "declared",
+            "unknown",
+            "failed",
+            "not_applicable"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "source": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,6 +1,6 @@
 {
-  "version": "1.0.1",
-  "generated_at": "2026-02-16T18:20:00+00:00",
+  "version": "1.0.2",
+  "generated_at": "2026-02-24T12:19:38Z",
   "files": [
     "server/dfm/README.md",
     "server/dfm/manifest.json",
@@ -23,16 +23,16 @@
     "server/dfm/schemas/cost_model.schema.json",
     "server/dfm/schemas/supplier_profile_template.schema.json"
   ],
-  "expected_rule_count": 130,
+  "expected_rule_count": 170,
   "pack_counts": {
     "A_DRAWING": 25,
     "B_CNC": 25,
     "C_SHEET": 20,
     "D_WELD": 15,
     "E_ASSEMBLY": 15,
-    "F_OVERLAY": 30
+    "F_OVERLAY": 70
   },
-  "reference_count": 34,
+  "reference_count": 48,
   "roles_count": 5,
   "templates_count": 5
 }

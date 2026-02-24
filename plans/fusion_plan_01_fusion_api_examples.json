@@ -1,0 +1,49 @@
+{
+  "post_create_fusion_review": {
+    "request": {
+      "component_node_name": "component_1",
+      "vision_report_id": null,
+      "dfm_review_request": {
+        "component_node_name": "component_1",
+        "planning_inputs": {
+          "extracted_part_facts": {},
+          "analysis_mode": "geometry_dfm",
+          "selected_process_override": null,
+          "selected_overlay": "pilot_prototype",
+          "process_selection_mode": "auto",
+          "overlay_selection_mode": "override",
+          "selected_role": "general_dfm",
+          "selected_template": "executive_1page",
+          "run_both_if_mismatch": true
+        },
+        "context_payload": {}
+      }
+    },
+    "response_excerpt": {
+      "report_id": "fusion_rpt_20260224_001",
+      "priority_summary": {
+        "confirmed_count": 2,
+        "dfm_only_count": 3,
+        "vision_only_count": 1
+      },
+      "source_status": {
+        "dfm": "available",
+        "vision": "available"
+      }
+    }
+  },
+  "get_fusion_report": {
+    "request": {
+      "method": "GET",
+      "path": "/api/models/{model_id}/fusion/reports/{report_id}"
+    },
+    "response_excerpt": {
+      "report_id": "fusion_rpt_20260224_001",
+      "confirmed_by_both": [],
+      "dfm_only": [],
+      "vision_only": [],
+      "standards_trace_union": []
+    }
+  }
+}
+

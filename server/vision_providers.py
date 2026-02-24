@@ -2,6 +2,7 @@
 
 import base64
 import json
+import mimetypes
 import os
 import urllib.error
 import urllib.request
@@ -73,6 +74,7 @@ class _BaseVisionProvider:
         image_paths: list[Path],
         model_override: str | None = None,
         base_url_override: str | None = None,
+        api_key_override: str | None = None,
     ) -> VisionProviderResult:
         raise NotImplementedError
 
@@ -81,17 +83,40 @@ class OpenAIVisionProvider(_BaseVisionProvider):
     route_id = "openai"
     label = "OpenAI"
 
+    def __init__(
+        self,
+        *,
+        api_key: str,
+        base_url: str,
+        default_model: str,
+        timeout_seconds: float,
+        request_defaults: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(
+            api_key=api_key,
+            base_url=base_url,
+            default_model=default_model,
+            timeout_seconds=timeout_seconds,
+        )
+        self.request_defaults = request_defaults or {}
+
     @classmethod
     def from_env(cls) -> "OpenAIVisionProvider":
         timeout_seconds = _parse_timeout_seconds(
             os.getenv("VISION_REQUEST_TIMEOUT_SECONDS"),
             fallback=90.0,
         )
+        base_url = os.getenv("VISION_OPENAI_BASE_URL", "https://api.openai.com/v1")
+        request_defaults = _build_openai_request_defaults(
+            base_url=base_url,
+            use_fireworks_preset=_parse_bool_env(os.getenv("VISION_OPENAI_USE_FIREWORKS_PRESET"), default=True),
+        )
         return cls(
             api_key=os.getenv("VISION_OPENAI_API_KEY", ""),
-            base_url=os.getenv("VISION_OPENAI_BASE_URL", "https://api.openai.com/v1"),
+            base_url=base_url,
             default_model=os.getenv("VISION_OPENAI_MODEL", ""),
             timeout_seconds=timeout_seconds,
+            request_defaults=request_defaults,
         )
 
     @property
@@ -105,11 +130,12 @@ class OpenAIVisionProvider(_BaseVisionProvider):
         image_paths: list[Path],
         model_override: str | None = None,
         base_url_override: str | None = None,
+        api_key_override: str | None = None,
     ) -> VisionProviderResult:
         if not image_paths:
             raise VisionProviderError("At least one image is required for OpenAI vision analysis.")
 
-        api_key = self.api_key
+        api_key = (api_key_override or self.api_key).strip()
         if not api_key:
             raise VisionProviderError("OpenAI provider is not configured (missing VISION_OPENAI_API_KEY).")
 
@@ -132,9 +158,8 @@ class OpenAIVisionProvider(_BaseVisionProvider):
                 }
             )
 
-        request_payload = {
+        request_payload: dict[str, Any] = {
             "model": model_used,
-            "temperature": 0,
             "messages": [
                 {
                     "role": "user",
@@ -142,11 +167,15 @@ class OpenAIVisionProvider(_BaseVisionProvider):
                 }
             ],
         }
+        request_payload.update(self.request_defaults)
+        if "temperature" not in request_payload:
+            request_payload["temperature"] = 0
 
-        url = f"{base_url}/chat/completions"
+        url = _build_chat_completions_url(base_url)
         response = _post_json(
             url=url,
             headers={
+                "Accept": "application/json",
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
             },
@@ -206,11 +235,12 @@ class ClaudeVisionProvider(_BaseVisionProvider):
         image_paths: list[Path],
         model_override: str | None = None,
         base_url_override: str | None = None,
+        api_key_override: str | None = None,
     ) -> VisionProviderResult:
         if not image_paths:
             raise VisionProviderError("At least one image is required for Claude vision analysis.")
 
-        api_key = self.api_key
+        api_key = (api_key_override or self.api_key).strip()
         if not api_key:
             raise VisionProviderError("Claude provider is not configured (missing VISION_CLAUDE_API_KEY).")
 
@@ -231,7 +261,7 @@ class ClaudeVisionProvider(_BaseVisionProvider):
                     "type": "image",
                     "source": {
                         "type": "base64",
-                        "media_type": "image/png",
+                        "media_type": _infer_image_media_type(image_path),
                         "data": _to_base64(image_path),
                     },
                 }
@@ -308,6 +338,7 @@ class LocalOpenAICompatVisionProvider(_BaseVisionProvider):
         image_paths: list[Path],
         model_override: str | None = None,
         base_url_override: str | None = None,
+        api_key_override: str | None = None,
     ) -> VisionProviderResult:
         if not image_paths:
             raise VisionProviderError("At least one image is required for local vision analysis.")
@@ -343,8 +374,9 @@ class LocalOpenAICompatVisionProvider(_BaseVisionProvider):
         }
 
         headers = {"Content-Type": "application/json"}
-        if self.api_key:
-            headers["Authorization"] = f"Bearer {self.api_key}"
+        api_key = (api_key_override or self.api_key).strip()
+        if api_key:
+            headers["Authorization"] = f"Bearer {api_key}"
 
         url = f"{base_url}/chat/completions"
         response = _post_json(
@@ -408,7 +440,15 @@ def _to_base64(path: Path) -> str:
 
 
 def _to_data_url(path: Path) -> str:
-    return f"data:image/png;base64,{_to_base64(path)}"
+    media_type = _infer_image_media_type(path)
+    return f"data:{media_type};base64,{_to_base64(path)}"
+
+
+def _infer_image_media_type(path: Path) -> str:
+    guessed_type, _ = mimetypes.guess_type(path.name)
+    if isinstance(guessed_type, str) and guessed_type.startswith("image/"):
+        return guessed_type
+    return "image/png"
 
 
 def _post_json(
@@ -418,11 +458,15 @@ def _post_json(
     request_payload: dict[str, Any],
     timeout_seconds: float,
 ) -> _SimpleHttpResponse:
+    normalized_headers = dict(headers)
+    normalized_headers.setdefault("Accept", "application/json")
+    normalized_headers.setdefault("User-Agent", "RapidDraft/1.0")
+
     if _httpx is not None:
         try:
             response = _httpx.post(
                 url,
-                headers=headers,
+                headers=normalized_headers,
                 json=request_payload,
                 timeout=timeout_seconds,
             )
@@ -437,7 +481,7 @@ def _post_json(
     request = urllib.request.Request(
         url,
         data=body,
-        headers=headers,
+        headers=normalized_headers,
         method="POST",
     )
     try:
@@ -505,3 +549,90 @@ def _extract_error_detail(response: Any) -> str:
         pass
     body = response.text.strip()
     return body[:300] if body else "Unknown provider error"
+
+
+def _parse_bool_env(raw_value: str | None, *, default: bool) -> bool:
+    if raw_value is None:
+        return default
+    value = raw_value.strip().lower()
+    if value in {"1", "true", "yes", "on"}:
+        return True
+    if value in {"0", "false", "no", "off"}:
+        return False
+    return default
+
+
+def _parse_optional_int(raw_value: str | None) -> int | None:
+    if raw_value is None:
+        return None
+    try:
+        parsed = int(raw_value)
+    except Exception:
+        return None
+    return parsed
+
+
+def _parse_optional_float(raw_value: str | None) -> float | None:
+    if raw_value is None:
+        return None
+    try:
+        parsed = float(raw_value)
+    except Exception:
+        return None
+    return parsed
+
+
+def _is_fireworks_base_url(base_url: str) -> bool:
+    normalized = base_url.strip().lower()
+    return "api.fireworks.ai" in normalized
+
+
+def _build_chat_completions_url(base_url: str) -> str:
+    normalized = base_url.strip().rstrip("/")
+    if normalized.endswith("/chat/completions"):
+        return normalized
+    return f"{normalized}/chat/completions"
+
+
+def _build_openai_request_defaults(
+    *,
+    base_url: str,
+    use_fireworks_preset: bool,
+) -> dict[str, Any]:
+    request_defaults: dict[str, Any] = {}
+
+    max_tokens = _parse_optional_int(os.getenv("VISION_OPENAI_MAX_TOKENS"))
+    top_p = _parse_optional_float(os.getenv("VISION_OPENAI_TOP_P"))
+    top_k = _parse_optional_int(os.getenv("VISION_OPENAI_TOP_K"))
+    presence_penalty = _parse_optional_float(os.getenv("VISION_OPENAI_PRESENCE_PENALTY"))
+    frequency_penalty = _parse_optional_float(os.getenv("VISION_OPENAI_FREQUENCY_PENALTY"))
+    temperature = _parse_optional_float(os.getenv("VISION_OPENAI_TEMPERATURE"))
+
+    if use_fireworks_preset and _is_fireworks_base_url(base_url):
+        if max_tokens is None:
+            max_tokens = 32768
+        if top_p is None:
+            top_p = 1.0
+        if top_k is None:
+            top_k = 40
+        if presence_penalty is None:
+            presence_penalty = 0.0
+        if frequency_penalty is None:
+            frequency_penalty = 0.0
+        if temperature is None:
+            temperature = 0.6
+
+    if max_tokens is not None and max_tokens > 0:
+        request_defaults["max_tokens"] = max_tokens
+    if top_p is not None:
+        request_defaults["top_p"] = top_p
+    if top_k is not None and top_k > 0:
+        request_defaults["top_k"] = top_k
+    if presence_penalty is not None:
+        request_defaults["presence_penalty"] = presence_penalty
+    if frequency_penalty is not None:
+        request_defaults["frequency_penalty"] = frequency_penalty
+    if temperature is not None:
+        request_defaults["temperature"] = temperature
+
+    return request_defaults

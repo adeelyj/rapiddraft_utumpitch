@@ -1,0 +1,447 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-02-24T12:19:38Z",
+  "source": "pilot_deep_research",
+  "summary": {
+    "rules_total": 28,
+    "rules_executable_now": 28,
+    "rules_deferred": 0,
+    "references_patch_count": 22
+  },
+  "rule_mappings": [
+    {
+      "source_rule_id": "PILOTSTD-001",
+      "runtime_rule_id": "PSTD-001",
+      "status": "executable_now",
+      "source_analysis_mode": "geometry_dfm",
+      "input_mapping": [
+        {
+          "source_input": "cad.robot_interface.standard",
+          "runtime_input": "geometry_features"
+        },
+        {
+          "source_input": "cad.robot_interface.variant",
+          "runtime_input": "geometry_features"
+        },
+        {
+          "source_input": "cad.robot_interface.conformance_flag",
+          "runtime_input": "geometry_features"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-002",
+      "runtime_rule_id": "PSTD-002",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "drawing.text_all",
+          "runtime_input": "drawing_notes"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-003",
+      "runtime_rule_id": "PSTD-003",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "drawing.features_of_size.mating_without_fit_callout_count",
+          "runtime_input": "drawing_notes"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-004",
+      "runtime_rule_id": "PSTD-004",
+      "status": "executable_now",
+      "source_analysis_mode": "geometry_dfm",
+      "input_mapping": [
+        {
+          "source_input": "cad.fits.all_pairs_intended_fit_type_met",
+          "runtime_input": "hole_features"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-005",
+      "runtime_rule_id": "PSTD-005",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "drawing.title_block.general_tolerance_note",
+          "runtime_input": "drawing_title_block"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-006",
+      "runtime_rule_id": "PSTD-006",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "drawing.surface_treatments.anodizing.present",
+          "runtime_input": "coating_spec"
+        },
+        {
+          "source_input": "drawing.surface_treatments.anodizing.references",
+          "runtime_input": "coating_spec"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-007",
+      "runtime_rule_id": "PSTD-007",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "drawing.thread_callouts.pipe_threads_text",
+          "runtime_input": "thread_callouts"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-008",
+      "runtime_rule_id": "PSTD-008",
+      "status": "executable_now",
+      "source_analysis_mode": "geometry_dfm",
+      "input_mapping": [
+        {
+          "source_input": "cad.threads.iso228_all_conformant",
+          "runtime_input": "hole_features"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-009",
+      "runtime_rule_id": "PSTD-009",
+      "status": "executable_now",
+      "source_analysis_mode": "geometry_dfm",
+      "input_mapping": [
+        {
+          "source_input": "cad.hygienic_design.enclosed_voids_in_product_zone_count",
+          "runtime_input": "geometry_features"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-010",
+      "runtime_rule_id": "PSTD-010",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "drawing.hygiene.zone_tagging_present",
+          "runtime_input": "drawing_notes"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-011",
+      "runtime_rule_id": "PSTD-011",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "project.product_category",
+          "runtime_input": "manual_context"
+        },
+        {
+          "source_input": "drawing.text_all",
+          "runtime_input": "drawing_notes"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-012",
+      "runtime_rule_id": "PSTD-012",
+      "status": "executable_now",
+      "source_analysis_mode": "geometry_dfm",
+      "input_mapping": [
+        {
+          "source_input": "cad.hygienic_design.trapped_volume_count",
+          "runtime_input": "geometry_features"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-013",
+      "runtime_rule_id": "PSTD-013",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "drawing.text_all",
+          "runtime_input": "drawing_notes"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-014",
+      "runtime_rule_id": "PSTD-014",
+      "status": "executable_now",
+      "source_analysis_mode": "full",
+      "input_mapping": [
+        {
+          "source_input": "docs.fcm.framework_1935_2004.compliance_statement_present",
+          "runtime_input": "manual_context"
+        },
+        {
+          "source_input": "docs.fcm.traceability_system_present",
+          "runtime_input": "manual_context"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-015",
+      "runtime_rule_id": "PSTD-015",
+      "status": "executable_now",
+      "source_analysis_mode": "full",
+      "input_mapping": [
+        {
+          "source_input": "docs.fcm.eu10_2011.declaration_present",
+          "runtime_input": "manual_context"
+        },
+        {
+          "source_input": "docs.fcm.eu10_2011.supporting_docs_present",
+          "runtime_input": "manual_context"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-016",
+      "runtime_rule_id": "PSTD-016",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "bom.materials.stainless_spec_text",
+          "runtime_input": "material_spec"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-017",
+      "runtime_rule_id": "PSTD-017",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "drawing.title_block.general_tolerance_note",
+          "runtime_input": "drawing_title_block"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-018",
+      "runtime_rule_id": "PSTD-018",
+      "status": "executable_now",
+      "source_analysis_mode": "full",
+      "input_mapping": [
+        {
+          "source_input": "docs.ce.ec_declaration_present",
+          "runtime_input": "manual_context"
+        },
+        {
+          "source_input": "docs.ce.technical_file_present",
+          "runtime_input": "manual_context"
+        },
+        {
+          "source_input": "docs.ce.instructions_present",
+          "runtime_input": "manual_context"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-019",
+      "runtime_rule_id": "PSTD-019",
+      "status": "executable_now",
+      "source_analysis_mode": "geometry_dfm",
+      "input_mapping": [
+        {
+          "source_input": "cad.hygienic_design.crevice_count",
+          "runtime_input": "geometry_features"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-020",
+      "runtime_rule_id": "PSTD-020",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "drawing.hygiene.cleaning_instructions_present",
+          "runtime_input": "drawing_notes"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-021",
+      "runtime_rule_id": "PSTD-021",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "project.manufacturing.process",
+          "runtime_input": "manual_context"
+        },
+        {
+          "source_input": "drawing.manufacturing.notes",
+          "runtime_input": "drawing_notes"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-022",
+      "runtime_rule_id": "PSTD-022",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "drawing.gdt.invalid_frame_count",
+          "runtime_input": "datum_scheme"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-023",
+      "runtime_rule_id": "PSTD-023",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "drawing.gdt.undefined_datum_reference_count",
+          "runtime_input": "datum_scheme"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-024",
+      "runtime_rule_id": "PSTD-024",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "drawing.text_all",
+          "runtime_input": "drawing_notes"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-025",
+      "runtime_rule_id": "PSTD-025",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "drawing.title_block.general_tolerance_note",
+          "runtime_input": "drawing_title_block"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-026",
+      "runtime_rule_id": "PSTD-026",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "drawing.title_block.general_tolerance_note",
+          "runtime_input": "drawing_title_block"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-027",
+      "runtime_rule_id": "PSTD-027",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "drawing.surface_texture.missing_value_count",
+          "runtime_input": "surface_finish_spec"
+        }
+      ],
+      "unknown_source_inputs": []
+    },
+    {
+      "source_rule_id": "PILOTSTD-028",
+      "runtime_rule_id": "PSTD-028",
+      "status": "executable_now",
+      "source_analysis_mode": "drawing_spec",
+      "input_mapping": [
+        {
+          "source_input": "drawing.thread_callouts.metric_without_tolerance_class_count",
+          "runtime_input": "thread_callouts"
+        }
+      ],
+      "unknown_source_inputs": []
+    }
+  ],
+  "input_alias_map": {
+    "drawing.text_all": "drawing_notes",
+    "drawing.title_block.general_tolerance_note": "drawing_title_block",
+    "drawing.features_of_size.mating_without_fit_callout_count": "drawing_notes",
+    "drawing.gdt.invalid_frame_count": "datum_scheme",
+    "drawing.gdt.undefined_datum_reference_count": "datum_scheme",
+    "drawing.hygiene.cleaning_instructions_present": "drawing_notes",
+    "drawing.hygiene.zone_tagging_present": "drawing_notes",
+    "drawing.manufacturing.notes": "drawing_notes",
+    "drawing.surface_texture.missing_value_count": "surface_finish_spec",
+    "drawing.surface_treatments.anodizing.present": "coating_spec",
+    "drawing.surface_treatments.anodizing.references": "coating_spec",
+    "drawing.thread_callouts.metric_without_tolerance_class_count": "thread_callouts",
+    "drawing.thread_callouts.pipe_threads_text": "thread_callouts",
+    "docs.ce.ec_declaration_present": "manual_context",
+    "docs.ce.instructions_present": "manual_context",
+    "docs.ce.technical_file_present": "manual_context",
+    "docs.fcm.eu10_2011.declaration_present": "manual_context",
+    "docs.fcm.eu10_2011.supporting_docs_present": "manual_context",
+    "docs.fcm.framework_1935_2004.compliance_statement_present": "manual_context",
+    "docs.fcm.traceability_system_present": "manual_context",
+    "project.manufacturing.process": "manual_context",
+    "project.product_category": "manual_context",
+    "bom.materials.stainless_spec_text": "material_spec",
+    "cad.robot_interface.standard": "geometry_features",
+    "cad.robot_interface.variant": "geometry_features",
+    "cad.robot_interface.conformance_flag": "geometry_features",
+    "cad.fits.all_pairs_intended_fit_type_met": "hole_features",
+    "cad.threads.iso228_all_conformant": "hole_features",
+    "cad.hygienic_design.crevice_count": "geometry_features",
+    "cad.hygienic_design.enclosed_voids_in_product_zone_count": "geometry_features",
+    "cad.hygienic_design.trapped_volume_count": "geometry_features"
+  },
+  "deferred_rule_ids": []
+}

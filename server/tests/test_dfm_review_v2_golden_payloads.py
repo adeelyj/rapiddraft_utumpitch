@@ -36,7 +36,6 @@ def test_review_v2_golden_payloads_match_runtime_output():
             planning_inputs=request.get("planning_inputs"),
             execution_plans=request.get("execution_plans"),
             selected_execution_plan_id=request.get("selected_execution_plan_id"),
-            screenshot_data_url=request.get("screenshot_data_url"),
             context_payload=request.get("context_payload"),
         )
 

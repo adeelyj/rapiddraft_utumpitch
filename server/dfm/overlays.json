@@ -95,6 +95,49 @@
       "extra_report_sections": [
         "safety_requirements_matrix"
       ]
+    },
+    {
+      "overlay_id": "pilot_prototype",
+      "label": "Pilots",
+      "adds_refs": [
+        "REF-ADD-VDI-3405",
+        "REF-COAT-7599",
+        "REF-FCM-EU-10-2011",
+        "REF-FCM-EU-1935-2004",
+        "REF-FIT-286",
+        "REF-FOOD-EN",
+        "REF-FOOD-EN13870",
+        "REF-FOOD-ISO",
+        "REF-GPS-1",
+        "REF-GPS-2",
+        "REF-GPS-3",
+        "REF-GPS-4",
+        "REF-GPS-6",
+        "REF-GPS-7",
+        "REF-HYG-1",
+        "REF-MACH-DIR-2006-42",
+        "REF-MACH-REG",
+        "REF-MAT-EN10088-3",
+        "REF-ROBOT-9409-1",
+        "REF-THR-1",
+        "REF-THR-228-1",
+        "REF-TOL-2768-FH",
+        "REF-TOL-2768-MK"
+      ],
+      "adds_rules_pack": "F_OVERLAY",
+      "rule_prefixes": [
+        "FOOD-",
+        "ALPMA-",
+        "ROBOT-",
+        "PILOT-",
+        "PILOTSTD-",
+        "PSTD-"
+      ],
+      "extra_report_sections": [
+        "hygiene_checklist",
+        "cleanability_findings",
+        "pilot_gate_checklist"
+      ]
     }
   ]
 }

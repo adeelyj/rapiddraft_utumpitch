@@ -5,6 +5,7 @@ import os
 import shutil
 import zipfile
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,6 +31,11 @@ from .dfm_template_store import (
     DfmTemplateNotFoundError,
     DfmTemplateStore,
     DfmTemplateStoreError,
+)
+from .fusion_analysis import (
+    FusionAnalysisError,
+    FusionAnalysisService,
+    FusionReportNotFoundError,
 )
 from .model_store import ModelStore
 from .part_facts import PartFactsError, PartFactsService
@@ -63,6 +69,7 @@ model_store = ModelStore(root=MODELS_DIR)
 review_store = ReviewStore(root=MODELS_DIR, templates_path=DATA_DIR / "review_templates.json")
 cnc_analysis_service = CncAnalysisService(root=MODELS_DIR)
 vision_analysis_service = VisionAnalysisService(root=MODELS_DIR, occ_service=cad_service_occ)
+fusion_analysis_service = FusionAnalysisService(root=MODELS_DIR)
 
 app = FastAPI(title="TextCAD Drafting Service", version="0.1.0")
 app.add_middleware(
@@ -222,6 +229,12 @@ class CreateVisionReportBody(BaseModel):
     provider: VisionProviderBody = Field(default_factory=VisionProviderBody)
 
 
+class CreateFusionReviewBody(BaseModel):
+    component_node_name: str | None = None
+    vision_report_id: str | None = None
+    dfm_review_request: DfmReviewV2Body | None = None
+
+
 def _collect_option_labels(options: dict, key: str) -> set[str]:
     records = options.get(key, [])
     labels = set()
@@ -244,6 +257,172 @@ def _require_model(model_id: str) -> None:
     metadata = model_store.get(model_id)
     if not metadata:
         raise HTTPException(status_code=404, detail="Model not found")
+
+
+def _default_dfm_role_id() -> str:
+    roles = DFM_BUNDLE.roles.get("roles", [])
+    general_role = next(
+        (
+            role.get("role_id")
+            for role in roles
+            if isinstance(role, dict) and role.get("role_id") == "general_dfm"
+        ),
+        None,
+    )
+    if isinstance(general_role, str) and general_role:
+        return general_role
+    first_role = next(
+        (
+            role.get("role_id")
+            for role in roles
+            if isinstance(role, dict) and isinstance(role.get("role_id"), str) and role.get("role_id")
+        ),
+        None,
+    )
+    if isinstance(first_role, str) and first_role:
+        return first_role
+    return "general_dfm"
+
+
+def _default_dfm_template_id() -> str:
+    templates = DFM_BUNDLE.report_templates.get("templates", [])
+    executive_template = next(
+        (
+            template.get("template_id")
+            for template in templates
+            if isinstance(template, dict) and template.get("template_id") == "executive_1page"
+        ),
+        None,
+    )
+    if isinstance(executive_template, str) and executive_template:
+        return executive_template
+    first_template = next(
+        (
+            template.get("template_id")
+            for template in templates
+            if isinstance(template, dict) and isinstance(template.get("template_id"), str) and template.get("template_id")
+        ),
+        None,
+    )
+    if isinstance(first_template, str) and first_template:
+        return first_template
+    return "executive_1page"
+
+
+def _default_fusion_dfm_body(component_node_name: str | None) -> DfmReviewV2Body:
+    return DfmReviewV2Body(
+        component_node_name=component_node_name,
+        planning_inputs={
+            "extracted_part_facts": {},
+            "analysis_mode": "geometry_dfm",
+            "selected_process_override": None,
+            "selected_overlay": "pilot_prototype",
+            "process_selection_mode": "auto",
+            "overlay_selection_mode": "profile",
+            "selected_role": _default_dfm_role_id(),
+            "selected_template": _default_dfm_template_id(),
+            "run_both_if_mismatch": True,
+        },
+        context_payload={},
+    )
+
+
+def _resolve_dfm_review_request_for_fusion(body: CreateFusionReviewBody) -> DfmReviewV2Body:
+    component_node_name = body.component_node_name
+    if body.dfm_review_request is None:
+        return _default_fusion_dfm_body(component_node_name)
+
+    payload = body.dfm_review_request.dict()
+    if component_node_name and not payload.get("component_node_name"):
+        payload["component_node_name"] = component_node_name
+    return DfmReviewV2Body(**payload)
+
+
+def _generate_dfm_review_v2_payload(
+    *,
+    model_id: str,
+    body: DfmReviewV2Body,
+) -> dict[str, Any]:
+    metadata = model_store.get(model_id)
+    if not metadata:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    component = None
+    if body.component_node_name:
+        component = _get_component_entry(metadata, body.component_node_name)
+        if not component:
+            raise HTTPException(status_code=400, detail="Unknown component_node_name")
+
+    component_node_name = body.component_node_name
+    component_display_name = (
+        (component or {}).get("displayName")
+        if component
+        else "Global Context"
+    )
+    component_profile = (
+        metadata.component_profiles.get(component_node_name, {})
+        if component_node_name
+        else {}
+    )
+    component_context = {
+        "component_node_name": component_node_name,
+        "component_display_name": component_display_name,
+        "profile": component_profile,
+        "triangle_count": (component or {}).get("triangleCount") if component else None,
+    }
+
+    context_payload = dict(body.context_payload or {})
+    planning_inputs = body.planning_inputs.dict() if body.planning_inputs else None
+    effective_context = None
+    if planning_inputs:
+        planning_inputs, effective_context = resolve_effective_planning_inputs(
+            DFM_BUNDLE,
+            planning_inputs=planning_inputs,
+            component_profile=component_profile,
+        )
+    if planning_inputs and component_node_name:
+        extracted_facts = planning_inputs.get("extracted_part_facts")
+        if not isinstance(extracted_facts, dict) or not extracted_facts:
+            try:
+                part_facts_payload = part_facts_service.get_or_create(
+                    model_id=model_id,
+                    step_path=metadata.step_path,
+                    component_node_name=component_node_name,
+                    component_display_name=str(component_display_name),
+                    component_profile=component_profile,
+                    triangle_count=(component or {}).get("triangleCount") if component else None,
+                    assembly_component_count=len(metadata.components),
+                    force_refresh=False,
+                )
+            except PartFactsError as exc:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Failed to resolve part facts for DFM review: {exc}",
+                )
+            planning_inputs["extracted_part_facts"] = build_extracted_facts_from_part_facts(
+                part_facts_payload=part_facts_payload,
+                component_profile=component_profile,
+                context_payload=context_payload,
+            )
+    execution_plans = (
+        [plan.dict() for plan in body.execution_plans]
+        if body.execution_plans
+        else None
+    )
+    try:
+        return generate_dfm_review_v2(
+            DFM_BUNDLE,
+            model_id=model_id,
+            component_context=component_context,
+            planning_inputs=planning_inputs,
+            execution_plans=execution_plans,
+            selected_execution_plan_id=body.selected_execution_plan_id,
+            context_payload=context_payload,
+            effective_context=effective_context,
+            cost_enabled=DFM_COST_ENABLED,
+        )
+    except (DfmReviewV2Error, DfmPlanningError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.get("/health")
@@ -419,86 +598,7 @@ async def refresh_component_part_facts(model_id: str, node_name: str):
 
 @app.post("/api/models/{model_id}/dfm/review-v2")
 async def create_component_dfm_review_v2(model_id: str, body: DfmReviewV2Body):
-    metadata = model_store.get(model_id)
-    if not metadata:
-        raise HTTPException(status_code=404, detail="Model not found")
-
-    component = None
-    if body.component_node_name:
-        component = _get_component_entry(metadata, body.component_node_name)
-        if not component:
-            raise HTTPException(status_code=400, detail="Unknown component_node_name")
-
-    component_node_name = body.component_node_name
-    component_display_name = (
-        (component or {}).get("displayName")
-        if component
-        else "Global Context"
-    )
-    component_profile = (
-        metadata.component_profiles.get(component_node_name, {})
-        if component_node_name
-        else {}
-    )
-    component_context = {
-        "component_node_name": component_node_name,
-        "component_display_name": component_display_name,
-        "profile": component_profile,
-        "triangle_count": (component or {}).get("triangleCount") if component else None,
-    }
-
-    context_payload = dict(body.context_payload or {})
-    planning_inputs = body.planning_inputs.dict() if body.planning_inputs else None
-    effective_context = None
-    if planning_inputs:
-        planning_inputs, effective_context = resolve_effective_planning_inputs(
-            DFM_BUNDLE,
-            planning_inputs=planning_inputs,
-            component_profile=component_profile,
-        )
-    if planning_inputs and component_node_name:
-        extracted_facts = planning_inputs.get("extracted_part_facts")
-        if not isinstance(extracted_facts, dict) or not extracted_facts:
-            try:
-                part_facts_payload = part_facts_service.get_or_create(
-                    model_id=model_id,
-                    step_path=metadata.step_path,
-                    component_node_name=component_node_name,
-                    component_display_name=str(component_display_name),
-                    component_profile=component_profile,
-                    triangle_count=(component or {}).get("triangleCount") if component else None,
-                    assembly_component_count=len(metadata.components),
-                    force_refresh=False,
-                )
-            except PartFactsError as exc:
-                raise HTTPException(
-                    status_code=500,
-                    detail=f"Failed to resolve part facts for DFM review: {exc}",
-                )
-            planning_inputs["extracted_part_facts"] = build_extracted_facts_from_part_facts(
-                part_facts_payload=part_facts_payload,
-                component_profile=component_profile,
-                context_payload=context_payload,
-            )
-    execution_plans = (
-        [plan.dict() for plan in body.execution_plans]
-        if body.execution_plans
-        else None
-    )
-    try:
-        return generate_dfm_review_v2(
-            DFM_BUNDLE,
-            model_id=model_id,
-            component_context=component_context,
-            planning_inputs=planning_inputs,
-            execution_plans=execution_plans,
-            selected_execution_plan_id=body.selected_execution_plan_id,
-            context_payload=context_payload,
-            effective_context=effective_context,
-            cost_enabled=DFM_COST_ENABLED,
-        )
-    except (DfmReviewV2Error, DfmPlanningError) as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+    return _generate_dfm_review_v2_payload(model_id=model_id, body=body)
 
 
 @app.post("/api/models/{model_id}/cnc/geometry-report")
@@ -653,6 +753,72 @@ async def get_vision_report(model_id: str, report_id: str):
     except VisionReportNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except VisionAnalysisError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/models/{model_id}/fusion/reviews")
+async def create_fusion_review(model_id: str, body: CreateFusionReviewBody):
+    _require_model(model_id)
+    dfm_body = _resolve_dfm_review_request_for_fusion(body)
+    if not dfm_body.component_node_name:
+        raise HTTPException(
+            status_code=400,
+            detail="component_node_name is required for fusion reviews.",
+        )
+
+    dfm_review = _generate_dfm_review_v2_payload(model_id=model_id, body=dfm_body)
+    requested_vision_report_id = (
+        body.vision_report_id.strip()
+        if isinstance(body.vision_report_id, str) and body.vision_report_id.strip()
+        else None
+    )
+    resolved_vision_report_id = requested_vision_report_id
+    vision_report_payload: dict[str, Any] = {}
+
+    if requested_vision_report_id:
+        try:
+            vision_report_payload = vision_analysis_service.get_report(
+                model_id=model_id,
+                report_id=requested_vision_report_id,
+            )
+        except VisionReportNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc))
+        except VisionAnalysisError as exc:
+            raise HTTPException(status_code=500, detail=str(exc))
+    else:
+        latest_vision_report_id = fusion_analysis_service.latest_vision_report_id(model_id)
+        resolved_vision_report_id = latest_vision_report_id
+        if latest_vision_report_id:
+            try:
+                vision_report_payload = vision_analysis_service.get_report(
+                    model_id=model_id,
+                    report_id=latest_vision_report_id,
+                )
+            except VisionReportNotFoundError:
+                vision_report_payload = {}
+            except VisionAnalysisError:
+                vision_report_payload = {}
+
+    try:
+        return fusion_analysis_service.create_report(
+            model_id=model_id,
+            component_node_name=dfm_body.component_node_name,
+            dfm_review=dfm_review,
+            vision_report=vision_report_payload,
+            vision_report_id=resolved_vision_report_id,
+        )
+    except FusionAnalysisError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.get("/api/models/{model_id}/fusion/reports/{report_id}")
+async def get_fusion_report(model_id: str, report_id: str):
+    _require_model(model_id)
+    try:
+        return fusion_analysis_service.get_report(model_id=model_id, report_id=report_id)
+    except FusionReportNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except FusionAnalysisError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
 

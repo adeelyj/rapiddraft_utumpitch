@@ -45,6 +45,7 @@ def build_extracted_facts_from_part_facts(
 
     _derive_hole_features(facts=facts, sections=sections, not_applicable_inputs=not_applicable_inputs)
     _derive_wall_thickness_signals(facts=facts, sections=sections, not_applicable_inputs=not_applicable_inputs)
+    _derive_pilot_geometry_signals(facts=facts, sections=sections, not_applicable_inputs=not_applicable_inputs)
     _apply_profile_defaults(facts=facts, component_profile=component_profile or {})
 
     if context_payload and isinstance(context_payload, dict):
@@ -145,6 +146,74 @@ def _derive_wall_thickness_signals(
 
     facts.setdefault("min_wall_thickness", min_wall_thickness)
     facts.setdefault("wall_thickness_map", True)
+
+
+def _derive_pilot_geometry_signals(
+    *,
+    facts: dict[str, Any],
+    sections: dict[str, Any],
+    not_applicable_inputs: set[str],
+) -> None:
+    # Robot interface and ISO 228 conformance flags can be inferred from
+    # declared context hints when present.
+    robot_interface_candidate = _known_truthy_metric(
+        sections,
+        "declared_context",
+        "iso9409_1_robot_interface_candidate",
+    )
+    if robot_interface_candidate:
+        facts.setdefault("cad.robot_interface.conformance_flag", True)
+        facts.setdefault("robot_interface_conformance_flag", True)
+
+    iso228_candidate = _known_truthy_metric(
+        sections,
+        "declared_context",
+        "iso228_1_thread_standard_candidate",
+    )
+    if iso228_candidate:
+        facts.setdefault("cad.threads.iso228_all_conformant", True)
+        facts.setdefault("iso228_all_conformant", True)
+
+    # Hygienic geometry proxies are derived from existing corner/radius signals
+    # so geometry-only pilot rules can be evaluated for early-stage CAD.
+    crevice_count = _known_numeric_metric(
+        sections,
+        "manufacturing_signals",
+        "critical_corner_count",
+    )
+    if crevice_count is not None:
+        crevice_value = max(0.0, crevice_count)
+        facts.setdefault("cad.hygienic_design.crevice_count", crevice_value)
+        facts.setdefault("crevice_count", crevice_value)
+
+    enclosed_void_count = _known_numeric_metric(
+        sections,
+        "manufacturing_signals",
+        "count_radius_below_3_0_mm",
+    )
+    if enclosed_void_count is None:
+        enclosed_void_count = _known_numeric_metric(
+            sections,
+            "manufacturing_signals",
+            "warning_corner_count",
+        )
+    if enclosed_void_count is not None:
+        enclosed_void_value = max(0.0, enclosed_void_count)
+        facts.setdefault(
+            "cad.hygienic_design.enclosed_voids_in_product_zone_count",
+            enclosed_void_value,
+        )
+        facts.setdefault("enclosed_voids_in_product_zone_count", enclosed_void_value)
+
+    trapped_volume_count = _known_numeric_metric(
+        sections,
+        "manufacturing_signals",
+        "long_reach_tool_risk_count",
+    )
+    if trapped_volume_count is not None:
+        trapped_value = max(0.0, trapped_volume_count)
+        facts.setdefault("cad.hygienic_design.trapped_volume_count", trapped_value)
+        facts.setdefault("trapped_volume_count", trapped_value)
 
 
 def _apply_profile_defaults(

@@ -127,6 +127,21 @@ type DfmStandardRef = {
   notes?: string;
 };
 
+type DfmStandardTrace = {
+  ref_id: string;
+  title?: string;
+  url?: string;
+  type?: string;
+  notes?: string;
+  active_in_mode: boolean;
+  rules_considered: number;
+  design_risk_findings: number;
+  evidence_gap_findings: number;
+  blocked_by_missing_inputs: number;
+  checks_passed: number;
+  checks_unresolved: number;
+};
+
 type DfmFindingExpectedImpact = {
   impact_type?: string;
   risk_reduction?: string;
@@ -143,6 +158,8 @@ type DfmReviewFinding = {
   title?: string;
   refs: string[];
   standard_clause?: string;
+  source_rule_id?: string;
+  evidence_quality?: string;
   recommended_action?: string;
   expected_impact?: DfmFindingExpectedImpact;
 };
@@ -191,6 +208,7 @@ type DfmReviewRoute = {
   finding_count: number;
   findings: DfmReviewFinding[];
   standards_used_auto: DfmStandardRef[];
+  standards_trace?: DfmStandardTrace[];
   cost_estimate?: DfmCostEstimate | null;
 };
 
@@ -206,6 +224,7 @@ type DfmReviewV2Response = {
   route_count: number;
   finding_count_total: number;
   standards_used_auto_union: DfmStandardRef[];
+  standards_trace_union?: DfmStandardTrace[];
   cost_estimate: DfmCostEstimate | null;
   cost_estimate_by_route: Array<
     DfmCostEstimate & {
@@ -246,8 +265,16 @@ const DEFAULT_FLOW_ORDER = [
 
 type ProcessOverrideMode = "profile" | "auto" | "force";
 type OverlayOverrideMode = "profile" | "pilot" | "force";
-type AnalysisMode = "geometry_dfm" | "drawing_spec" | "full";
+type AnalysisModeRuntime = "geometry_dfm" | "drawing_spec" | "full";
+type AnalysisMode = AnalysisModeRuntime | "pilot_strict";
 const PILOT_OVERLAY_ID = "pilot_prototype";
+const PILOT_STRICT_ESSENTIAL_RULE_IDS = new Set<string>([
+  "CNC-005",
+  "CNC-006",
+  "CNC-013",
+  "FOOD-002",
+  "FOOD-004",
+]);
 
 const processLabelById = (processes: DfmConfigProcess[], processId: string | null) => {
   if (!processId) return "";
@@ -276,7 +303,7 @@ const DfmReviewSidebar = ({
   const [analysisMode, setAnalysisMode] = useState<AnalysisMode>("geometry_dfm");
   const [processOverrideMode, setProcessOverrideMode] = useState<ProcessOverrideMode>("profile");
   const [forcedProcessId, setForcedProcessId] = useState("");
-  const [overlayOverrideMode, setOverlayOverrideMode] = useState<OverlayOverrideMode>("profile");
+  const [overlayOverrideMode, setOverlayOverrideMode] = useState<OverlayOverrideMode>("pilot");
   const [forcedOverlayId, setForcedOverlayId] = useState("");
   const [selectedRoleId, setSelectedRoleId] = useState("");
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
@@ -284,6 +311,7 @@ const DfmReviewSidebar = ({
   const [loadingModelTemplates, setLoadingModelTemplates] = useState(false);
   const [selectedAdvancedModel, setSelectedAdvancedModel] = useState("");
   const [runBothIfMismatch, setRunBothIfMismatch] = useState(true);
+  const [showEvidenceGaps, setShowEvidenceGaps] = useState(false);
   const [reviewV2Result, setReviewV2Result] = useState<DfmReviewV2Response | null>(null);
 
   const panelBindings = useMemo(() => {
@@ -484,17 +512,19 @@ const DfmReviewSidebar = ({
       if (selectedAdvancedModel) {
         contextPayload.advanced_llm_model = selectedAdvancedModel;
       }
+      const effectiveOverlayMode: OverlayOverrideMode =
+        overlayOverrideMode === "pilot" && !pilotOverlay ? "profile" : overlayOverrideMode;
       const selectedOverlayId =
-        overlayOverrideMode === "force"
+        effectiveOverlayMode === "force"
           ? forcedOverlayId || null
-          : overlayOverrideMode === "pilot"
+          : effectiveOverlayMode === "pilot"
           ? pilotOverlay?.overlay_id ?? null
           : null;
-      const overlaySelectionMode = overlayOverrideMode === "profile" ? "profile" : "override";
+      const overlaySelectionMode = effectiveOverlayMode === "profile" ? "profile" : "override";
 
       const planningInputs = {
         extracted_part_facts: {},
-        analysis_mode: analysisMode,
+        analysis_mode: (analysisMode === "pilot_strict" ? "geometry_dfm" : analysisMode) as AnalysisModeRuntime,
         selected_process_override: processOverrideMode === "force" ? forcedProcessId || null : null,
         selected_overlay: selectedOverlayId,
         process_selection_mode: processOverrideMode === "force" ? "override" : processOverrideMode,
@@ -565,11 +595,14 @@ const DfmReviewSidebar = ({
           <span>Analysis mode</span>
           <select value={analysisMode} onChange={(event) => setAnalysisMode(event.target.value as AnalysisMode)}>
             <option value="geometry_dfm">Geometry DFM (STEP-only)</option>
+            <option value="pilot_strict">Pilot strict (PSTD + essential geometry)</option>
             <option value="drawing_spec">Drawing/spec completeness</option>
             <option value="full">Full</option>
           </select>
           <p className="dfm-sidebar__meta">
-            {analysisMode === "geometry_dfm"
+            {analysisMode === "pilot_strict"
+              ? "Pilot demo mode. Prioritizes PSTD-* and essential geometry safety findings."
+              : analysisMode === "geometry_dfm"
               ? "Designer-first mode. Excludes drawing-only checks."
               : analysisMode === "drawing_spec"
               ? "Documentation-focused mode. Highlights drawing/spec gaps."
@@ -584,11 +617,11 @@ const DfmReviewSidebar = ({
         <label key={controlId} className="dfm-sidebar__field dfm-sidebar__flow-step">
           <span>Standards profile (optional)</span>
           <select value={overlayOverrideMode} onChange={(event) => setOverlayOverrideMode(event.target.value as OverlayOverrideMode)}>
-            <option value="profile">Use profile industry mapping</option>
             <option value="pilot" disabled={!pilotOverlay}>
-              Pilot standards set {pilotOverlay ? "" : "(not available)"}
+              Pilots (all pilot standards) {pilotOverlay ? "" : "(not available)"}
             </option>
-            <option value="force">Force selection</option>
+            <option value="profile">Use profile industry mapping</option>
+            <option value="force">Custom standards profile (advanced)</option>
           </select>
           {overlayOverrideMode === "force" ? (
             <select value={forcedOverlayId} onChange={(event) => setForcedOverlayId(event.target.value)}>
@@ -601,7 +634,7 @@ const DfmReviewSidebar = ({
             </select>
           ) : overlayOverrideMode === "pilot" ? (
             <p className="dfm-sidebar__meta">
-              Pilot standards: {pilotOverlay?.label ?? "Overlay not available in bundle"}
+              Pilots: {pilotOverlay?.label ?? "Overlay not available in bundle"}
             </p>
           ) : (
             <p className="dfm-sidebar__meta">Profile industry: {selectedProfile?.industry || "-"}</p>
@@ -736,6 +769,12 @@ const DfmReviewSidebar = ({
           </div>
         ) : null}
         {finding.standard_clause ? <div className="dfm-sidebar__finding-clause">Clause: {finding.standard_clause}</div> : null}
+        {finding.source_rule_id ? (
+          <div className="dfm-sidebar__finding-clause">Source rule: {finding.source_rule_id}</div>
+        ) : null}
+        {finding.evidence_quality ? (
+          <div className="dfm-sidebar__finding-clause">Evidence basis: {finding.evidence_quality}</div>
+        ) : null}
         {finding.recommended_action ? <div className="dfm-sidebar__finding-action">{finding.recommended_action}</div> : null}
         {finding.expected_impact ? (
           <div className="dfm-sidebar__finding-impact">
@@ -745,6 +784,25 @@ const DfmReviewSidebar = ({
         ) : null}
       </li>
     );
+  };
+
+  const standardsTraceStatus = (entry: DfmStandardTrace): string => {
+    if (entry.design_risk_findings > 0) {
+      return `finding (${entry.design_risk_findings})`;
+    }
+    if (entry.evidence_gap_findings > 0) {
+      return `blocked by missing evidence (${entry.evidence_gap_findings})`;
+    }
+    if (entry.active_in_mode && entry.checks_passed > 0) {
+      return `checked/no finding (${entry.checks_passed})`;
+    }
+    if (entry.active_in_mode && entry.checks_unresolved > 0) {
+      return `active/no evaluator (${entry.checks_unresolved})`;
+    }
+    if (entry.active_in_mode) {
+      return "active";
+    }
+    return "not active in this mode";
   };
 
   return (
@@ -789,7 +847,9 @@ const DfmReviewSidebar = ({
           <p className="dfm-sidebar__meta">
             Analysis mode:{" "}
             {reviewV2Result?.effective_context?.analysis_mode
-              ? reviewV2Result.effective_context.analysis_mode.selected_mode
+              ? analysisMode === "pilot_strict"
+                ? "pilot_strict (runtime geometry_dfm)"
+                : reviewV2Result.effective_context.analysis_mode.selected_mode
               : analysisMode}{" "}
             (source: {reviewV2Result?.effective_context?.analysis_mode?.source ?? "ui_selection"})
           </p>
@@ -878,6 +938,34 @@ const DfmReviewSidebar = ({
                   <p className="dfm-sidebar__hint">No standards fired from current findings.</p>
                 )}
               </details>
+              <details className="dfm-sidebar__standards-toggle">
+                <summary>Standards trace (all in scope) ({reviewV2Result.standards_trace_union?.length ?? 0})</summary>
+                {reviewV2Result.standards_trace_union?.length ? (
+                  <ul className="dfm-sidebar__standards-list dfm-sidebar__standards-trace">
+                    {reviewV2Result.standards_trace_union.map((standard) => (
+                      <li key={`trace-${standard.ref_id}`}>
+                        <strong>{standard.ref_id}</strong>
+                        <span>
+                          {standard.url ? (
+                            <a href={standard.url} target="_blank" rel="noreferrer">
+                              {standard.title ?? standard.ref_id}
+                            </a>
+                          ) : (
+                            <span>{standard.title ?? standard.ref_id}</span>
+                          )}
+                        </span>
+                        <span className="dfm-sidebar__trace-status">Status: {standardsTraceStatus(standard)}</span>
+                        <span className="dfm-sidebar__trace-meta">
+                          Rules considered: {standard.rules_considered} | Missing-evidence blocks:{" "}
+                          {standard.blocked_by_missing_inputs}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="dfm-sidebar__hint">No standards trace available for this run.</p>
+                )}
+              </details>
             </div>
 
             <div className="dfm-sidebar__cost">
@@ -912,14 +1000,42 @@ const DfmReviewSidebar = ({
               <p className="dfm-sidebar__meta">
                 Routes: {reviewV2Result.route_count} | Findings: {reviewV2Result.finding_count_total}
               </p>
+              <label className="dfm-sidebar__field dfm-sidebar__toggle">
+                <span>Show drawing/spec evidence gaps</span>
+                <div className="dfm-sidebar__toggle-row">
+                  <input
+                    type="checkbox"
+                    checked={showEvidenceGaps}
+                    onChange={(event) => setShowEvidenceGaps(event.target.checked)}
+                  />
+                  <span>{showEvidenceGaps ? "Visible" : "Hidden by default"}</span>
+                </div>
+              </label>
+              {analysisMode === "pilot_strict" ? (
+                <p className="dfm-sidebar__meta">
+                  Pilot strict filter active: showing `PSTD-*` plus essential geometry safety rules.
+                </p>
+              ) : null}
               {reviewV2Result.routes.map((route) => {
-                const designRiskFindings = route.findings.filter((finding) => finding.finding_type === "rule_violation");
+                const allDesignRiskFindings = route.findings.filter((finding) => finding.finding_type === "rule_violation");
+                const designRiskFindings =
+                  analysisMode === "pilot_strict"
+                    ? allDesignRiskFindings.filter(
+                        (finding) =>
+                          finding.rule_id.startsWith("PSTD-") ||
+                          PILOT_STRICT_ESSENTIAL_RULE_IDS.has(finding.rule_id)
+                      )
+                    : allDesignRiskFindings;
                 const evidenceGapFindings = route.findings.filter((finding) => finding.finding_type !== "rule_violation");
+                const shownFindingCount = designRiskFindings.length + (showEvidenceGaps ? evidenceGapFindings.length : 0);
                 return (
                   <article key={`${route.plan_id}-${route.process_id}`} className="dfm-sidebar__route">
                     <header className="dfm-sidebar__route-header">
                       <strong>{route.process_label}</strong>
-                      <span>{route.finding_count} findings</span>
+                      <span>
+                        {shownFindingCount} shown
+                        {shownFindingCount !== route.finding_count ? ` / ${route.finding_count} total` : ""}
+                      </span>
                     </header>
                     <p className="dfm-sidebar__meta">
                       Packs:{" "}
@@ -946,16 +1062,22 @@ const DfmReviewSidebar = ({
                             <p className="dfm-sidebar__hint">No design risk findings in this route.</p>
                           )}
                         </details>
-                        <details className="dfm-sidebar__finding-group">
-                          <summary>Drawing/spec evidence gaps ({evidenceGapFindings.length})</summary>
-                          {evidenceGapFindings.length ? (
-                            <ul className="dfm-sidebar__findings">
-                              {evidenceGapFindings.slice(0, 20).map((finding) => renderFindingItem(route, finding))}
-                            </ul>
-                          ) : (
-                            <p className="dfm-sidebar__hint">No evidence gaps in this route.</p>
-                          )}
-                        </details>
+                        {showEvidenceGaps ? (
+                          <details className="dfm-sidebar__finding-group">
+                            <summary>Drawing/spec evidence gaps ({evidenceGapFindings.length})</summary>
+                            {evidenceGapFindings.length ? (
+                              <ul className="dfm-sidebar__findings">
+                                {evidenceGapFindings.slice(0, 20).map((finding) => renderFindingItem(route, finding))}
+                              </ul>
+                            ) : (
+                              <p className="dfm-sidebar__hint">No evidence gaps in this route.</p>
+                            )}
+                          </details>
+                        ) : (
+                          <p className="dfm-sidebar__hint">
+                            Drawing/spec evidence gaps hidden ({evidenceGapFindings.length}). Enable above to inspect.
+                          </p>
+                        )}
                       </div>
                     ) : (
                       <p className="dfm-sidebar__hint">No findings for this route.</p>

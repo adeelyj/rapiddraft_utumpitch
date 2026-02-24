@@ -1,5 +1,7 @@
 ﻿from __future__ import annotations
 
+import base64
+import binascii
 import json
 import re
 import shutil
@@ -299,6 +301,7 @@ class VisionAnalysisService:
     def list_providers(self) -> dict[str, Any]:
         ordered_keys = ["openai", "claude", "local"]
         providers_payload: list[dict[str, Any]] = []
+        provider_defaults: dict[str, dict[str, str]] = {}
         for key in ordered_keys:
             provider = self.providers.get(key)
             if provider is None:
@@ -306,6 +309,11 @@ class VisionAnalysisService:
             provider_entry = provider.availability()
             provider_entry["id"] = key
             providers_payload.append(provider_entry)
+            provider_base_url = getattr(provider, "base_url", None)
+            if isinstance(provider_base_url, str) and provider_base_url.strip():
+                provider_defaults[key] = {
+                    "base_url": provider_base_url,
+                }
 
         default_provider = "openai"
         for candidate in ordered_keys:
@@ -314,14 +322,15 @@ class VisionAnalysisService:
                 default_provider = candidate
                 break
 
-        local_provider = self.providers.get("local")
-        local_base_url = "http://127.0.0.1:1234/v1"
-        if local_provider and isinstance(getattr(local_provider, "base_url", None), str):
-            local_base_url = local_provider.base_url
+        local_base_url = provider_defaults.get("local", {}).get(
+            "base_url",
+            "http://127.0.0.1:1234/v1",
+        )
 
         return {
             "providers": providers_payload,
             "default_provider": default_provider,
+            "provider_defaults": provider_defaults,
             "local_defaults": {
                 "base_url": local_base_url,
             },
@@ -353,6 +362,8 @@ class VisionAnalysisService:
         view_set_id: str,
         criteria_payload: dict[str, Any] | None,
         provider_payload: dict[str, Any] | None,
+        selected_view_names: list[str] | None = None,
+        pasted_images_payload: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         criteria = parse_vision_criteria(criteria_payload)
         provider_payload = provider_payload or {}
@@ -363,9 +374,18 @@ class VisionAnalysisService:
 
         provider = self.providers[route_requested]
         model_override = _clean_optional_str(provider_payload.get("model_override"))
-        local_base_url_override = _clean_optional_str(provider_payload.get("local_base_url"))
+        base_url_override = _clean_optional_str(provider_payload.get("base_url_override"))
+        api_key_override = _clean_optional_str(provider_payload.get("api_key_override"))
+        legacy_local_base_url_override = _clean_optional_str(provider_payload.get("local_base_url"))
+        if base_url_override is None and legacy_local_base_url_override is not None:
+            base_url_override = legacy_local_base_url_override
 
-        if not provider.configured and not model_override:
+        provider_default_model = _clean_optional_str(getattr(provider, "default_model", None))
+        if (
+            not provider.configured
+            and not model_override
+            and not (api_key_override and provider_default_model)
+        ):
             raise VisionAnalysisError(
                 f"Provider '{route_requested}' is not configured. Check environment variables."
             )
@@ -384,6 +404,20 @@ class VisionAnalysisService:
         report_dir = self._report_dir(model_id, report_id)
         report_dir.mkdir(parents=True, exist_ok=True)
 
+        selected_generated_view_names = self._resolve_selected_view_names(
+            view_paths=view_paths,
+            selected_view_names=selected_view_names,
+        )
+        pasted_analysis_inputs = self._materialize_pasted_images(
+            report_dir=report_dir,
+            pasted_images_payload=pasted_images_payload,
+        )
+        analysis_inputs: list[tuple[str, Path]] = [
+            (view_name, view_paths[view_name]) for view_name in selected_generated_view_names
+        ] + pasted_analysis_inputs
+        if not analysis_inputs:
+            raise VisionAnalysisError("Select at least one generated or pasted image for analysis.")
+
         prompt_base = _build_prompt(
             criteria=criteria,
             component_node_name=component_node_name,
@@ -394,10 +428,16 @@ class VisionAnalysisService:
             "component_node_name": component_node_name,
             "view_set_id": view_set_id,
             "criteria_applied": criteria.to_dict(),
+            "image_selection": {
+                "selected_view_names": selected_generated_view_names,
+                "pasted_image_labels": [label for label, _ in pasted_analysis_inputs],
+            },
             "provider_request": {
                 "route": route_requested,
                 "model_override": model_override,
-                "local_base_url": local_base_url_override if route_requested == "local" else None,
+                "base_url_override": base_url_override,
+                "api_key_override_provided": bool(api_key_override),
+                "local_base_url": legacy_local_base_url_override if route_requested == "local" else None,
             },
         }
         (report_dir / "request.json").write_text(
@@ -406,28 +446,34 @@ class VisionAnalysisService:
         )
 
         raw_response_artifact: dict[str, Any]
+        raw_output_text = ""
 
         try:
             if route_requested == "local":
                 parsed_by_view: list[dict[str, Any]] = []
                 per_view_raw: list[dict[str, Any]] = []
-                for view_name in self.REQUIRED_VIEWS:
-                    prompt = f"{prompt_base}\n\nCurrent orthographic view: {view_name.upper()}."
+                for view_label, image_path in analysis_inputs:
+                    if view_label in self.REQUIRED_VIEWS:
+                        context_line = f"Current orthographic view: {view_label.upper()}."
+                    else:
+                        context_line = f"Current supplemental image label: {view_label}."
+                    prompt = f"{prompt_base}\n\n{context_line}"
                     provider_result = provider.analyze(
                         prompt=prompt,
-                        image_paths=[view_paths[view_name]],
+                        image_paths=[image_path],
                         model_override=model_override,
-                        base_url_override=local_base_url_override,
+                        base_url_override=base_url_override,
+                        api_key_override=api_key_override,
                     )
                     parsed_payload = _parse_model_output_as_json(provider_result.text)
                     normalized = normalize_provider_result(
                         parsed_payload,
-                        fallback_view=view_name,
+                        fallback_view=view_label,
                     )
                     parsed_by_view.append(normalized)
                     per_view_raw.append(
                         {
-                            "view_name": view_name,
+                            "view_name": view_label,
                             "response_text": provider_result.text,
                             "request_metadata": provider_result.request_metadata,
                             "raw_response": provider_result.raw_response,
@@ -440,29 +486,55 @@ class VisionAnalysisService:
                 raw_response_artifact = {
                     "mode": "sequential_single_image",
                     "provider": route_requested,
+                    "analysis_image_labels": [label for label, _ in analysis_inputs],
                     "results": per_view_raw,
                 }
+                raw_output_sections: list[str] = []
+                for item in per_view_raw:
+                    view_name = str(item.get("view_name") or "").strip() or "unknown"
+                    response_text = str(item.get("response_text") or "").strip()
+                    if not response_text:
+                        raw_payload = item.get("raw_response")
+                        if raw_payload is not None:
+                            try:
+                                response_text = json.dumps(raw_payload, indent=2)
+                            except Exception:
+                                response_text = str(raw_payload)
+                    if not response_text:
+                        continue
+                    raw_output_sections.append(f"--- {view_name} ---\n{response_text}")
+                raw_output_text = "\n\n".join(raw_output_sections).strip()
             else:
                 provider_result = provider.analyze(
                     prompt=prompt_base,
-                    image_paths=[view_paths[name] for name in self.REQUIRED_VIEWS],
+                    image_paths=[image_path for _, image_path in analysis_inputs],
                     model_override=model_override,
+                    base_url_override=base_url_override,
+                    api_key_override=api_key_override,
                 )
                 parsed_payload = _parse_model_output_as_json(provider_result.text)
                 merged = normalize_provider_result(parsed_payload)
+                source_fallback_views = [label for label, _ in analysis_inputs]
                 for finding in merged.get("flagged_features", []):
                     if not finding.get("source_views"):
-                        finding["source_views"] = list(self.REQUIRED_VIEWS)
+                        finding["source_views"] = source_fallback_views
 
                 model_used = provider_result.model_used
                 base_url_used = provider_result.base_url_used
                 raw_response_artifact = {
                     "mode": "multi_image",
                     "provider": route_requested,
+                    "analysis_image_labels": source_fallback_views,
                     "response_text": provider_result.text,
                     "request_metadata": provider_result.request_metadata,
                     "raw_response": provider_result.raw_response,
                 }
+                raw_output_text = str(provider_result.text or "").strip()
+                if not raw_output_text and provider_result.raw_response is not None:
+                    try:
+                        raw_output_text = json.dumps(provider_result.raw_response, indent=2)
+                    except Exception:
+                        raw_output_text = str(provider_result.raw_response)
 
             findings = merged.get("flagged_features")
             if not isinstance(findings, list):
@@ -491,6 +563,7 @@ class VisionAnalysisService:
                 },
                 "findings": filtered_findings,
                 "general_observations": str(merged.get("general_observations") or "").strip(),
+                "raw_output_text": raw_output_text,
                 "criteria_applied": criteria.to_dict(),
                 "provider_applied": {
                     "route_requested": route_requested,
@@ -534,8 +607,11 @@ class VisionAnalysisService:
             )
             report_views_dir = report_dir / "views"
             report_views_dir.mkdir(parents=True, exist_ok=True)
-            for view_name in self.REQUIRED_VIEWS:
-                shutil.copy2(view_paths[view_name], report_views_dir / f"{view_name}.png")
+            for index, (view_label, image_path) in enumerate(analysis_inputs, start=1):
+                suffix = image_path.suffix if image_path.suffix else ".png"
+                safe_label = _sanitize_view_label(view_label, fallback=f"image_{index}")
+                artifact_name = f"{index:02d}_{safe_label}{suffix}"
+                shutil.copy2(image_path, report_views_dir / artifact_name)
         except Exception as exc:
             raise VisionAnalysisError(f"Failed to persist vision report artifacts: {exc}") from exc
 
@@ -564,6 +640,60 @@ class VisionAnalysisService:
             raise VisionViewSetMissingError(str(exc)) from exc
         except VisionViewSetError as exc:
             raise VisionAnalysisError(str(exc)) from exc
+
+    def _resolve_selected_view_names(
+        self,
+        *,
+        view_paths: dict[str, Path],
+        selected_view_names: list[str] | None,
+    ) -> list[str]:
+        available_view_names = {str(name).strip().lower() for name in view_paths.keys()}
+        if selected_view_names is None:
+            candidates = list(self.REQUIRED_VIEWS)
+        else:
+            candidates = [
+                str(name).strip().lower()
+                for name in selected_view_names
+                if isinstance(name, str) and str(name).strip()
+            ]
+
+        selected: list[str] = []
+        seen: set[str] = set()
+        for candidate in candidates:
+            if candidate in available_view_names and candidate not in seen:
+                selected.append(candidate)
+                seen.add(candidate)
+        return selected
+
+    def _materialize_pasted_images(
+        self,
+        *,
+        report_dir: Path,
+        pasted_images_payload: list[dict[str, Any]] | None,
+    ) -> list[tuple[str, Path]]:
+        if not pasted_images_payload:
+            return []
+
+        pasted_images_dir = report_dir / "pasted_images"
+        pasted_images_dir.mkdir(parents=True, exist_ok=True)
+
+        materialized: list[tuple[str, Path]] = []
+        for index, payload in enumerate(pasted_images_payload, start=1):
+            if not isinstance(payload, dict):
+                continue
+
+            data_url = _clean_optional_str(payload.get("data_url"))
+            if not data_url:
+                continue
+
+            raw_name = _clean_optional_str(payload.get("name")) or f"screenshot_{index}"
+            safe_name = _sanitize_view_label(raw_name, fallback=f"screenshot_{index}")
+            extension, image_bytes = _decode_image_data_url(data_url)
+            image_path = pasted_images_dir / f"{index:02d}_{safe_name}{extension}"
+            image_path.write_bytes(image_bytes)
+            materialized.append((safe_name, image_path))
+
+        return materialized
 
     def _reports_root(self, model_id: str) -> Path:
         return self.root / model_id / "vision_reports"
@@ -644,40 +774,77 @@ def _build_prompt(*, criteria: VisionCriteria, component_node_name: str | None) 
 
 
 def _parse_model_output_as_json(text: str) -> dict[str, Any]:
-    if not isinstance(text, str) or not text.strip():
-        raise VisionExecutionError("Vision provider returned empty text response.")
+    if not isinstance(text, str):
+        return _fallback_model_output_payload("")
 
     stripped = text.strip()
+    if not stripped:
+        return _fallback_model_output_payload("")
+
+    candidates: list[tuple[int, int, dict[str, Any]]] = []
+
+    def _append_candidate(payload: Any, *, position: int) -> None:
+        if not isinstance(payload, dict):
+            return
+        score = _score_schema_candidate(payload)
+        candidates.append((score, position, payload))
 
     try:
         payload = json.loads(stripped)
-        if isinstance(payload, dict):
-            return payload
+        _append_candidate(payload, position=0)
     except Exception:
         pass
 
-    fenced_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", stripped, flags=re.DOTALL | re.IGNORECASE)
-    if fenced_match:
+    for fenced_match in re.finditer(r"```(?:json)?\s*(\{.*?\})\s*```", stripped, flags=re.DOTALL | re.IGNORECASE):
         candidate = fenced_match.group(1)
         try:
             payload = json.loads(candidate)
-            if isinstance(payload, dict):
-                return payload
+            _append_candidate(payload, position=fenced_match.start())
         except Exception:
             pass
 
-    start = stripped.find("{")
-    end = stripped.rfind("}")
-    if start != -1 and end != -1 and end > start:
-        candidate = stripped[start : end + 1]
+    # Try parsing JSON from each opening brace position to handle prose + JSON mixtures.
+    decoder = json.JSONDecoder()
+    for match in re.finditer(r"\{", stripped):
+        candidate = stripped[match.start() :]
         try:
-            payload = json.loads(candidate)
-            if isinstance(payload, dict):
-                return payload
+            payload, _ = decoder.raw_decode(candidate)
+            _append_candidate(payload, position=match.start())
         except Exception:
             pass
 
-    raise VisionExecutionError("Vision provider response was not valid JSON.")
+    if candidates:
+        candidates.sort(key=lambda item: (item[0], item[1]), reverse=True)
+        best_score, _, best_payload = candidates[0]
+        if best_score > 0:
+            return best_payload
+
+    return _fallback_model_output_payload(stripped)
+
+
+def _score_schema_candidate(payload: dict[str, Any]) -> int:
+    score = 0
+
+    flagged_features = payload.get("flagged_features")
+    if isinstance(flagged_features, list):
+        score += 3
+        if any(isinstance(item, dict) and str(item.get("description") or "").strip() for item in flagged_features):
+            score += 2
+    elif "flagged_features" in payload:
+        score += 1
+
+    if isinstance(payload.get("general_observations"), str):
+        score += 2
+    elif "general_observations" in payload:
+        score += 1
+
+    confidence_raw = payload.get("confidence")
+    if isinstance(confidence_raw, str) and confidence_raw.strip().lower() in VALID_CONFIDENCE:
+        score += 2
+    elif "confidence" in payload:
+        score += 1
+
+    return score
 
 
 def _filter_findings_by_criteria(
@@ -770,3 +937,60 @@ def _clean_optional_str(raw_value: Any) -> str | None:
         return None
     value = raw_value.strip()
     return value if value else None
+
+
+def _sanitize_view_label(raw_value: str, *, fallback: str) -> str:
+    normalized = re.sub(r"[^a-z0-9]+", "_", raw_value.strip().lower())
+    normalized = normalized.strip("_")
+    if not normalized:
+        normalized = fallback
+    return normalized[:48]
+
+
+def _decode_image_data_url(data_url: str) -> tuple[str, bytes]:
+    match = re.match(
+        r"^\s*data:(image/[a-zA-Z0-9.+-]+);base64,(?P<data>.+)\s*$",
+        data_url,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    if not match:
+        raise VisionAnalysisError("Pasted images must be base64 data URLs.")
+
+    media_type = match.group(1).lower()
+    encoded_data = re.sub(r"\s+", "", match.group("data"))
+    try:
+        image_bytes = base64.b64decode(encoded_data, validate=True)
+    except (binascii.Error, ValueError) as exc:
+        raise VisionAnalysisError("Pasted image payload contains invalid base64 data.") from exc
+
+    if not image_bytes:
+        raise VisionAnalysisError("Pasted image payload was empty.")
+
+    extension_map = {
+        "image/png": ".png",
+        "image/jpeg": ".jpg",
+        "image/jpg": ".jpg",
+        "image/webp": ".webp",
+        "image/gif": ".gif",
+        "image/bmp": ".bmp",
+    }
+    extension = extension_map.get(media_type, ".png")
+    return extension, image_bytes
+
+
+def _fallback_model_output_payload(raw_text: str) -> dict[str, Any]:
+    clipped = raw_text.strip()
+    if len(clipped) > 2000:
+        clipped = f"{clipped[:2000]}..."
+
+    note = "Model returned non-JSON output; included raw text summary below."
+    if clipped:
+        observations = f"{note}\n\n{clipped}"
+    else:
+        observations = f"{note}\n\n(No content returned by provider.)"
+
+    return {
+        "flagged_features": [],
+        "general_observations": observations,
+        "confidence": "low",
+    }

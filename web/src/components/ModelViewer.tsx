@@ -1,10 +1,11 @@
-import { Suspense, useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { Center, Environment, GizmoHelper, GizmoViewport, OrbitControls } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { Box3, Object3D, Vector2, Vector3 } from "three";
 import ReviewPins from "./ReviewPins";
 import type { PinPosition, PinnedItem } from "../types/review";
+import type { PartFactMetric, PartFactsResponse } from "../types/partFacts";
 
 type ModelComponent = {
   id: string;
@@ -35,6 +36,8 @@ type ComponentProfile = {
 };
 
 type ModelViewerProps = {
+  apiBase: string;
+  modelId: string | null;
   previewUrl: string | null;
   message?: string;
   onCreateDrawing?: () => void;
@@ -72,6 +75,36 @@ type ModelViewerProps = {
     screenY: number;
   }) => void;
 };
+
+const joinApiUrl = (base: string, path: string): string => {
+  const normalizedBase = base.replace(/\/$/, "");
+  if (!normalizedBase) return path;
+  if (path.startsWith("http")) return path;
+  return `${normalizedBase}${path}`;
+};
+
+const metricStateClass = (state: string): string => {
+  if (state === "measured") return "part-facts__state part-facts__state--measured";
+  if (state === "inferred") return "part-facts__state part-facts__state--inferred";
+  if (state === "declared") return "part-facts__state part-facts__state--declared";
+  if (state === "failed") return "part-facts__state part-facts__state--failed";
+  if (state === "not_applicable") return "part-facts__state part-facts__state--na";
+  return "part-facts__state part-facts__state--unknown";
+};
+
+const formatMetricValue = (metric: PartFactMetric): string => {
+  if (metric.value === null || metric.value === undefined) return "-";
+  if (typeof metric.value === "boolean") return metric.value ? "Yes" : "No";
+  if (typeof metric.value === "number") {
+    const rendered = Number.isInteger(metric.value) ? metric.value.toString() : metric.value.toFixed(4);
+    return metric.unit ? `${rendered} ${metric.unit}` : rendered;
+  }
+  const value = String(metric.value);
+  return metric.unit ? `${value} ${metric.unit}` : value;
+};
+
+const sortedMetrics = (metrics: Record<string, PartFactMetric>): Array<[string, PartFactMetric]> =>
+  Object.entries(metrics).sort((a, b) => a[1].label.localeCompare(b[1].label));
 
 const FitCamera = ({ object, trigger }: { object: Object3D; trigger: number }) => {
   const camera = useThree((state) => state.camera);
@@ -259,6 +292,8 @@ const ModelContents = ({
 const Placeholder = () => <div className="viewer__placeholder" />;
 
 const ModelViewer = ({
+  apiBase,
+  modelId,
   previewUrl,
   message,
   onCreateDrawing,
@@ -288,6 +323,60 @@ const ModelViewer = ({
   const selectedComponent =
     components.find((component) => component.nodeName === selectedComponentNodeName) ?? components[0] ?? null;
   const profile = selectedComponentProfile ?? { material: "", manufacturingProcess: "", industry: "" };
+  const [partFacts, setPartFacts] = useState<PartFactsResponse | null>(null);
+  const [partFactsLoading, setPartFactsLoading] = useState(false);
+  const [partFactsRefreshing, setPartFactsRefreshing] = useState(false);
+  const [partFactsError, setPartFactsError] = useState<string | null>(null);
+
+  const fetchPartFacts = async (refresh: boolean) => {
+    if (!modelId || !selectedComponent?.nodeName) {
+      setPartFacts(null);
+      setPartFactsError(null);
+      return;
+    }
+
+    if (refresh) setPartFactsRefreshing(true);
+    else setPartFactsLoading(true);
+    setPartFactsError(null);
+
+    const path = refresh
+      ? `/api/models/${modelId}/components/${selectedComponent.nodeName}/part-facts/refresh`
+      : `/api/models/${modelId}/components/${selectedComponent.nodeName}/part-facts`;
+
+    try {
+      const response = await fetch(joinApiUrl(apiBase, path), {
+        method: refresh ? "POST" : "GET",
+      });
+      if (!response.ok) {
+        let detail = "Failed to load part facts";
+        try {
+          const payload = (await response.json()) as { detail?: string; message?: string };
+          detail = payload.detail ?? payload.message ?? detail;
+        } catch {
+          // Keep fallback text.
+        }
+        throw new Error(`${detail} (HTTP ${response.status})`);
+      }
+      const payload = (await response.json()) as PartFactsResponse;
+      setPartFacts(payload);
+    } catch (err) {
+      setPartFactsError(err instanceof Error ? err.message : "Unexpected error while loading part facts");
+      if (!refresh) setPartFacts(null);
+    } finally {
+      if (refresh) setPartFactsRefreshing(false);
+      else setPartFactsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!previewUrl || !selectedComponent?.nodeName || !modelId) {
+      setPartFacts(null);
+      setPartFactsError(null);
+      return;
+    }
+    fetchPartFacts(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [previewUrl, selectedComponent?.nodeName, modelId, apiBase]);
 
   return (
     <section className="viewer-area">
@@ -419,6 +508,140 @@ const ModelViewer = ({
                 <span>Standards:</span>
                 <p>{selectedIndustryStandards.length ? selectedIndustryStandards.join(", ") : "None"}</p>
               </div>
+              <section className="part-facts" aria-label="Part facts">
+                <header className="part-facts__header">
+                  <h4>Part Facts</h4>
+                  <button
+                    type="button"
+                    onClick={() => fetchPartFacts(true)}
+                    disabled={partFactsRefreshing || partFactsLoading || !modelId || !selectedComponent?.nodeName}
+                  >
+                    {partFactsRefreshing ? "Refreshing..." : "Refresh"}
+                  </button>
+                </header>
+                {partFacts ? (
+                  <>
+                    <p className="part-facts__meta">
+                      Core extraction: {partFacts.coverage.core_extraction_coverage.percent.toFixed(1)}% (
+                      {partFacts.coverage.core_extraction_coverage.known_metrics}/
+                      {partFacts.coverage.core_extraction_coverage.applicable_metrics} applicable,{" "}
+                      {partFacts.coverage.core_extraction_coverage.not_applicable_metrics} N/A)
+                    </p>
+                    <p className="part-facts__meta">
+                      Full rule readiness: {partFacts.coverage.full_rule_readiness_coverage.percent.toFixed(1)}% (
+                      {partFacts.coverage.full_rule_readiness_coverage.known_metrics}/
+                      {partFacts.coverage.full_rule_readiness_coverage.applicable_metrics} applicable,{" "}
+                      {partFacts.coverage.full_rule_readiness_coverage.not_applicable_metrics} N/A)
+                    </p>
+                    <p className="part-facts__meta">
+                      Confidence: {partFacts.overall_confidence}
+                    </p>
+                    <div className="part-facts__section">
+                      <h5>Geometry</h5>
+                      <div className="part-facts__metrics">
+                        {sortedMetrics(partFacts.sections.geometry).map(([key, metric]) => (
+                          <div key={key} className="part-facts__metric">
+                            <div className="part-facts__metric-main">
+                              <span>{metric.label}</span>
+                              <strong>{formatMetricValue(metric)}</strong>
+                            </div>
+                            <div className="part-facts__metric-meta">
+                              <span className={metricStateClass(metric.state)}>{metric.state}</span>
+                              <span>{Math.round(metric.confidence * 100)}%</span>
+                            </div>
+                            {metric.reason ? <p className="part-facts__reason">{metric.reason}</p> : null}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="part-facts__section">
+                      <h5>Manufacturing Signals</h5>
+                      <div className="part-facts__metrics">
+                        {sortedMetrics(partFacts.sections.manufacturing_signals).map(([key, metric]) => (
+                          <div key={key} className="part-facts__metric">
+                            <div className="part-facts__metric-main">
+                              <span>{metric.label}</span>
+                              <strong>{formatMetricValue(metric)}</strong>
+                            </div>
+                            <div className="part-facts__metric-meta">
+                              <span className={metricStateClass(metric.state)}>{metric.state}</span>
+                              <span>{Math.round(metric.confidence * 100)}%</span>
+                            </div>
+                            {metric.reason ? <p className="part-facts__reason">{metric.reason}</p> : null}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="part-facts__section">
+                      <h5>Declared Context</h5>
+                      <div className="part-facts__metrics">
+                        {sortedMetrics(partFacts.sections.declared_context).map(([key, metric]) => (
+                          <div key={key} className="part-facts__metric">
+                            <div className="part-facts__metric-main">
+                              <span>{metric.label}</span>
+                              <strong>{formatMetricValue(metric)}</strong>
+                            </div>
+                            <div className="part-facts__metric-meta">
+                              <span className={metricStateClass(metric.state)}>{metric.state}</span>
+                              <span>{Math.round(metric.confidence * 100)}%</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <details className="part-facts__details">
+                      <summary>Downstream Input Coverage</summary>
+                      <p className="part-facts__meta">
+                        Missing inputs: {partFacts.missing_inputs.length ? partFacts.missing_inputs.join(", ") : "None"}
+                      </p>
+                      <div className="part-facts__section">
+                        <h5>Process Inputs</h5>
+                        <div className="part-facts__metrics">
+                          {sortedMetrics(partFacts.sections.process_inputs).map(([key, metric]) => (
+                            <div key={key} className="part-facts__metric">
+                              <div className="part-facts__metric-main">
+                                <span>{metric.label}</span>
+                                <strong>{formatMetricValue(metric)}</strong>
+                              </div>
+                              <div className="part-facts__metric-meta">
+                                <span className={metricStateClass(metric.state)}>{metric.state}</span>
+                                <span>{Math.round(metric.confidence * 100)}%</span>
+                              </div>
+                              {metric.reason ? <p className="part-facts__reason">{metric.reason}</p> : null}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="part-facts__section">
+                        <h5>Rule Inputs</h5>
+                        <div className="part-facts__metrics">
+                          {sortedMetrics(partFacts.sections.rule_inputs).map(([key, metric]) => (
+                            <div key={key} className="part-facts__metric">
+                              <div className="part-facts__metric-main">
+                                <span>{metric.label}</span>
+                                <strong>{formatMetricValue(metric)}</strong>
+                              </div>
+                              <div className="part-facts__metric-meta">
+                                <span className={metricStateClass(metric.state)}>{metric.state}</span>
+                                <span>{Math.round(metric.confidence * 100)}%</span>
+                              </div>
+                              {metric.reason ? <p className="part-facts__reason">{metric.reason}</p> : null}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </details>
+                    {partFacts.errors.length ? (
+                      <p className="part-facts__error">Errors: {partFacts.errors.join(" | ")}</p>
+                    ) : null}
+                  </>
+                ) : (
+                  <p className="part-facts__meta">
+                    {partFactsLoading ? "Extracting part facts..." : "Part facts not loaded yet."}
+                  </p>
+                )}
+                {partFactsError ? <p className="part-facts__error">{partFactsError}</p> : null}
+              </section>
               {profileError ? <p className="component-profile-panel__error">{profileError}</p> : null}
             </section>
           )}

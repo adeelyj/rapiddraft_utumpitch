@@ -10,6 +10,7 @@ import DfmReviewSidebar from "./components/DfmReviewSidebar";
 import ReportTemplateBuilderSidebar from "./components/ReportTemplateBuilderSidebar";
 import CncAnalysisSidebar from "./components/CncAnalysisSidebar";
 import VisionAnalysisSidebar from "./components/VisionAnalysisSidebar";
+import FusionAnalysisSidebar from "./components/FusionAnalysisSidebar";
 import type {
   ChecklistTemplate,
   DesignReviewSession,
@@ -73,14 +74,28 @@ export type Dimension = {
 
 const resolveApiBase = (): string => {
   const configured = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim();
-  if (configured) return configured.replace(/\/$/, "");
+  if (configured) {
+    let normalized = configured.replace(/\/$/, "");
+    // Prevent accidental double-prefix when users set VITE_API_BASE_URL to .../api
+    // while the app already calls `/api/...` routes.
+    if (normalized.endsWith("/api")) {
+      normalized = normalized.slice(0, -4);
+    }
+    return normalized;
+  }
 
   if (typeof window !== "undefined") {
-    const devPorts = new Set(["5173", "4173", "5174", "4174"]);
-    if (devPorts.has(window.location.port)) {
-      return `${window.location.protocol}//${window.location.hostname}:8000`;
+    const { hostname, origin, port, protocol } = window.location;
+    const isLocalHost = hostname === "localhost" || hostname === "127.0.0.1";
+    // In local dev, frontend often runs on a non-8000 port while backend is on 8000.
+    if (isLocalHost && port && port !== "8000") {
+      return `${protocol}//${hostname}:8000`;
     }
-    return window.location.origin.replace(/\/$/, "");
+    const devPorts = new Set(["5173", "4173", "5174", "4174"]);
+    if (devPorts.has(port)) {
+      return `${protocol}//${hostname}:8000`;
+    }
+    return origin.replace(/\/$/, "");
   }
 
   return "http://localhost:8000";
@@ -208,7 +223,7 @@ const App = () => {
   const [leftOpen, setLeftOpen] = useState(false);
   const [leftTab, setLeftTab] = useState<"views" | "reviews" | "com" | "dfm" | "km" | "req">("reviews");
   const [rightOpen, setRightOpen] = useState(false);
-  const [rightTab, setRightTab] = useState<"dfm" | "rep" | "cnc" | "vision" | null>(null);
+  const [rightTab, setRightTab] = useState<"dfm" | "rep" | "cnc" | "vision" | "fusion" | null>(null);
   const [pinMode, setPinMode] = useState<"none" | "comment" | "review">("none");
 
   const previewUrl = useMemo(() => {
@@ -1068,7 +1083,7 @@ const App = () => {
     setLeftTab(tab);
   };
 
-  const handleRightRailToggle = (tab: "dfm" | "rep" | "cnc" | "vision") => {
+  const handleRightRailToggle = (tab: "dfm" | "rep" | "cnc" | "vision" | "fusion") => {
     if (rightOpen && rightTab === tab) {
       setRightOpen(false);
       setRightTab(null);
@@ -1388,6 +1403,8 @@ const App = () => {
           ) : (
             <div className="viewer-stack">
               <ModelViewer
+                apiBase={apiBase}
+                modelId={model?.id ?? null}
                 previewUrl={previewUrl}
                 message={statusMessage}
                 onCreateDrawing={handleCreateDrawing}
@@ -1471,6 +1488,13 @@ const App = () => {
             <span className="sidebar-rail__label">DFM (AI)</span>
           </button>
           <button
+            className={`sidebar-rail__button ${rightOpen && rightTab === "fusion" ? "sidebar-rail__button--active" : ""}`}
+            onClick={() => handleRightRailToggle("fusion")}
+          >
+            <span className="sidebar-rail__icon">F</span>
+            <span className="sidebar-rail__label">Fusion</span>
+          </button>
+          <button
             className={`sidebar-rail__button ${rightOpen && rightTab === "rep" ? "sidebar-rail__button--active" : ""}`}
             onClick={() => handleRightRailToggle("rep")}
           >
@@ -1514,6 +1538,22 @@ const App = () => {
         ) : null}
         {rightOpen && rightTab === "vision" ? (
           <VisionAnalysisSidebar
+            open
+            apiBase={apiBase}
+            modelId={model?.id ?? null}
+            selectedComponent={
+              selectedComponent
+                ? { nodeName: selectedComponent.nodeName, displayName: selectedComponent.displayName }
+                : null
+            }
+            onClose={() => {
+              setRightOpen(false);
+              setRightTab(null);
+            }}
+          />
+        ) : null}
+        {rightOpen && rightTab === "fusion" ? (
+          <FusionAnalysisSidebar
             open
             apiBase={apiBase}
             modelId={model?.id ?? null}

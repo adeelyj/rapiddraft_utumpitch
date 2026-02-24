@@ -150,6 +150,9 @@ def generate_dfm_review_v2(
     all_standards = _dedupe_standards(
         standards_lists=[route["standards_used_auto"] for route in route_outputs]
     )
+    standards_trace_union = _merge_standards_trace(
+        standards_trace_lists=[route.get("standards_trace", []) for route in route_outputs]
+    )
     total_findings = sum(route["finding_count"] for route in route_outputs)
     ai_recommendation = plan_payload.get("ai_recommendation")
     mismatch = plan_payload.get("mismatch", {})
@@ -177,6 +180,7 @@ def generate_dfm_review_v2(
         "route_count": len(route_outputs),
         "finding_count_total": total_findings,
         "standards_used_auto_union": all_standards,
+        "standards_trace_union": standards_trace_union,
         "cost_estimate": cost_outputs["cost_estimate"],
         "cost_estimate_by_route": cost_outputs["cost_estimate_by_route"],
         "cost_compare_routes": cost_outputs["cost_compare_routes"],
@@ -367,6 +371,7 @@ def _evaluate_plan(
     overlay_id = execution_plan.get("overlay_id")
     not_applicable_inputs = _not_applicable_inputs(review_facts)
     pack_map = _index_by_id(bundle.rule_library.get("packs", []), "pack_id")
+    standards_trace = _init_standards_trace(bundle=bundle, overlay_id=overlay_id)
 
     findings: list[dict[str, Any]] = []
     evaluated_pack_ids: list[str] = []
@@ -379,6 +384,7 @@ def _evaluate_plan(
         pack_id = _clean_optional_string(rule.get("pack_id"))
         if pack_id and pack_id not in evaluated_pack_ids:
             evaluated_pack_ids.append(pack_id)
+        refs = [ref for ref in rule.get("refs", []) if isinstance(ref, str) and ref]
         required_inputs = rule.get("inputs_required", [])
         if not isinstance(required_inputs, list):
             required_inputs = []
@@ -389,15 +395,35 @@ def _evaluate_plan(
         )
         if not missing_inputs:
             violation = _evaluate_rule_violation(rule, review_facts)
-            if not violation or not violation.get("violated"):
+            if not violation:
+                _update_standards_trace(
+                    standards_trace=standards_trace,
+                    bundle=bundle,
+                    refs=refs,
+                    outcome="unresolved",
+                )
                 continue
-            refs = [ref for ref in rule.get("refs", []) if isinstance(ref, str) and ref]
+            if not violation.get("violated"):
+                _update_standards_trace(
+                    standards_trace=standards_trace,
+                    bundle=bundle,
+                    refs=refs,
+                    outcome="passed",
+                )
+                continue
+            _update_standards_trace(
+                standards_trace=standards_trace,
+                bundle=bundle,
+                refs=refs,
+                outcome="rule_violation",
+            )
             guidance = _build_finding_guidance(
                 rule=rule,
                 finding_type="rule_violation",
                 missing_inputs=[],
                 evaluation=violation.get("evaluation"),
             )
+            trace_fields = _rule_trace_fields(rule)
             finding = {
                 "rule_id": rule.get("rule_id"),
                 "pack_id": rule.get("pack_id"),
@@ -406,6 +432,7 @@ def _evaluate_plan(
                 "title": rule.get("title"),
                 "description": rule.get("description"),
                 "refs": refs,
+                **trace_fields,
                 "recommended_action": guidance["recommended_action"],
                 "expected_impact": guidance["expected_impact"],
                 "evidence": {
@@ -415,13 +442,19 @@ def _evaluate_plan(
             }
             findings.append(finding)
             continue
-        refs = [ref for ref in rule.get("refs", []) if isinstance(ref, str) and ref]
+        _update_standards_trace(
+            standards_trace=standards_trace,
+            bundle=bundle,
+            refs=refs,
+            outcome="evidence_gap",
+        )
         guidance = _build_finding_guidance(
             rule=rule,
             finding_type="evidence_gap",
             missing_inputs=missing_inputs,
             evaluation=None,
         )
+        trace_fields = _rule_trace_fields(rule)
         finding = {
             "rule_id": rule.get("rule_id"),
             "pack_id": rule.get("pack_id"),
@@ -430,6 +463,7 @@ def _evaluate_plan(
             "title": rule.get("title"),
             "description": rule.get("description"),
             "refs": refs,
+            **trace_fields,
             "recommended_action": guidance["recommended_action"],
             "expected_impact": guidance["expected_impact"],
             "evidence": {
@@ -445,6 +479,7 @@ def _evaluate_plan(
         findings.append(finding)
 
     standards = _derive_standards_used_auto(bundle, findings)
+    standards_trace_payload = _standards_trace_payload(standards_trace)
     role_map = _index_by_id(bundle.roles.get("roles", []), "role_id")
     role = role_map.get(execution_plan["role_id"], {})
 
@@ -465,6 +500,7 @@ def _evaluate_plan(
         "finding_count": len(findings),
         "findings": findings,
         "standards_used_auto": standards,
+        "standards_trace": standards_trace_payload,
         "report_skeleton": {
             "template_sections": execution_plan.get("template_sections", []),
             "suppressed_template_sections": execution_plan.get(
@@ -681,6 +717,23 @@ def _clean_optional_string(value: Any) -> str:
     if not isinstance(value, str):
         return ""
     return value.strip()
+
+
+def _rule_trace_fields(rule: dict[str, Any]) -> dict[str, str]:
+    thresholds = rule.get("thresholds")
+    if not isinstance(thresholds, dict):
+        return {}
+    fields: dict[str, str] = {}
+    standard_clause = _clean_optional_string(thresholds.get("source_standard_clause"))
+    source_rule_id = _clean_optional_string(thresholds.get("source_rule_id"))
+    evidence_quality = _clean_optional_string(thresholds.get("source_evidence_quality"))
+    if standard_clause:
+        fields["standard_clause"] = standard_clause
+    if source_rule_id:
+        fields["source_rule_id"] = source_rule_id
+    if evidence_quality:
+        fields["evidence_quality"] = evidence_quality
+    return fields
 
 
 def _evaluate_rule_violation(
@@ -1134,6 +1187,135 @@ def _evaluate_sm_001(review_facts: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
+def _evaluate_pstd_001(review_facts: dict[str, Any]) -> dict[str, Any] | None:
+    actual = _bool_fact(
+        review_facts,
+        "cad.robot_interface.conformance_flag",
+        "robot_interface_conformance_flag",
+        "iso9409_1_robot_interface_candidate",
+    )
+    if actual is None:
+        return None
+    expected = True
+    return {
+        "violated": actual != expected,
+        "evaluation": {
+            "operator": "==",
+            "fact_key": "cad.robot_interface.conformance_flag",
+            "actual": actual,
+            "threshold": expected,
+            "rule_expression": "cad.robot_interface.conformance_flag == true",
+        },
+    }
+
+
+def _evaluate_pstd_004(review_facts: dict[str, Any]) -> dict[str, Any] | None:
+    actual = _bool_fact(
+        review_facts,
+        "cad.fits.all_pairs_intended_fit_type_met",
+        "fits_all_pairs_intended_fit_type_met",
+        "fit_conformance_flag",
+    )
+    if actual is None:
+        return None
+    expected = True
+    return {
+        "violated": actual != expected,
+        "evaluation": {
+            "operator": "==",
+            "fact_key": "cad.fits.all_pairs_intended_fit_type_met",
+            "actual": actual,
+            "threshold": expected,
+            "rule_expression": "cad.fits.all_pairs_intended_fit_type_met == true",
+        },
+    }
+
+
+def _evaluate_pstd_008(review_facts: dict[str, Any]) -> dict[str, Any] | None:
+    actual = _bool_fact(
+        review_facts,
+        "cad.threads.iso228_all_conformant",
+        "iso228_all_conformant",
+        "iso228_1_thread_standard_candidate",
+    )
+    if actual is None:
+        return None
+    expected = True
+    return {
+        "violated": actual != expected,
+        "evaluation": {
+            "operator": "==",
+            "fact_key": "cad.threads.iso228_all_conformant",
+            "actual": actual,
+            "threshold": expected,
+            "rule_expression": "cad.threads.iso228_all_conformant == true",
+        },
+    }
+
+
+def _evaluate_pstd_009(review_facts: dict[str, Any]) -> dict[str, Any] | None:
+    count = _numeric_fact(
+        review_facts,
+        "cad.hygienic_design.enclosed_voids_in_product_zone_count",
+        "enclosed_voids_in_product_zone_count",
+        "count_radius_below_3_0_mm",
+    )
+    if count is None:
+        return None
+    return {
+        "violated": count > 0,
+        "evaluation": {
+            "operator": "==",
+            "fact_key": "cad.hygienic_design.enclosed_voids_in_product_zone_count",
+            "actual": round(count, 4),
+            "threshold": 0,
+            "rule_expression": "cad.hygienic_design.enclosed_voids_in_product_zone_count == 0",
+        },
+    }
+
+
+def _evaluate_pstd_012(review_facts: dict[str, Any]) -> dict[str, Any] | None:
+    count = _numeric_fact(
+        review_facts,
+        "cad.hygienic_design.trapped_volume_count",
+        "trapped_volume_count",
+        "long_reach_tool_risk_count",
+    )
+    if count is None:
+        return None
+    return {
+        "violated": count > 0,
+        "evaluation": {
+            "operator": "==",
+            "fact_key": "cad.hygienic_design.trapped_volume_count",
+            "actual": round(count, 4),
+            "threshold": 0,
+            "rule_expression": "cad.hygienic_design.trapped_volume_count == 0",
+        },
+    }
+
+
+def _evaluate_pstd_019(review_facts: dict[str, Any]) -> dict[str, Any] | None:
+    count = _numeric_fact(
+        review_facts,
+        "cad.hygienic_design.crevice_count",
+        "crevice_count",
+        "critical_corner_count",
+    )
+    if count is None:
+        return None
+    return {
+        "violated": count > 0,
+        "evaluation": {
+            "operator": "==",
+            "fact_key": "cad.hygienic_design.crevice_count",
+            "actual": round(count, 4),
+            "threshold": 0,
+            "rule_expression": "cad.hygienic_design.crevice_count == 0",
+        },
+    }
+
+
 RULE_VIOLATION_EVALUATORS: dict[str, Any] = {
     "CNC-001": _evaluate_cnc_001,
     "CNC-002": _evaluate_cnc_002,
@@ -1148,6 +1330,12 @@ RULE_VIOLATION_EVALUATORS: dict[str, Any] = {
     "FOOD-002": _evaluate_food_002,
     "FOOD-004": _evaluate_food_004,
     "SM-001": _evaluate_sm_001,
+    "PSTD-001": _evaluate_pstd_001,
+    "PSTD-004": _evaluate_pstd_004,
+    "PSTD-008": _evaluate_pstd_008,
+    "PSTD-009": _evaluate_pstd_009,
+    "PSTD-012": _evaluate_pstd_012,
+    "PSTD-019": _evaluate_pstd_019,
 }
 
 
@@ -1158,6 +1346,24 @@ def _numeric_fact(review_facts: dict[str, Any], *keys: str) -> float | None:
             continue
         if isinstance(value, (int, float)):
             return float(value)
+    return None
+
+
+def _bool_fact(review_facts: dict[str, Any], *keys: str) -> bool | None:
+    for key in keys:
+        value = review_facts.get(key)
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, (int, float)):
+            return float(value) > 0.0
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            if not normalized:
+                continue
+            if normalized in {"true", "yes", "y", "1"}:
+                return True
+            if normalized in {"false", "no", "n", "0"}:
+                return False
     return None
 
 
@@ -1209,6 +1415,75 @@ def _derive_standards_used_auto(
     return standards
 
 
+def _init_standards_trace(
+    *,
+    bundle: DfmBundle,
+    overlay_id: str | None,
+) -> dict[str, dict[str, Any]]:
+    standards_trace: dict[str, dict[str, Any]] = {}
+    overlay_map = _index_by_id(bundle.overlays.get("overlays", []), "overlay_id")
+    overlay = overlay_map.get(overlay_id) if overlay_id else None
+    overlay_refs = overlay.get("adds_refs", []) if isinstance(overlay, dict) else []
+    for ref_id in overlay_refs:
+        if not isinstance(ref_id, str) or not ref_id:
+            continue
+        standards_trace[ref_id] = _new_standards_trace_entry(bundle, ref_id)
+    return standards_trace
+
+
+def _new_standards_trace_entry(bundle: DfmBundle, ref_id: str) -> dict[str, Any]:
+    reference_catalog = bundle.references
+    ref_entry = reference_catalog.get(ref_id)
+    if not isinstance(ref_entry, dict):
+        raise DfmReviewV2Error(
+            f"Rule references unknown ref id '{ref_id}' in reference catalog."
+        )
+    return {
+        "ref_id": ref_id,
+        "title": ref_entry.get("title"),
+        "url": ref_entry.get("url"),
+        "type": ref_entry.get("type"),
+        "notes": ref_entry.get("notes"),
+        "active_in_mode": False,
+        "rules_considered": 0,
+        "design_risk_findings": 0,
+        "evidence_gap_findings": 0,
+        "blocked_by_missing_inputs": 0,
+        "checks_passed": 0,
+        "checks_unresolved": 0,
+    }
+
+
+def _update_standards_trace(
+    *,
+    standards_trace: dict[str, dict[str, Any]],
+    bundle: DfmBundle,
+    refs: list[str],
+    outcome: str,
+) -> None:
+    for ref_id in refs:
+        if ref_id not in standards_trace:
+            standards_trace[ref_id] = _new_standards_trace_entry(bundle, ref_id)
+        entry = standards_trace[ref_id]
+        entry["active_in_mode"] = True
+        entry["rules_considered"] = int(entry.get("rules_considered", 0)) + 1
+        if outcome == "rule_violation":
+            entry["design_risk_findings"] = int(entry.get("design_risk_findings", 0)) + 1
+        elif outcome == "evidence_gap":
+            entry["evidence_gap_findings"] = int(entry.get("evidence_gap_findings", 0)) + 1
+            entry["blocked_by_missing_inputs"] = int(entry.get("blocked_by_missing_inputs", 0)) + 1
+        elif outcome == "passed":
+            entry["checks_passed"] = int(entry.get("checks_passed", 0)) + 1
+        elif outcome == "unresolved":
+            entry["checks_unresolved"] = int(entry.get("checks_unresolved", 0)) + 1
+
+
+def _standards_trace_payload(
+    standards_trace: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    return [standards_trace[key] for key in sorted(standards_trace.keys())]
+
+
 def _dedupe_standards(
     standards_lists: list[list[dict[str, Any]]],
 ) -> list[dict[str, Any]]:
@@ -1218,6 +1493,33 @@ def _dedupe_standards(
             ref_id = entry.get("ref_id")
             if isinstance(ref_id, str) and ref_id:
                 merged[ref_id] = entry
+    return [merged[ref_id] for ref_id in sorted(merged.keys())]
+
+
+def _merge_standards_trace(
+    standards_trace_lists: list[list[dict[str, Any]]],
+) -> list[dict[str, Any]]:
+    merged: dict[str, dict[str, Any]] = {}
+    additive_fields = (
+        "rules_considered",
+        "design_risk_findings",
+        "evidence_gap_findings",
+        "blocked_by_missing_inputs",
+        "checks_passed",
+        "checks_unresolved",
+    )
+    for trace_list in standards_trace_lists:
+        for entry in trace_list:
+            ref_id = entry.get("ref_id")
+            if not isinstance(ref_id, str) or not ref_id:
+                continue
+            if ref_id not in merged:
+                merged[ref_id] = dict(entry)
+                continue
+            target = merged[ref_id]
+            target["active_in_mode"] = bool(target.get("active_in_mode")) or bool(entry.get("active_in_mode"))
+            for field in additive_fields:
+                target[field] = int(target.get(field, 0)) + int(entry.get(field, 0))
     return [merged[ref_id] for ref_id in sorted(merged.keys())]
 
 

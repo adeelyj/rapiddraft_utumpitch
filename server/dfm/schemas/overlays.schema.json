@@ -32,7 +32,8 @@
               "pressure_hvac",
               "medical",
               "automotive",
-              "lab"
+              "lab",
+              "pilot_prototype"
             ]
           },
           "label": {

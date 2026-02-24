@@ -129,3 +129,80 @@ def test_review_v2_request_model_forbids_manual_standards_field():
                 "manual_standards": ["REF-GPS-1"],
             }
         )
+
+
+def test_pilot_overlay_emits_new_standards_from_findings():
+    bundle = _bundle()
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="model-pilot-standards",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "CombiCUT_FormatPart",
+            "profile": {
+                "material": "Stainless Steel 316L (1.4404)",
+                "manufacturingProcess": "CNC Machining",
+                "industry": "Prototype and Pilot Compliance (Food Portioning/Robotics)",
+            },
+        },
+        execution_plans=[
+            {
+                "plan_id": "plan_1",
+                "route_source": "selected",
+                "process_id": "cnc_milling",
+                "pack_ids": ["A_DRAWING", "F_OVERLAY"],
+                "overlay_id": "pilot_prototype",
+                "role_id": "general_dfm",
+                "template_id": "executive_1page",
+            }
+        ],
+        context_payload={},
+    )
+
+    ref_ids = {entry["ref_id"] for entry in response["standards_used_auto_union"]}
+    assert "REF-FOOD-EN13870" in ref_ids
+    assert "REF-FCM-EU-1935-2004" in ref_ids
+    assert "REF-FIT-286" in ref_ids
+
+
+def test_pilot_overlay_standards_trace_includes_all_overlay_refs():
+    bundle = _bundle()
+    pilot_overlay = next(
+        overlay
+        for overlay in bundle.overlays.get("overlays", [])
+        if overlay.get("overlay_id") == "pilot_prototype"
+    )
+    expected_refs = {
+        ref_id
+        for ref_id in pilot_overlay.get("adds_refs", [])
+        if isinstance(ref_id, str) and ref_id
+    }
+
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="model-pilot-trace",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "CombiCUT_FormatPart",
+            "profile": {},
+        },
+        execution_plans=[
+            {
+                "plan_id": "plan_1",
+                "route_source": "selected",
+                "process_id": "cnc_milling",
+                "pack_ids": ["A_DRAWING", "F_OVERLAY"],
+                "overlay_id": "pilot_prototype",
+                "role_id": "general_dfm",
+                "template_id": "executive_1page",
+            }
+        ],
+        context_payload={},
+    )
+
+    traced_refs = {
+        entry["ref_id"]
+        for entry in response.get("standards_trace_union", [])
+        if isinstance(entry, dict) and isinstance(entry.get("ref_id"), str)
+    }
+    assert expected_refs.issubset(traced_refs)

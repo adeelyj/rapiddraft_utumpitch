@@ -1,27 +1,27 @@
 {
   "REF-GPS-1": {
-    "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
-    "url": "https://www.iso.org/standard/76602.html",
+    "title": "ISO 8015:2011 \u2014 Geometrical product specifications (GPS) \u2014 Fundamentals \u2014 Concepts, principles and rules",
+    "url": "https://www.iso.org/standard/55979.html",
     "type": "standard",
-    "notes": "Core GPS interpretation principles including independency."
+    "notes": "Defines fundamental GPS concepts/principles/rules used for creating and interpreting geometrical product specifications."
   },
   "REF-GPS-2": {
-    "title": "ISO 1101: Geometrical tolerancing",
-    "url": "https://www.iso.org/standard/79211.html",
+    "title": "ISO 1101:2017 \u2014 Geometrical product specifications (GPS) \u2014 Geometrical tolerancing \u2014 Tolerances of form, orientation, location and run-out",
+    "url": "https://www.iso.org/standard/66777.html",
     "type": "standard",
-    "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules."
+    "notes": "Defines the symbol language for geometrical tolerancing and the rules for interpreting those specifications."
   },
   "REF-GPS-3": {
-    "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
-    "url": "https://www.iso.org/standard/26209.html",
+    "title": "ISO 2768-1:1989 \u2014 General tolerances \u2014 Part 1: Tolerances for linear and angular dimensions without individual tolerance indications",
+    "url": "https://www.iso.org/standard/7748.html",
     "type": "standard",
-    "notes": "Default dimension tolerance classes when not individually specified."
+    "notes": "Specifies general tolerances for linear/angular dimensions without individual tolerances, in four tolerance classes, to simplify drawing indications."
   },
   "REF-GPS-4": {
-    "title": "ISO 2768-2: General geometrical tolerances",
-    "url": "https://www.iso.org/standard/26210.html",
+    "title": "ISO 2768-2:1989 \u2014 General tolerances \u2014 Part 2: Geometrical tolerances for features without individual tolerance indications (withdrawn)",
+    "url": "https://www.iso.org/standard/7749.html",
     "type": "standard",
-    "notes": "Default geometrical tolerances for unspecified features."
+    "notes": "ISO catalog indicates ISO 2768-2:1989 is withdrawn; ISO 22081:2021 is stated to cancel/replace it for general geometrical and size specifications."
   },
   "REF-GPS-5": {
     "title": "ISO 21920-1: Surface texture profile method",
@@ -36,10 +36,10 @@
     "notes": "Alias-safe entry mapping legacy REF-GPS references to GPS core standards."
   },
   "REF-THR-1": {
-    "title": "ISO 965-1: Metric screw thread tolerances",
-    "url": "https://www.iso.org/standard/58999.html",
+    "title": "ISO 965-1:2013 \u2014 ISO general purpose metric screw threads \u2014 Tolerances \u2014 Part 1: Principles and basic data",
+    "url": "https://www.iso.org/standard/57721.html",
     "type": "standard",
-    "notes": "Tolerance positions and grades for metric threads."
+    "notes": "Provides principles and basic data for thread tolerancing in ISO metric screw thread system; ISO catalog shows a new revision is under publication intended to replace the 2013 edition."
   },
   "REF-BLT-1": {
     "title": "ISO 898-1: Mechanical properties of bolts/screws/studs",
@@ -132,22 +132,22 @@
     "notes": "Methodology for hazard identification and risk reduction."
   },
   "REF-FOOD-EN": {
-    "title": "EN 1672-2: Hygiene requirements for food machinery",
-    "url": "https://standards.iteh.ai/catalog/standards/cen/6ff4d7c4-7cab-4f8f-8f43-3c235a491091/en-1672-2-2020",
+    "title": "EN 1672-2:2020 \u2014 Food processing machinery \u2014 Basic concepts \u2014 Part 2: Hygiene and cleanability requirements",
+    "url": "https://www.dinmedia.de/en/standard/din-en-1672-2/327452751",
     "type": "standard",
-    "notes": "Cleanability and hygienic design obligations in food equipment."
+    "notes": "European standard specifying common hygiene/cleanability requirements for food-processing machinery and components to minimize food-safety risks via hygienic design."
   },
   "REF-FOOD-ISO": {
-    "title": "ISO 14159: Hygiene requirements in machinery design",
-    "url": "https://www.iso.org/standard/71044.html",
+    "title": "EN ISO 14159 (ISO 14159:2002; EN adoption 2008) \u2014 Safety of machinery \u2014 Hygiene requirements for the design of machinery",
+    "url": "https://www.dinmedia.de/en/standard/din-en-iso-14159/108215480",
     "type": "standard",
-    "notes": "Selection and verification guidance for hygienic measures."
+    "notes": "Hygiene requirements for machinery design as an EN-adopted ISO standard (DIN listing shows EN ISO 14159:2008 based on ISO 14159:2002)."
   },
   "REF-HYG-1": {
-    "title": "EHEDG hygienic design guidance",
-    "url": "https://www.ehedg.org/guidelines",
+    "title": "EHEDG Guideline 8 (Doc 8) \u2014 Hygienic design principles (guidance)",
+    "url": "https://www.ehedg.org/guidelines-working-groups/guidelines/guidelines/detail/hygienic-design-principles",
     "type": "guide",
-    "notes": "Practical hygienic design heuristics for geometry and finish."
+    "notes": "EHEDG guidance outlining risk-based hygienic design considerations for entities intended for food manufacturing, emphasizing cleanability and contamination prevention."
   },
   "REF-PED-EU": {
     "title": "Directive 2014/68/EU (Pressure Equipment Directive)",
@@ -202,5 +202,89 @@
     "url": "https://www.iatfglobaloversight.org/oem-requirements/",
     "type": "guide",
     "notes": "Customer-specific quality/control plan expectations for suppliers."
+  },
+  "REF-ROBOT-9409-1": {
+    "title": "ISO 9409-1:2004 \u2014 Manipulating industrial robots \u2014 Mechanical interfaces \u2014 Part 1: Plates",
+    "url": "https://www.iso.org/standard/36578.html",
+    "type": "standard",
+    "notes": "ISO standard defining mechanical interface plate requirements to enable interchangeability between robot manipulators and end-effectors."
+  },
+  "REF-FIT-286": {
+    "title": "ISO 286 (series) \u2014 ISO code system for tolerances on linear sizes (limits & fits; used for H7/m6-style fit designations)",
+    "url": "https://www.iso.org/standard/45975.html",
+    "type": "standard",
+    "notes": "Series provides the code system for tolerances and deviations (Part 1) and tables of standard tolerance classes/limit deviations for holes and shafts (Part 2)."
+  },
+  "REF-TOL-2768-MK": {
+    "title": "ISO 2768 (general tolerances) \u2014 drawing notation ISO 2768-mK (ISO 2768-1 class m + ISO 2768-2 class K; legacy because ISO 2768-2 is withdrawn)",
+    "url": "https://www.iso.org/standard/7748.html",
+    "type": "standard",
+    "notes": "ISO 2768-1 defines general tolerances for linear and angular dimensions (classes f/m/c/v). ISO 2768-2 (geometrical tolerances) is withdrawn and is replaced by ISO 22081 for general geometrical/size specifications, so legacy notes like 'mK' need careful referencing."
+  },
+  "REF-TOL-2768-FH": {
+    "title": "ISO 2768 (general tolerances) \u2014 drawing notation ISO 2768-fH (ISO 2768-1 class f + ISO 2768-2 class H; legacy because ISO 2768-2 is withdrawn)",
+    "url": "https://www.iso.org/standard/7748.html",
+    "type": "standard",
+    "notes": "Common drawing shorthand combining ISO 2768-1 (linear/angular) with ISO 2768-2 (geometrical, withdrawn). If used, treat as a legacy reference and confirm intended successor approach (e.g., ISO 22081 for general geometrical/size specs)."
+  },
+  "REF-COAT-7599": {
+    "title": "ISO 7599:2018 \u2014 Anodizing of aluminium and its alloys \u2014 Method for specifying decorative and protective anodic oxidation coatings on aluminium",
+    "url": "https://www.iso.org/standard/70156.html",
+    "type": "standard",
+    "notes": "Defines how to specify decorative/protective anodic oxidation coatings, characteristic properties, referenced test methods, and minimum performance requirements."
+  },
+  "REF-THR-228-1": {
+    "title": "ISO 228-1:2000 \u2014 Pipe threads where pressure-tight joints are not made on the threads \u2014 Dimensions, tolerances and designation",
+    "url": "https://www.iso.org/standard/33652.html",
+    "type": "standard",
+    "notes": "Defines dimensions/tolerances and designation for 'G' (parallel) pipe threads intended for joints where thread flanks do not provide pressure tightness."
+  },
+  "REF-FOOD-EN13870": {
+    "title": "EN 13870 (current edition includes EN 13870:2015+A1:2021) \u2014 Food processing machinery \u2014 Portion cutting machines \u2014 Safety and hygiene requirements",
+    "url": "https://www.dinmedia.de/en/standard/din-en-13870/291328038",
+    "type": "standard",
+    "notes": "Type-C European standard for portion cutting machines; the DIN listing shows the current document as DIN EN 13870:2022-03 implementing EN 13870:2015+A1:2021 and replacing the 2015 edition."
+  },
+  "REF-FCM-EU-1935-2004": {
+    "title": "Regulation (EC) No 1935/2004 \u2014 Food contact materials framework regulation",
+    "url": "https://eur-lex.europa.eu/eli/reg/2004/1935/oj/eng",
+    "type": "eu_reg",
+    "notes": "Framework rules for materials/articles intended to come into contact with food; includes general safety (Article 3) and traceability (Article 17). Tooling note: EUR-Lex pages were JS-gated in this session; full-text evidence was taken from the UK legislation mirror."
+  },
+  "REF-FCM-EU-10-2011": {
+    "title": "Commission Regulation (EU) No 10/2011 \u2014 Plastic materials and articles intended to come into contact with food",
+    "url": "https://eur-lex.europa.eu/eli/reg/2011/10/oj/eng",
+    "type": "eu_reg",
+    "notes": "Specific measure for food-contact plastics; includes requirements for written declaration of compliance and supporting documentation (Chapter IV; Articles 15\u201316; Annex IV). Tooling note: EUR-Lex pages were JS-gated in this session; full-text evidence was taken from the UK legislation mirror (2019-08-29 consolidated text)."
+  },
+  "REF-MAT-EN10088-3": {
+    "title": "EN 10088-3:2023 \u2014 Stainless steels \u2014 Part 3: Technical delivery conditions for semi-finished products, bars, rods, wire, sections and bright products of corrosion resistant steels",
+    "url": "https://www.dinmedia.de/en/standard/din-en-10088-3/367623815",
+    "type": "standard",
+    "notes": "European standard specifying technical delivery conditions for corrosion-resistant (stainless) steels in bar/rod/wire/section forms (DIN listing references EN 10088-3:2023)."
+  },
+  "REF-MACH-DIR-2006-42": {
+    "title": "Directive 2006/42/EC \u2014 Machinery Directive",
+    "url": "https://eur-lex.europa.eu/eli/dir/2006/42/oj/eng",
+    "type": "eu_reg",
+    "notes": "EU machinery safety directive (EHSR in Annex I; manufacturer obligations incl. technical file and instructions). Note: repealed by Regulation (EU) 2023/1230, which applies from 20 Jan 2027; until 19 Jan 2027, the directive remains the applied legal framework per transition schedule. Tooling note: EUR-Lex pages were JS-gated in this session; full-text evidence was taken from the UK legislation mirror; transition note supported by DGUV summary."
+  },
+  "REF-ADD-VDI-3405": {
+    "title": "VDI 3405 \u2014 Additive manufacturing processes \u2014 Rapid manufacturing (basics, definitions, processes)",
+    "url": "https://www.vdi.de/en/home/vdi-standards/details/vdi-3405-additive-manufacturing-processes-rapid-manufacturing-basics-definitions-processes",
+    "type": "standard",
+    "notes": "VDI guideline covering design, fabrication and assessment of additive-manufactured parts, including quality parameters, testing considerations, and supply-agreement aspects."
+  },
+  "REF-GPS-6": {
+    "title": "ISO 5459:2024 \u2014 Geometrical product specifications (GPS) \u2014 Geometrical tolerancing \u2014 Datums and datum systems",
+    "url": "https://www.iso.org/standard/87855.html",
+    "type": "standard",
+    "notes": "Specifies terminology, rules and methodology for indicating and understanding datums and datum systems in technical product documentation."
+  },
+  "REF-GPS-7": {
+    "title": "ISO 1302:2002 \u2014 Geometrical product specifications (GPS) \u2014 Indication of surface texture in technical product documentation",
+    "url": "https://www.iso.org/standard/28089.html",
+    "type": "standard",
+    "notes": "Specifies rules for indicating surface texture in technical product documentation using graphical symbols and textual indications."
   }
 }

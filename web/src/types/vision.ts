@@ -18,7 +18,14 @@ export type VisionCriteria = {
 export type VisionProviderRequest = {
   route: VisionProviderRoute;
   model_override?: string | null;
+  base_url_override?: string | null;
+  api_key_override?: string | null;
   local_base_url?: string | null;
+};
+
+export type VisionPastedImageRequest = {
+  name?: string | null;
+  data_url: string;
 };
 
 export type VisionViewSetRequest = {
@@ -47,6 +54,14 @@ export type VisionProviderAvailability = {
 export type VisionProvidersResponse = {
   providers: VisionProviderAvailability[];
   default_provider: VisionProviderRoute;
+  provider_defaults?: Partial<
+    Record<
+      VisionProviderRoute,
+      {
+        base_url: string;
+      }
+    >
+  >;
   local_defaults: {
     base_url: string;
   };
@@ -71,6 +86,7 @@ export type VisionReportResponse = {
   };
   findings: VisionFinding[];
   general_observations: string;
+  raw_output_text?: string;
   criteria_applied: VisionCriteria;
   provider_applied: {
     route_requested: VisionProviderRoute;
@@ -84,6 +100,8 @@ export type VisionReportResponse = {
 export type VisionReportRequest = {
   component_node_name?: string | null;
   view_set_id: string;
+  selected_view_names?: string[];
+  pasted_images?: VisionPastedImageRequest[];
   criteria?: VisionCriteria;
   provider: VisionProviderRequest;
 };

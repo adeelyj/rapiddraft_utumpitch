@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated_at": "2026-02-16T14:55:32.982853+00:00",
+  "generated_at": "2026-02-24T12:19:38Z",
   "packs": [
     {
       "pack_id": "A_DRAWING",
@@ -41,7 +41,7 @@
       "pack_id": "F_OVERLAY",
       "label": "Industry Overlay and Compliance",
       "description": "Domain overlays that add compliance/risk documentation constraints.",
-      "expected_rule_count": 30,
+      "expected_rule_count": 70,
       "trigger_type": "overlay_selected"
     }
   ],
@@ -193,8 +193,8 @@
     {
       "rule_id": "SPEC-008",
       "pack_id": "A_DRAWING",
-      "title": "“Deburr/break edges” requirement present if sharp edges unacceptable",
-      "description": "“Deburr/break edges” requirement present if sharp edges unacceptable",
+      "title": "\u201cDeburr/break edges\u201d requirement present if sharp edges unacceptable",
+      "description": "\u201cDeburr/break edges\u201d requirement present if sharp edges unacceptable",
       "applies_to": [
         "drawing"
       ],
@@ -213,8 +213,8 @@
     {
       "rule_id": "SPEC-009",
       "pack_id": "A_DRAWING",
-      "title": "Critical features have explicit tolerances (don’t rely only on general tolerances)",
-      "description": "Critical features have explicit tolerances (don’t rely only on general tolerances)",
+      "title": "Critical features have explicit tolerances (don\u2019t rely only on general tolerances)",
+      "description": "Critical features have explicit tolerances (don\u2019t rely only on general tolerances)",
       "applies_to": [
         "drawing"
       ],
@@ -253,8 +253,8 @@
     {
       "rule_id": "SPEC-011",
       "pack_id": "A_DRAWING",
-      "title": "Datum references exist on actual features (not “floating” letters)",
-      "description": "Datum references exist on actual features (not “floating” letters)",
+      "title": "Datum references exist on actual features (not \u201cfloating\u201d letters)",
+      "description": "Datum references exist on actual features (not \u201cfloating\u201d letters)",
       "applies_to": [
         "drawing"
       ],
@@ -572,8 +572,8 @@
     {
       "rule_id": "CNC-001",
       "pack_id": "B_CNC",
-      "title": "Min wall thickness check vs material class (thin walls → vibration/warp risk)",
-      "description": "Min wall thickness check vs material class (thin walls → vibration/warp risk)",
+      "title": "Min wall thickness check vs material class (thin walls \u2192 vibration/warp risk)",
+      "description": "Min wall thickness check vs material class (thin walls \u2192 vibration/warp risk)",
       "applies_to": [
         "cad_part",
         "cad_feature_wall"
@@ -595,8 +595,8 @@
     {
       "rule_id": "CNC-002",
       "pack_id": "B_CNC",
-      "title": "Deep holes: recommended depth ~4×D, hard max ~10×D (flag beyond)",
-      "description": "Deep holes: recommended depth ~4×D, hard max ~10×D (flag beyond)",
+      "title": "Deep holes: recommended depth ~4\u00d7D, hard max ~10\u00d7D (flag beyond)",
+      "description": "Deep holes: recommended depth ~4\u00d7D, hard max ~10\u00d7D (flag beyond)",
       "applies_to": [
         "cad_part",
         "cad_feature_hole"
@@ -617,8 +617,8 @@
     {
       "rule_id": "CNC-003",
       "pack_id": "B_CNC",
-      "title": "Prefer standard drill diameters (non-standard → milling/time)",
-      "description": "Prefer standard drill diameters (non-standard → milling/time)",
+      "title": "Prefer standard drill diameters (non-standard \u2192 milling/time)",
+      "description": "Prefer standard drill diameters (non-standard \u2192 milling/time)",
       "applies_to": [
         "cad_part"
       ],
@@ -659,8 +659,8 @@
     {
       "rule_id": "CNC-005",
       "pack_id": "B_CNC",
-      "title": "Pocket internal corners: small radius → small tool → depth limits/cost",
-      "description": "Pocket internal corners: small radius → small tool → depth limits/cost",
+      "title": "Pocket internal corners: small radius \u2192 small tool \u2192 depth limits/cost",
+      "description": "Pocket internal corners: small radius \u2192 small tool \u2192 depth limits/cost",
       "applies_to": [
         "cad_part",
         "cad_feature_pocket"
@@ -702,8 +702,8 @@
     {
       "rule_id": "CNC-007",
       "pack_id": "B_CNC",
-      "title": "Avoid “raised islands/bosses” if they require removing whole face volume (cost driver)",
-      "description": "Avoid “raised islands/bosses” if they require removing whole face volume (cost driver)",
+      "title": "Avoid \u201craised islands/bosses\u201d if they require removing whole face volume (cost driver)",
+      "description": "Avoid \u201craised islands/bosses\u201d if they require removing whole face volume (cost driver)",
       "applies_to": [
         "cad_part",
         "cad_feature_hole"
@@ -785,8 +785,8 @@
     {
       "rule_id": "CNC-011",
       "pack_id": "B_CNC",
-      "title": "Tool access: internal corner smaller than tool radius → redesign (relief/teardrop)",
-      "description": "Tool access: internal corner smaller than tool radius → redesign (relief/teardrop)",
+      "title": "Tool access: internal corner smaller than tool radius \u2192 redesign (relief/teardrop)",
+      "description": "Tool access: internal corner smaller than tool radius \u2192 redesign (relief/teardrop)",
       "applies_to": [
         "cad_part"
       ],
@@ -868,8 +868,8 @@
     {
       "rule_id": "CNC-020",
       "pack_id": "B_CNC",
-      "title": "Tight tolerance on thin wall features → likely scrap risk",
-      "description": "Tight tolerance on thin wall features → likely scrap risk; suggest redesign or add stock",
+      "title": "Tight tolerance on thin wall features \u2192 likely scrap risk",
+      "description": "Tight tolerance on thin wall features \u2192 likely scrap risk; suggest redesign or add stock",
       "applies_to": [
         "cad_part",
         "cad_feature_wall"
@@ -889,8 +889,8 @@
     {
       "rule_id": "CNC-021",
       "pack_id": "B_CNC",
-      "title": "Tight positional tolerances without datum strategy → inspection/machining risk",
-      "description": "Tight positional tolerances without datum strategy → inspection/machining risk",
+      "title": "Tight positional tolerances without datum strategy \u2192 inspection/machining risk",
+      "description": "Tight positional tolerances without datum strategy \u2192 inspection/machining risk",
       "applies_to": [
         "cad_part"
       ],
@@ -909,8 +909,8 @@
     {
       "rule_id": "CNC-022",
       "pack_id": "B_CNC",
-      "title": "Surface finish Ra very low on large area → time/cost",
-      "description": "Surface finish Ra very low on large area → time/cost; suggest selective finishing",
+      "title": "Surface finish Ra very low on large area \u2192 time/cost",
+      "description": "Surface finish Ra very low on large area \u2192 time/cost; suggest selective finishing",
       "applies_to": [
         "cad_part"
       ],
@@ -930,8 +930,8 @@
     {
       "rule_id": "CNC-023",
       "pack_id": "B_CNC",
-      "title": "Threaded holes too close to edge → breakout risk",
-      "description": "Threaded holes too close to edge → breakout risk; suggest move/add boss",
+      "title": "Threaded holes too close to edge \u2192 breakout risk",
+      "description": "Threaded holes too close to edge \u2192 breakout risk; suggest move/add boss",
       "applies_to": [
         "cad_part",
         "cad_feature_hole",
@@ -952,8 +952,8 @@
     {
       "rule_id": "CNC-024",
       "pack_id": "B_CNC",
-      "title": "Deep pocket with small corner radius → cost driver",
-      "description": "Deep pocket with small corner radius → cost driver; suggest larger radius or split part",
+      "title": "Deep pocket with small corner radius \u2192 cost driver",
+      "description": "Deep pocket with small corner radius \u2192 cost driver; suggest larger radius or split part",
       "applies_to": [
         "cad_part",
         "cad_feature_pocket"
@@ -1057,8 +1057,8 @@
     {
       "rule_id": "TURN-004",
       "pack_id": "B_CNC",
-      "title": "Min hole sizes for turning (axial/radial) — flag below",
-      "description": "Min hole sizes for turning (axial/radial) — flag below",
+      "title": "Min hole sizes for turning (axial/radial) \u2014 flag below",
+      "description": "Min hole sizes for turning (axial/radial) \u2014 flag below",
       "applies_to": [
         "cad_part",
         "cad_feature_hole"
@@ -1080,7 +1080,7 @@
       "rule_id": "TURN-005",
       "pack_id": "B_CNC",
       "title": "Long slender turned sections: flag chatter risk",
-      "description": "Long slender turned sections: flag chatter risk; recommend support/geometry change.   GD&T ↔ machining feasibility bridge",
+      "description": "Long slender turned sections: flag chatter risk; recommend support/geometry change.   GD&T \u2194 machining feasibility bridge",
       "applies_to": [
         "cad_part"
       ],
@@ -1099,8 +1099,8 @@
     {
       "rule_id": "SM-001",
       "pack_id": "C_SHEET",
-      "title": "Min flange length ≥ 4× thickness",
-      "description": "Min flange length ≥ 4× thickness",
+      "title": "Min flange length \u2265 4\u00d7 thickness",
+      "description": "Min flange length \u2265 4\u00d7 thickness",
       "applies_to": [
         "cad_sheet_metal"
       ],
@@ -1141,8 +1141,8 @@
     {
       "rule_id": "SM-003",
       "pack_id": "C_SHEET",
-      "title": "Hole/slot diameter ≥ material thickness",
-      "description": "Hole/slot diameter ≥ material thickness",
+      "title": "Hole/slot diameter \u2265 material thickness",
+      "description": "Hole/slot diameter \u2265 material thickness",
       "applies_to": [
         "cad_sheet_metal",
         "cad_feature_hole"
@@ -1205,8 +1205,8 @@
     {
       "rule_id": "SM-006",
       "pack_id": "C_SHEET",
-      "title": "Tabs: width ≥ 2×t (or ≥ 3",
-      "description": "Tabs: width ≥ 2×t (or ≥ 3.2 mm) and length ≤ 5× width",
+      "title": "Tabs: width \u2265 2\u00d7t (or \u2265 3",
+      "description": "Tabs: width \u2265 2\u00d7t (or \u2265 3.2 mm) and length \u2264 5\u00d7 width",
       "applies_to": [
         "cad_sheet_metal"
       ],
@@ -1225,8 +1225,8 @@
     {
       "rule_id": "SM-007",
       "pack_id": "C_SHEET",
-      "title": "Notches: width ≥ t (or ≥ 1",
-      "description": "Notches: width ≥ t (or ≥ 1.016 mm), length ≤ 5× width",
+      "title": "Notches: width \u2265 t (or \u2265 1",
+      "description": "Notches: width \u2265 t (or \u2265 1.016 mm), length \u2264 5\u00d7 width",
       "applies_to": [
         "cad_sheet_metal"
       ],
@@ -1285,8 +1285,8 @@
     {
       "rule_id": "SM-010",
       "pack_id": "C_SHEET",
-      "title": "Bend angle tolerance expectation ±1°",
-      "description": "Bend angle tolerance expectation ±1°; flag if drawing demands tighter without process note",
+      "title": "Bend angle tolerance expectation \u00b11\u00b0",
+      "description": "Bend angle tolerance expectation \u00b11\u00b0; flag if drawing demands tighter without process note",
       "applies_to": [
         "cad_sheet_metal",
         "cad_feature_bend"
@@ -1817,8 +1817,8 @@
     {
       "rule_id": "ASM-001",
       "pack_id": "E_ASSEMBLY",
-      "title": "Reduce part count by combining parts where no “minimum part criteria” applies",
-      "description": "Reduce part count by combining parts where no “minimum part criteria” applies",
+      "title": "Reduce part count by combining parts where no \u201cminimum part criteria\u201d applies",
+      "description": "Reduce part count by combining parts where no \u201cminimum part criteria\u201d applies",
       "applies_to": [
         "assembly"
       ],
@@ -1937,8 +1937,8 @@
     {
       "rule_id": "ASM-007",
       "pack_id": "E_ASSEMBLY",
-      "title": "Clear symmetry/asymmetry for orientation (avoid ambiguous “looks same”)",
-      "description": "Clear symmetry/asymmetry for orientation (avoid ambiguous “looks same”)",
+      "title": "Clear symmetry/asymmetry for orientation (avoid ambiguous \u201clooks same\u201d)",
+      "description": "Clear symmetry/asymmetry for orientation (avoid ambiguous \u201clooks same\u201d)",
       "applies_to": [
         "assembly"
       ],
@@ -2019,8 +2019,8 @@
     {
       "rule_id": "FIX-003",
       "pack_id": "E_ASSEMBLY",
-      "title": "Clamp forces won’t deform thin walls (flag clamp-sensitive areas)",
-      "description": "Clamp forces won’t deform thin walls (flag clamp-sensitive areas)",
+      "title": "Clamp forces won\u2019t deform thin walls (flag clamp-sensitive areas)",
+      "description": "Clamp forces won\u2019t deform thin walls (flag clamp-sensitive areas)",
       "applies_to": [
         "assembly",
         "fixture_plan"
@@ -2184,8 +2184,8 @@
     {
       "rule_id": "AUTO-004",
       "pack_id": "F_OVERLAY",
-      "title": "Layout inspection expectation (example: dimensional requirements on ≥5 parts)",
-      "description": "Layout inspection expectation (example: dimensional requirements on ≥5 parts)",
+      "title": "Layout inspection expectation (example: dimensional requirements on \u22655 parts)",
+      "description": "Layout inspection expectation (example: dimensional requirements on \u22655 parts)",
       "applies_to": [
         "compliance_overlay"
       ],
@@ -2446,7 +2446,7 @@
       "rule_id": "LAB-005",
       "pack_id": "F_OVERLAY",
       "title": "Electrical safety constraints impact enclosure/clearances (tie to enclosure CAD checks)",
-      "description": "Electrical safety constraints impact enclosure/clearances (tie to enclosure CAD checks).   How to “use this” with a vision model (without pretending screenshots give real 3D DFM) You can reliably do two kinds of checks with vision: 1. Drawing/spec compliance (",
+      "description": "Electrical safety constraints impact enclosure/clearances (tie to enclosure CAD checks).   How to \u201cuse this\u201d with a vision model (without pretending screenshots give real 3D DFM) You can reliably do two kinds of checks with vision: 1. Drawing/spec compliance (",
       "applies_to": [
         "compliance_overlay"
       ],
@@ -2548,7 +2548,7 @@
       "rule_id": "MACH-005",
       "pack_id": "F_OVERLAY",
       "title": "Safety-related control functions require structured design approach",
-      "description": "Safety-related control functions require structured design approach.   F2 Food machinery / Hygienic design (very “DFM-ish”)",
+      "description": "Safety-related control functions require structured design approach.   F2 Food machinery / Hygienic design (very \u201cDFM-ish\u201d)",
       "applies_to": [
         "compliance_overlay"
       ],
@@ -2608,8 +2608,8 @@
     {
       "rule_id": "MED-003",
       "pack_id": "F_OVERLAY",
-      "title": "Risk management process (ISO 14971): hazards → risk controls → residual risk monitoring",
-      "description": "Risk management process (ISO 14971): hazards → risk controls → residual risk monitoring",
+      "title": "Risk management process (ISO 14971): hazards \u2192 risk controls \u2192 residual risk monitoring",
+      "description": "Risk management process (ISO 14971): hazards \u2192 risk controls \u2192 residual risk monitoring",
       "applies_to": [
         "compliance_overlay"
       ],
@@ -2728,6 +2728,1533 @@
       "refs": [
         "REF-PED-EU"
       ]
+    },
+    {
+      "rule_id": "ALPMA-001",
+      "pack_id": "F_OVERLAY",
+      "title": "Portion cutting machine scope reviewed against EN 13870 requirements",
+      "description": "Pilot portion-cutting concepts should explicitly map safety and hygiene obligations from EN 13870.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context",
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "critical",
+      "fix_template": "Add machine-specific compliance evidence for portion-cutting use case and constraints.",
+      "refs": [
+        "REF-FOOD-EN13870"
+      ]
+    },
+    {
+      "rule_id": "ALPMA-002",
+      "pack_id": "F_OVERLAY",
+      "title": "Food-contact materials declaration includes EU 1935/2004 and EU 10/2011 linkage",
+      "description": "Food-contact and polymer components should carry explicit declaration path for EU framework and plastics regulation.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "material_spec",
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "critical",
+      "fix_template": "Declare food-contact compliance path and polymer migration evidence for relevant parts.",
+      "refs": [
+        "REF-FCM-EU-1935-2004",
+        "REF-FCM-EU-10-2011"
+      ]
+    },
+    {
+      "rule_id": "ALPMA-003",
+      "pack_id": "F_OVERLAY",
+      "title": "Stainless stock callout ties grade to EN 10088-3 where applicable",
+      "description": "For 1.4404/316L design intent, material callout should map to EN 10088-3 style stock specification.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "material_spec",
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Add material grade and stock standard reference for stainless components.",
+      "refs": [
+        "REF-MAT-EN10088-3"
+      ]
+    },
+    {
+      "rule_id": "ALPMA-004",
+      "pack_id": "F_OVERLAY",
+      "title": "General tolerance baseline for CNC pilot parts is explicitly declared (ISO 2768-fH)",
+      "description": "Pilot machining drawings should avoid ambiguity by explicitly declaring fH baseline where intended.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "drawing_title_block",
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Declare ISO 2768 class explicitly for pilot machining release package.",
+      "refs": [
+        "REF-TOL-2768-FH"
+      ]
+    },
+    {
+      "rule_id": "ALPMA-005",
+      "pack_id": "F_OVERLAY",
+      "title": "Locating fits for dowel/kinematic interfaces are declared (ISO 286 H7/m6 intent)",
+      "description": "Precision locating interfaces should include fit-system declaration to avoid assembly drift in pilot builds.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "datum_scheme",
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Add fit callouts for mating locator features and inspection strategy.",
+      "refs": [
+        "REF-FIT-286"
+      ]
+    },
+    {
+      "rule_id": "ALPMA-006",
+      "pack_id": "F_OVERLAY",
+      "title": "Anodic oxidation specification declared when aluminum corrosion/hygiene finish is required",
+      "description": "Where anodized aluminum is intended, coating notes should align to ISO 7599-style requirements.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "coating_spec",
+        "drawing_notes",
+        "material_spec"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Add coating class/thickness/process notes and tolerance compensation guidance.",
+      "refs": [
+        "REF-COAT-7599"
+      ]
+    },
+    {
+      "rule_id": "ALPMA-007",
+      "pack_id": "F_OVERLAY",
+      "title": "Pipe-thread designation is explicit for fluid/service interfaces (ISO 228-1 where used)",
+      "description": "Interfaces using G-thread families should declare ISO 228-1 compatible callouts and sealing intent.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "thread_callouts",
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Declare thread system and mating/sealing assumptions for service interfaces.",
+      "refs": [
+        "REF-THR-228-1"
+      ]
+    },
+    {
+      "rule_id": "ALPMA-008",
+      "pack_id": "F_OVERLAY",
+      "title": "General tolerance baseline is explicit for concept drawings (ISO 2768-mK)",
+      "description": "Early concept packages should still declare baseline tolerance class to prevent supplier interpretation gaps.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "drawing_title_block",
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Declare ISO 2768 class explicitly in title block/notes for concept release.",
+      "refs": [
+        "REF-TOL-2768-MK"
+      ]
+    },
+    {
+      "rule_id": "ROBOT-001",
+      "pack_id": "F_OVERLAY",
+      "title": "Robot-side mounting interface compatibility is declared to ISO 9409-1 intent",
+      "description": "Robot-integrated tooling concepts should specify flange/interface compatibility evidence before pilot release.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "geometry_features",
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Document robot interface pattern assumptions and mounting compatibility checks.",
+      "refs": [
+        "REF-ROBOT-9409-1"
+      ]
+    },
+    {
+      "rule_id": "PILOT-001",
+      "pack_id": "F_OVERLAY",
+      "title": "Pilot release includes machinery CE framework context where customers still require 2006/42/EC mapping",
+      "description": "Legacy CE documentation expectations should be identified early for pilot machinery deliveries.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Provide CE/legacy directive applicability note in pilot documentation set.",
+      "refs": [
+        "REF-MACH-DIR-2006-42"
+      ]
+    },
+    {
+      "rule_id": "PILOT-002",
+      "pack_id": "F_OVERLAY",
+      "title": "Machine hygiene design cross-check against EN ISO 14159 and EN 1672-2 intent",
+      "description": "Hygiene-focused pilot designs should align machine-level hygiene strategy and cleanability evidence.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "surface_finish_spec",
+        "geometry_features"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "critical",
+      "fix_template": "Add cleanability and hygiene-by-design evidence with measurable acceptance criteria.",
+      "refs": [
+        "REF-FOOD-ISO",
+        "REF-FOOD-EN"
+      ]
+    },
+    {
+      "rule_id": "PILOT-003",
+      "pack_id": "F_OVERLAY",
+      "title": "Additive prototype route declares process framework (VDI 3405) when used",
+      "description": "PA12/additive pilot artifacts should include process assumptions and quality controls when presented for production decisions.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context",
+        "material_spec"
+      ],
+      "check_logic": {
+        "type": "llm_assisted"
+      },
+      "severity": "major",
+      "fix_template": "Declare additive process route, material condition, and transfer-to-production constraints.",
+      "refs": [
+        "REF-ADD-VDI-3405"
+      ]
+    },
+    {
+      "rule_id": "PSTD-001",
+      "pack_id": "F_OVERLAY",
+      "title": "ISO 9409-1 robot interface geometry must match selected flange pattern",
+      "description": "Verifies that an ISO 9409-1 robot mechanical interface is implemented with the correct hole pattern and locating features for interchangeability.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "geometry_features"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "critical",
+      "fix_template": "Select a valid ISO 9409-1 interface size/type and regenerate the flange geometry to match; update the mating plate accordingly.",
+      "refs": [
+        "REF-ROBOT-9409-1"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-001",
+        "source_analysis_mode": "geometry_dfm",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "cad.robot_interface.conformance_flag",
+          "op": "==",
+          "right": true
+        },
+        "source_evaluator_hint": "Compute bolt pattern + locating features and compare against the selected ISO 9409-1 interface variant library (size/type).",
+        "source_pilot_sets": [
+          "SET_A_MECH_ROBOT"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "cad.robot_interface.standard",
+          "cad.robot_interface.variant",
+          "cad.robot_interface.conformance_flag"
+        ],
+        "compiled_inputs": [
+          "geometry_features"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-002",
+      "pack_id": "F_OVERLAY",
+      "title": "Robot/end-effector drawings must reference ISO 9409-1 when that interface is used",
+      "description": "Ensures the drawing references ISO 9409-1 to avoid supplier ambiguity for robot flange interfaces.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add a note/callout referencing ISO 9409-1 and include the intended interface designation (size/type).",
+      "refs": [
+        "REF-ROBOT-9409-1"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-002",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "drawing.text_all",
+          "op": "contains",
+          "right": "ISO 9409-1"
+        },
+        "source_evaluator_hint": "Extract title block and interface callouts; flag if ISO 9409-1 is missing.",
+        "source_pilot_sets": [
+          "SET_A_MECH_ROBOT"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "drawing.text_all"
+        ],
+        "compiled_inputs": [
+          "drawing_notes"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-003",
+      "pack_id": "F_OVERLAY",
+      "title": "Fit-critical mating holes/shafts must have an ISO 286 fit designation",
+      "description": "Checks that fit-critical mating features are annotated with ISO 286 tolerance classes (e.g., H7/h6) rather than relying only on general tolerances.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add ISO 286 fit callouts for each fit-critical pair (hole and shaft) and confirm nominal size range matches the ISO tables.",
+      "refs": [
+        "REF-FIT-286"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-003",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "drawing.features_of_size.mating_without_fit_callout_count",
+          "op": "==",
+          "right": 0
+        },
+        "source_evaluator_hint": "Requires upstream tagging of fit-critical mating pairs; if unavailable, treat as evidence_gap and request tagging.",
+        "source_pilot_sets": [
+          "SET_A_MECH_ROBOT"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "drawing.features_of_size.mating_without_fit_callout_count"
+        ],
+        "compiled_inputs": [
+          "drawing_notes"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-004",
+      "pack_id": "F_OVERLAY",
+      "title": "Computed ISO 286 fit outcome must match the intended fit type",
+      "description": "Validates that the selected ISO 286 tolerance classes produce the intended clearance/transition/interference range for each tagged mating pair.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "hole_features"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "critical",
+      "fix_template": "Adjust tolerance classes or nominal sizes (e.g., change from m6 to k6) until min/max clearance meets the intended functional fit; update drawing callouts.",
+      "refs": [
+        "REF-FIT-286"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-004",
+        "source_analysis_mode": "geometry_dfm",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "cad.fits.all_pairs_intended_fit_type_met",
+          "op": "==",
+          "right": true
+        },
+        "source_evaluator_hint": "For each tagged mating pair, compute min/max clearance from ISO 286-derived limit deviations and compare against intended fit type configured by the designer.",
+        "source_pilot_sets": [
+          "SET_A_MECH_ROBOT"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "cad.fits.all_pairs_intended_fit_type_met"
+        ],
+        "compiled_inputs": [
+          "hole_features"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-005",
+      "pack_id": "F_OVERLAY",
+      "title": "General tolerance note must be present when ISO 2768-mK is used",
+      "description": "Ensures the drawing explicitly states the default general tolerance class ISO 2768-mK so suppliers do not apply unspecified shop defaults.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "drawing_title_block"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add to title block: 'General tolerances ISO 2768-mK' (and, if referencing ISO 2768-2, add ':1989' or adopt ISO 22081 explicitly).",
+      "refs": [
+        "REF-TOL-2768-MK"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-005",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "drawing.title_block.general_tolerance_note",
+          "op": "contains",
+          "right": "ISO 2768-mK"
+        },
+        "source_evaluator_hint": "Also recommend explicitly dating any ISO 2768-2 reference component because ISO 2768-2 is withdrawn; treat undated references as needing manual review.",
+        "source_pilot_sets": [
+          "SET_A_MECH_ROBOT"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "drawing.title_block.general_tolerance_note"
+        ],
+        "compiled_inputs": [
+          "drawing_title_block"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-006",
+      "pack_id": "F_OVERLAY",
+      "title": "Anodizing callouts must reference ISO 7599 when anodic oxidation is specified",
+      "description": "If anodizing is specified as a controlled surface treatment, the drawing should reference ISO 7599 and state the required coating attributes (e.g., grade/thickness/performance).",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "coating_spec"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Update the surface treatment callout to include ISO 7599 and key coating properties required for the application; align with supplier capability.",
+      "refs": [
+        "REF-COAT-7599"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-006",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "drawing.surface_treatments.anodizing.references",
+          "op": "contains",
+          "right": "ISO 7599"
+        },
+        "source_evaluator_hint": "Parse surface treatment notes; if anodizing is present but ISO 7599 is absent, raise evidence gap.",
+        "source_pilot_sets": [
+          "SET_A_MECH_ROBOT"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "drawing.surface_treatments.anodizing.present",
+          "drawing.surface_treatments.anodizing.references"
+        ],
+        "compiled_inputs": [
+          "coating_spec"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-007",
+      "pack_id": "F_OVERLAY",
+      "title": "Pipe thread callouts must explicitly state ISO 228-1 for G-threads",
+      "description": "Ensures pipe threads intended as ISO 228-1 are called out as ISO 228-1 to avoid confusion with pressure-tight thread standards.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "thread_callouts"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Revise pipe thread notes to include 'ISO 228-1' and the proper designation (e.g., 'G 1/2'). Specify sealing method elsewhere if joint must be pressure tight.",
+      "refs": [
+        "REF-THR-228-1"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-007",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "drawing.thread_callouts.pipe_threads_text",
+          "op": "contains",
+          "right": "ISO 228-1"
+        },
+        "source_evaluator_hint": "Also verify that the thread designation uses 'G' for ISO 228-1 parallel pipe threads.",
+        "source_pilot_sets": [
+          "SET_A_MECH_ROBOT"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "drawing.thread_callouts.pipe_threads_text"
+        ],
+        "compiled_inputs": [
+          "thread_callouts"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-008",
+      "pack_id": "F_OVERLAY",
+      "title": "ISO 228-1 pipe threads must be parallel and match designated size",
+      "description": "Checks that modeled ISO 228-1 pipe threads are parallel (not tapered) and match the designated nominal size for manufacturability and assembly interchangeability.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "hole_features"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "critical",
+      "fix_template": "Replace tapered threads with ISO 228-1 parallel geometry (or change the callout standard) and confirm the mating component uses the same designation.",
+      "refs": [
+        "REF-THR-228-1"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-008",
+        "source_analysis_mode": "geometry_dfm",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "cad.threads.iso228_all_conformant",
+          "op": "==",
+          "right": true
+        },
+        "source_evaluator_hint": "Detect and classify pipe threads; for ISO 228-1, verify parallel geometry and nominal designation against the selected size.",
+        "source_pilot_sets": [
+          "SET_A_MECH_ROBOT"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "cad.threads.iso228_all_conformant"
+        ],
+        "compiled_inputs": [
+          "hole_features"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-009",
+      "pack_id": "F_OVERLAY",
+      "title": "Food-contact designs must not include enclosed/trapped volumes in product/splash zones",
+      "description": "Flags enclosed cavities or trapped volumes in product-contact or splash zones that are difficult to clean, supporting EN 1672-2 hygienic/cleanability intent.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "geometry_features"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Eliminate enclosed cavities in hygienic zones (open, vent, drain, or redesign); if a cavity is necessary, document cleaning/inspection access and validation.",
+      "refs": [
+        "REF-FOOD-EN"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-009",
+        "source_analysis_mode": "geometry_dfm",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "cad.hygienic_design.enclosed_voids_in_product_zone_count",
+          "op": "==",
+          "right": 0
+        },
+        "source_evaluator_hint": "Use computational geometry to detect enclosed voids and non-drainable pockets in tagged hygienic zones; require zone tagging if absent.",
+        "source_pilot_sets": [
+          "SET_B_FOOD_PILOT"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "cad.hygienic_design.enclosed_voids_in_product_zone_count"
+        ],
+        "compiled_inputs": [
+          "geometry_features"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-010",
+      "pack_id": "F_OVERLAY",
+      "title": "Food machinery drawings must state hygiene/cleanability assumptions needed for correct use",
+      "description": "Ensures the drawing pack or associated documentation states hygienic zoning and intended cleaning method so manufacturing and verification are aligned.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add hygiene zoning (product-contact/splash/non-contact) and intended cleaning method reference to the drawing notes or linked spec; align with EN 1672-2 compliance rationale.",
+      "refs": [
+        "REF-FOOD-EN"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-010",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "drawing.hygiene.zone_tagging_present",
+          "op": "==",
+          "right": true
+        },
+        "source_evaluator_hint": "Accept either explicit zone marking on drawings or a linked hygiene zoning document referenced in drawing notes/BOM.",
+        "source_pilot_sets": [
+          "SET_B_FOOD_PILOT"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "drawing.hygiene.zone_tagging_present"
+        ],
+        "compiled_inputs": [
+          "drawing_notes"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-011",
+      "pack_id": "F_OVERLAY",
+      "title": "If the product is a portion cutting machine, documentation must reference EN 13870",
+      "description": "EN 13870 is a type-C standard for portion cutting machines; if applicable, ensure the documentation references EN 13870 and uses the current edition.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context",
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "info",
+      "fix_template": "If applicable, add 'EN 13870:2015+A1:2021' (or local adoption) to the standards list in the drawing pack and align risk assessment accordingly.",
+      "refs": [
+        "REF-FOOD-EN13870"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-011",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "drawing.text_all",
+          "op": "contains",
+          "right": "EN 13870"
+        },
+        "source_evaluator_hint": "Apply only when project.product_category indicates a portion cutting machine (or equivalent). If not applicable, suppress.",
+        "source_pilot_sets": [
+          "SET_B_FOOD_PILOT"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "project.product_category",
+          "drawing.text_all"
+        ],
+        "compiled_inputs": [
+          "manual_context",
+          "drawing_notes"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-012",
+      "pack_id": "F_OVERLAY",
+      "title": "Hygienic designs should avoid non-drainable pockets and inaccessible crevices in hygienic zones",
+      "description": "Checks for trapped volumes and inaccessible crevices in hygienic zones as a proxy for EHEDG hygienic design guidance.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "geometry_features"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Redesign pockets/crevices to be drainable and cleanable (e.g., add drainage, open access, or redesign geometry). Document any unavoidable non-drainable features and their validated cleaning method.",
+      "refs": [
+        "REF-HYG-1"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-012",
+        "source_analysis_mode": "geometry_dfm",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "cad.hygienic_design.trapped_volume_count",
+          "op": "==",
+          "right": 0
+        },
+        "source_evaluator_hint": "Compute trapped volume / dead-pocket metrics in tagged hygienic zones (product-contact and splash). If hygienic zones are not tagged, raise evidence_gap first.",
+        "source_pilot_sets": [
+          "SET_B_FOOD_PILOT"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "cad.hygienic_design.trapped_volume_count"
+        ],
+        "compiled_inputs": [
+          "geometry_features"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-013",
+      "pack_id": "F_OVERLAY",
+      "title": "Food equipment docs should reference EHEDG hygienic design guidance when claimed",
+      "description": "If hygienic design compliance is claimed or required, the documentation should reference the applied guidance (e.g., EHEDG Doc 8) and link to the design rationale/validation evidence.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "info",
+      "fix_template": "Add a note in the drawing pack naming EHEDG Guideline 8 (Doc 8) as applied guidance and link to the hygienic design rationale/cleanability validation report.",
+      "refs": [
+        "REF-HYG-1"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-013",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "drawing.text_all",
+          "op": "contains",
+          "right": "EHEDG"
+        },
+        "source_evaluator_hint": "Accept either explicit 'EHEDG' reference in drawing notes or a linked hygiene specification document referenced by the drawing pack.",
+        "source_pilot_sets": [
+          "SET_B_FOOD_PILOT"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "drawing.text_all"
+        ],
+        "compiled_inputs": [
+          "drawing_notes"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-014",
+      "pack_id": "F_OVERLAY",
+      "title": "Food-contact materials must have framework FCM compliance evidence and traceability controls",
+      "description": "Requires evidence that food-contact materials/articles are compliant with EU 1935/2004 general safety requirements and that traceability systems exist for recall and responsibility attribution.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "critical",
+      "fix_template": "Obtain and attach supplier/manufacturer documentation supporting EU 1935/2004 compliance and implement lot/batch traceability in ERP/QMS; add references in the technical file.",
+      "refs": [
+        "REF-FCM-EU-1935-2004"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-014",
+        "source_analysis_mode": "full",
+        "source_standard_clause": "Article 3; Article 17",
+        "source_predicate": {
+          "left": "docs.fcm.framework_1935_2004.compliance_statement_present",
+          "op": "==",
+          "right": true
+        },
+        "source_evaluator_hint": "Check for a stored compliance statement or supplier declaration tying the part/material to EU 1935/2004; separately confirm traceability (batch/lot linkage).",
+        "source_pilot_sets": [
+          "SET_B_FOOD_PILOT"
+        ],
+        "source_evidence_quality": "official_full_text",
+        "source_needs_manual_confirmation": false,
+        "source_inputs": [
+          "docs.fcm.framework_1935_2004.compliance_statement_present",
+          "docs.fcm.traceability_system_present"
+        ],
+        "compiled_inputs": [
+          "manual_context"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-015",
+      "pack_id": "F_OVERLAY",
+      "title": "Food-contact plastics must have EU 10/2011 declaration of compliance and supporting documentation",
+      "description": "Requires a written declaration of compliance and supporting documentation for plastic food-contact materials/articles and relevant intermediate products when EU 10/2011 applies.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "critical",
+      "fix_template": "Collect the EU 10/2011 Declaration of Compliance (with Annex IV fields) and store supporting migration/testing documentation; update supplier requirements if missing.",
+      "refs": [
+        "REF-FCM-EU-10-2011"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-015",
+        "source_analysis_mode": "full",
+        "source_standard_clause": "Article 15\u201316; Annex IV",
+        "source_predicate": {
+          "left": "docs.fcm.eu10_2011.declaration_present",
+          "op": "==",
+          "right": true
+        },
+        "source_evaluator_hint": "Verify presence of DoC and that it includes Annex IV information; verify supporting test/risk documentation is stored and retrievable for authorities.",
+        "source_pilot_sets": [
+          "SET_B_FOOD_PILOT"
+        ],
+        "source_evidence_quality": "official_full_text",
+        "source_needs_manual_confirmation": false,
+        "source_inputs": [
+          "docs.fcm.eu10_2011.declaration_present",
+          "docs.fcm.eu10_2011.supporting_docs_present"
+        ],
+        "compiled_inputs": [
+          "manual_context"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-016",
+      "pack_id": "F_OVERLAY",
+      "title": "Stainless steel material specs must be stated per EN 10088-3 where applicable",
+      "description": "Ensures stainless steel bars/rods/wire/sections used for parts are specified with an EN 10088-3-compliant grade/delivery condition in the drawing/BOM so procurement and inspection are consistent.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "material_spec"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Update the BOM/material callout to include EN 10088-3 (or appropriate EN 10088 part for the product form) and specify the required steel grade/delivery condition.",
+      "refs": [
+        "REF-MAT-EN10088-3"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-016",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "bom.materials.stainless_spec_text",
+          "op": "contains",
+          "right": "EN 10088-3"
+        },
+        "source_evaluator_hint": "If the project uses stainless steels in the EN 10088-3 product forms, require explicit EN 10088-3 referencing and grade identification; otherwise suppress.",
+        "source_pilot_sets": [
+          "SET_B_FOOD_PILOT"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "bom.materials.stainless_spec_text"
+        ],
+        "compiled_inputs": [
+          "material_spec"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-017",
+      "pack_id": "F_OVERLAY",
+      "title": "General tolerance note must be present when ISO 2768-fH is used",
+      "description": "Ensures the drawing explicitly states ISO 2768-fH as the default general tolerance class for unspecified dimensions, to avoid uncontrolled tolerance assumptions.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "drawing_title_block"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add to title block: 'General tolerances ISO 2768-fH' (and, if referencing ISO 2768-2, add ':1989' or adopt ISO 22081 explicitly).",
+      "refs": [
+        "REF-TOL-2768-FH"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-017",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "drawing.title_block.general_tolerance_note",
+          "op": "contains",
+          "right": "ISO 2768-fH"
+        },
+        "source_evaluator_hint": "Also recommend explicitly dating any ISO 2768-2 reference component because ISO 2768-2 is withdrawn; treat use of geometrical class (H) as legacy unless matched to a successor approach.",
+        "source_pilot_sets": [
+          "SET_B_FOOD_PILOT"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "drawing.title_block.general_tolerance_note"
+        ],
+        "compiled_inputs": [
+          "drawing_title_block"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-018",
+      "pack_id": "F_OVERLAY",
+      "title": "Machinery Directive technical file and EC declaration must exist for CE-marked machinery",
+      "description": "Requires evidence that the technical file, instructions, and EC declaration of conformity exist when Machinery Directive conformity is claimed.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "critical",
+      "fix_template": "Create/collect the EC Declaration of Conformity, technical file (incl. risk assessment), and instructions; store them under revision control and reference applied standards.",
+      "refs": [
+        "REF-MACH-DIR-2006-42"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-018",
+        "source_analysis_mode": "full",
+        "source_standard_clause": "Article 5; Annex I 1.7.4",
+        "source_predicate": {
+          "left": "docs.ce.ec_declaration_present",
+          "op": "==",
+          "right": true
+        },
+        "source_evaluator_hint": "Confirm Article 5 obligations are met via document presence and version control; treat missing documents as critical evidence gaps.",
+        "source_pilot_sets": [
+          "SET_B_FOOD_PILOT"
+        ],
+        "source_evidence_quality": "official_full_text",
+        "source_needs_manual_confirmation": false,
+        "source_inputs": [
+          "docs.ce.ec_declaration_present",
+          "docs.ce.technical_file_present",
+          "docs.ce.instructions_present"
+        ],
+        "compiled_inputs": [
+          "manual_context"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-019",
+      "pack_id": "F_OVERLAY",
+      "title": "Hygienic-zone geometry must minimize crevices and inaccessible joints",
+      "description": "Checks for narrow gaps/crevices and inaccessible joints in hygienic zones as a proxy for meeting ISO 14159 hygienic design intent.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "geometry_features"
+      ],
+      "check_logic": {
+        "type": "hybrid"
+      },
+      "severity": "major",
+      "fix_template": "Redesign joints to eliminate crevices (e.g., continuous/sealed welds, hygienic fasteners, open access) and ensure surfaces are accessible for cleaning/inspection.",
+      "refs": [
+        "REF-FOOD-ISO"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-019",
+        "source_analysis_mode": "geometry_dfm",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "cad.hygienic_design.crevice_count",
+          "op": "==",
+          "right": 0
+        },
+        "source_evaluator_hint": "Detect gaps below a configurable threshold and inaccessible joints in tagged hygienic zones; require zone tagging if absent.",
+        "source_pilot_sets": [
+          "SET_B_FOOD_PILOT"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "cad.hygienic_design.crevice_count"
+        ],
+        "compiled_inputs": [
+          "geometry_features"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-020",
+      "pack_id": "F_OVERLAY",
+      "title": "Hygienic machinery documentation must include cleaning/maintenance information",
+      "description": "Ensures drawing pack or linked docs include the cleaning/maintenance information necessary to support hygienic use when ISO 14159 is in scope.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add cleaning/maintenance instructions reference (document ID) to the drawing pack and ensure it is controlled and accessible to users.",
+      "refs": [
+        "REF-FOOD-ISO"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-020",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "drawing.hygiene.cleaning_instructions_present",
+          "op": "==",
+          "right": true
+        },
+        "source_evaluator_hint": "Accept either explicit cleaning instructions in the drawing pack or a referenced cleaning procedure document ID.",
+        "source_pilot_sets": [
+          "SET_B_FOOD_PILOT"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "drawing.hygiene.cleaning_instructions_present"
+        ],
+        "compiled_inputs": [
+          "drawing_notes"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-021",
+      "pack_id": "F_OVERLAY",
+      "title": "Additive manufacturing drawings must document AM process and key quality parameters when VDI 3405 is applied",
+      "description": "If a part is produced by additive manufacturing, ensure the drawing/spec includes process identification and quality parameters (as-built expectations) so inspection and acceptance are feasible.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "manual_context",
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Add 'VDI 3405' reference and link to the AM process parameter sheet (process type, layer parameters, post-processing, inspection method) in the drawing pack.",
+      "refs": [
+        "REF-ADD-VDI-3405"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-021",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "drawing.manufacturing.notes",
+          "op": "contains",
+          "right": "VDI 3405"
+        },
+        "source_evaluator_hint": "Apply when project.manufacturing.process == 'additive'; otherwise suppress. If VDI 3405 is the governing guideline, require reference and parameter list (at least as a linked spec).",
+        "source_pilot_sets": [
+          "SET_B_FOOD_PILOT"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "project.manufacturing.process",
+          "drawing.manufacturing.notes"
+        ],
+        "compiled_inputs": [
+          "manual_context",
+          "drawing_notes"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-022",
+      "pack_id": "F_OVERLAY",
+      "title": "GD&T feature control frames must be syntactically complete per ISO 1101",
+      "description": "Flags incomplete or non-parsable GD&T feature control frames (missing tolerance value, missing datum references where required, malformed symbols).",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "datum_scheme"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Fix malformed GD&T callouts so each frame includes the required ISO 1101 fields (symbol, tolerance value, and required datum references/modifiers).",
+      "refs": [
+        "REF-GPS-2"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-022",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "drawing.gdt.invalid_frame_count",
+          "op": "==",
+          "right": 0
+        },
+        "source_evaluator_hint": "Implement a parser for ISO 1101-like feature control frames; treat unrecognized patterns as invalid.",
+        "source_pilot_sets": [
+          "SET_C_GPS_DRAWING"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "drawing.gdt.invalid_frame_count"
+        ],
+        "compiled_inputs": [
+          "datum_scheme"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-023",
+      "pack_id": "F_OVERLAY",
+      "title": "Datum references used in GD&T must be defined per ISO 5459",
+      "description": "Ensures every datum identifier referenced by a GD&T callout is associated with a defined datum feature and datum system.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "datum_scheme"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Define missing datum features/datum system on the drawing (datum feature symbol + leader) so every referenced datum is unambiguous.",
+      "refs": [
+        "REF-GPS-6"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-023",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "drawing.gdt.undefined_datum_reference_count",
+          "op": "==",
+          "right": 0
+        },
+        "source_evaluator_hint": "Extract datum symbols and datum feature identifiers, then cross-check every datum letter used in feature control frames is defined somewhere on the drawing.",
+        "source_pilot_sets": [
+          "SET_C_GPS_DRAWING"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "drawing.gdt.undefined_datum_reference_count"
+        ],
+        "compiled_inputs": [
+          "datum_scheme"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-024",
+      "pack_id": "F_OVERLAY",
+      "title": "GPS drawings should reference ISO 8015 when ISO GPS rules are intended to apply",
+      "description": "A lightweight check that the drawing pack references ISO 8015 so GPS default concepts/rules are explicit.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "drawing_notes"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "info",
+      "fix_template": "Add 'ISO 8015' to the drawing standards list if ISO GPS principles are intended to apply across the drawing.",
+      "refs": [
+        "REF-GPS-1"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-024",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "drawing.text_all",
+          "op": "contains",
+          "right": "ISO 8015"
+        },
+        "source_evaluator_hint": "Look for ISO 8015 in title block standards list or general notes.",
+        "source_pilot_sets": [
+          "SET_C_GPS_DRAWING"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "drawing.text_all"
+        ],
+        "compiled_inputs": [
+          "drawing_notes"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-025",
+      "pack_id": "F_OVERLAY",
+      "title": "If general tolerances are used, the drawing must reference ISO 2768-1 and the tolerance class",
+      "description": "Ensures explicit ISO 2768-1 reference and tolerance class (f/m/c/v) for general linear/angular tolerances when individual tolerances are not fully specified.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "drawing_title_block"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Update the general tolerance note to include ISO 2768-1 and the selected class (e.g., 'ISO 2768-1 m'). If also using geometrical general tolerances, explicitly decide how to handle ISO 2768-2 withdrawal.",
+      "refs": [
+        "REF-GPS-3"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-025",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "drawing.title_block.general_tolerance_note",
+          "op": "contains",
+          "right": "ISO 2768-1"
+        },
+        "source_evaluator_hint": "Check that the general tolerance note includes ISO 2768-1 and a class identifier; if only 'ISO 2768' is used, treat as ambiguous and raise evidence gap.",
+        "source_pilot_sets": [
+          "SET_C_GPS_DRAWING"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "drawing.title_block.general_tolerance_note"
+        ],
+        "compiled_inputs": [
+          "drawing_title_block"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-026",
+      "pack_id": "F_OVERLAY",
+      "title": "If ISO 2768-2 is referenced, it must be explicitly dated or migrated because ISO 2768-2 is withdrawn",
+      "description": "ISO 2768-2:1989 is withdrawn; this rule flags ambiguous or undated references to ISO 2768-2 in drawings and requires an explicit decision (freeze to :1989 or adopt a successor approach).",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "drawing_title_block"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Replace 'ISO 2768-2' with 'ISO 2768-2:1989' if legacy use is intended, or update the general GPS approach (e.g., adopt ISO 22081) and revise drawing notes accordingly.",
+      "refs": [
+        "REF-GPS-4"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-026",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "drawing.title_block.general_tolerance_note",
+          "op": "contains",
+          "right": "ISO 2768-2"
+        },
+        "source_evaluator_hint": "If ISO 2768-2 appears without an edition (e.g., ':1989'), raise evidence gap and recommend explicitly freezing the reference or adopting ISO 22081.",
+        "source_pilot_sets": [
+          "SET_C_GPS_DRAWING"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": false,
+        "source_inputs": [
+          "drawing.title_block.general_tolerance_note"
+        ],
+        "compiled_inputs": [
+          "drawing_title_block"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-027",
+      "pack_id": "F_OVERLAY",
+      "title": "Surface texture indications must include parameter/value per ISO 1302 when used",
+      "description": "Flags surface texture symbols/callouts missing the required parameter/value information, to keep surface finish requirements unambiguous.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "surface_finish_spec"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Complete each surface texture callout with the required parameter/value (e.g., Ra value) and any needed qualifiers/modifiers following ISO 1302 conventions.",
+      "refs": [
+        "REF-GPS-7"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-027",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "drawing.surface_texture.missing_value_count",
+          "op": "==",
+          "right": 0
+        },
+        "source_evaluator_hint": "Parse ISO 1302-like surface texture symbols and ensure required fields (at least one parameter/value) exist for each callout.",
+        "source_pilot_sets": [
+          "SET_C_GPS_DRAWING"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "drawing.surface_texture.missing_value_count"
+        ],
+        "compiled_inputs": [
+          "surface_finish_spec"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
+    },
+    {
+      "rule_id": "PSTD-028",
+      "pack_id": "F_OVERLAY",
+      "title": "Metric thread callouts must include tolerance class/position when ISO 965-1 is applied",
+      "description": "Ensures metric thread specifications include tolerance class/position (e.g., internal 6H, external 6g) so manufacturing and gaging are unambiguous.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "inputs_required": [
+        "thread_callouts"
+      ],
+      "check_logic": {
+        "type": "deterministic"
+      },
+      "severity": "major",
+      "fix_template": "Update thread callouts to include tolerance class (e.g., 'M10x1-6H' internal, 'M10x1-6g' external) consistent with ISO 965-1 and the intended fit/function.",
+      "refs": [
+        "REF-THR-1"
+      ],
+      "thresholds": {
+        "compiled_from": "pilot_deep_research",
+        "source_rule_id": "PILOTSTD-028",
+        "source_analysis_mode": "drawing_spec",
+        "source_standard_clause": null,
+        "source_predicate": {
+          "left": "drawing.thread_callouts.metric_without_tolerance_class_count",
+          "op": "==",
+          "right": 0
+        },
+        "source_evaluator_hint": "Parse metric thread callouts (e.g., 'M10x1') and verify presence of ISO 965-style tolerance class (e.g., '6H', '6g').",
+        "source_pilot_sets": [
+          "SET_C_GPS_DRAWING"
+        ],
+        "source_evidence_quality": "official_abstract",
+        "source_needs_manual_confirmation": true,
+        "source_inputs": [
+          "drawing.thread_callouts.metric_without_tolerance_class_count"
+        ],
+        "compiled_inputs": [
+          "thread_callouts"
+        ],
+        "unknown_source_inputs": [],
+        "compile_status": "executable_now"
+      }
     }
   ]
 }

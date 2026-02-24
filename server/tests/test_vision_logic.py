@@ -8,6 +8,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from server.vision_analysis import (  # noqa: E402
+    _parse_model_output_as_json,
     merge_view_results,
     normalize_provider_result,
     parse_vision_criteria,
@@ -102,3 +103,31 @@ def test_merge_view_results_deduplicates_and_promotes_severity():
     assert first["source_views"] == ["x", "y"]
     assert "[x]" in merged["general_observations"]
     assert "[y]" in merged["general_observations"]
+
+
+def test_parse_model_output_prefers_schema_object_in_mixed_text():
+    model_text = """
+Reasoning before JSON.
+Here is an inner object: {"feature_id": "V_tmp", "description": "not root schema"}.
+<think>intermediate thoughts</think>
+{
+  "flagged_features": [
+    {
+      "feature_id": "V1",
+      "description": "Internal slot corners appear sharp",
+      "severity": "critical",
+      "confidence": "medium",
+      "source_views": ["x", "y"]
+    }
+  ],
+  "general_observations": "Visible tight corners may need radius relief.",
+  "confidence": "medium"
+}
+""".strip()
+
+    parsed = _parse_model_output_as_json(model_text)
+    assert isinstance(parsed.get("flagged_features"), list)
+    assert len(parsed["flagged_features"]) == 1
+    assert parsed["flagged_features"][0]["description"] == "Internal slot corners appear sharp"
+    assert parsed["general_observations"] == "Visible tight corners may need radius relief."
+    assert parsed["confidence"] == "medium"

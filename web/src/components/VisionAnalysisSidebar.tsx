@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { type ClipboardEvent, useEffect, useMemo, useState } from "react";
 import type {
   VisionCriteria,
   VisionFinding,
@@ -17,6 +17,16 @@ type VisionAnalysisSidebarProps = {
 };
 
 type CriteriaProfile = "default" | "custom";
+type GeneratedViewName = "x" | "y" | "z";
+
+type PastedVisionImage = {
+  id: string;
+  label: string;
+  dataUrl: string;
+  selected: boolean;
+};
+
+const GENERATED_VIEW_NAMES: GeneratedViewName[] = ["x", "y", "z"];
 
 const DEFAULT_CRITERIA: VisionCriteria = {
   checks: {
@@ -65,7 +75,14 @@ const VisionAnalysisSidebar = ({
   const [loadingProviders, setLoadingProviders] = useState(false);
   const [route, setRoute] = useState<VisionProviderRoute>("openai");
   const [modelOverride, setModelOverride] = useState("");
-  const [localBaseUrl, setLocalBaseUrl] = useState("");
+  const [baseUrlOverride, setBaseUrlOverride] = useState("");
+  const [apiKeyOverride, setApiKeyOverride] = useState("");
+  const [selectedGeneratedViews, setSelectedGeneratedViews] = useState<Record<GeneratedViewName, boolean>>({
+    x: true,
+    y: true,
+    z: true,
+  });
+  const [pastedImages, setPastedImages] = useState<PastedVisionImage[]>([]);
 
   const [viewSet, setViewSet] = useState<VisionViewSetResponse | null>(null);
   const [report, setReport] = useState<VisionReportResponse | null>(null);
@@ -83,6 +100,8 @@ const VisionAnalysisSidebar = ({
     setViewSet(null);
     setReport(null);
     setError(null);
+    setSelectedGeneratedViews({ x: true, y: true, z: true });
+    setPastedImages([]);
   }, [modelId, selectedComponent?.nodeName]);
 
   useEffect(() => {
@@ -112,7 +131,6 @@ const VisionAnalysisSidebar = ({
 
         setProviders(payload);
         setRoute(payload.default_provider);
-        setLocalBaseUrl(payload.local_defaults?.base_url ?? "http://127.0.0.1:1234/v1");
       } catch (err) {
         if (cancelled) return;
         setError(err instanceof Error ? err.message : "Unexpected error while loading providers");
@@ -163,7 +181,97 @@ const VisionAnalysisSidebar = ({
     return found ? found.configured : true;
   }, [providers, route]);
 
-  const routeCanRun = routeConfigured || Boolean(modelOverride.trim());
+  const routeCanRun = routeConfigured || Boolean(modelOverride.trim()) || Boolean(apiKeyOverride.trim());
+  const routeDefaultBaseUrl = useMemo(() => {
+    const configuredDefault = providers?.provider_defaults?.[route]?.base_url;
+    if (configuredDefault && configuredDefault.trim()) return configuredDefault;
+
+    if (route === "openai") return "https://api.openai.com/v1";
+    if (route === "claude") return "https://api.anthropic.com";
+    if (route === "local") return providers?.local_defaults?.base_url ?? "http://127.0.0.1:1234/v1";
+    return "";
+  }, [providers, route]);
+  const selectedGeneratedViewNames = useMemo(
+    () => GENERATED_VIEW_NAMES.filter((viewName) => selectedGeneratedViews[viewName]),
+    [selectedGeneratedViews],
+  );
+  const selectedPastedImages = useMemo(
+    () => pastedImages.filter((image) => image.selected),
+    [pastedImages],
+  );
+  const hasAnySelectedImages = selectedGeneratedViewNames.length > 0 || selectedPastedImages.length > 0;
+
+  const toggleGeneratedView = (viewName: GeneratedViewName, checked: boolean) => {
+    setSelectedGeneratedViews((prev) => ({ ...prev, [viewName]: checked }));
+  };
+
+  const togglePastedImage = (id: string, checked: boolean) => {
+    setPastedImages((prev) =>
+      prev.map((image) =>
+        image.id === id
+          ? {
+              ...image,
+              selected: checked,
+            }
+          : image,
+      ),
+    );
+  };
+
+  const removePastedImage = (id: string) => {
+    setPastedImages((prev) => prev.filter((image) => image.id !== id));
+  };
+
+  const appendPastedImage = (dataUrl: string, fileNameHint?: string) => {
+    if (!dataUrl.startsWith("data:image/")) {
+      setError("Clipboard data is not a supported image.");
+      return;
+    }
+    setPastedImages((prev) => {
+      const nextIndex = prev.length + 1;
+      const fallbackLabel = `Screenshot ${nextIndex}`;
+      const trimmedName = (fileNameHint ?? "").trim();
+      const label = trimmedName ? trimmedName : fallbackLabel;
+      const id =
+        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : `shot_${Date.now()}_${nextIndex}`;
+      return [
+        ...prev,
+        {
+          id,
+          label,
+          dataUrl,
+          selected: true,
+        },
+      ];
+    });
+  };
+
+  const handlePasteScreenshot = (event: ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = Array.from(event.clipboardData?.items ?? []);
+    const imageItem = items.find((item) => item.type.startsWith("image/"));
+    if (!imageItem) return;
+
+    const file = imageItem.getAsFile();
+    if (!file) return;
+    event.preventDefault();
+    setError(null);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result !== "string") {
+        setError("Failed to read pasted image.");
+        return;
+      }
+      appendPastedImage(result, file.name);
+    };
+    reader.onerror = () => {
+      setError("Failed to read pasted image.");
+    };
+    reader.readAsDataURL(file);
+  };
 
   const setCheck = (key: keyof VisionCriteria["checks"], checked: boolean) => {
     setCriteria((prev) => ({
@@ -216,6 +324,7 @@ const VisionAnalysisSidebar = ({
 
       const payload = (await response.json()) as VisionViewSetResponse;
       setViewSet(payload);
+      setSelectedGeneratedViews({ x: true, y: true, z: true });
     } catch (err) {
       if (err instanceof TypeError) {
         setError(
@@ -242,6 +351,10 @@ const VisionAnalysisSidebar = ({
       setError("Generate views first before conducting analysis.");
       return;
     }
+    if (!hasAnySelectedImages) {
+      setError("Select at least one generated or pasted image before conducting analysis.");
+      return;
+    }
 
     setRunningAnalysis(true);
     setError(null);
@@ -250,13 +363,17 @@ const VisionAnalysisSidebar = ({
       const providerPayload: {
         route: VisionProviderRoute;
         model_override?: string;
+        base_url_override?: string;
+        api_key_override?: string;
         local_base_url?: string;
       } = {
         route,
       };
 
       if (modelOverride.trim()) providerPayload.model_override = modelOverride.trim();
-      if (route === "local" && localBaseUrl.trim()) providerPayload.local_base_url = localBaseUrl.trim();
+      if (baseUrlOverride.trim()) providerPayload.base_url_override = baseUrlOverride.trim();
+      if (apiKeyOverride.trim()) providerPayload.api_key_override = apiKeyOverride.trim();
+      if (route === "local" && baseUrlOverride.trim()) providerPayload.local_base_url = baseUrlOverride.trim();
 
       const path = `/api/models/${modelId}/vision/reports`;
       const response = await runWithFallback(path, {
@@ -265,6 +382,11 @@ const VisionAnalysisSidebar = ({
         body: JSON.stringify({
           component_node_name: selectedComponent.nodeName,
           view_set_id: viewSet.view_set_id,
+          selected_view_names: selectedGeneratedViewNames,
+          pasted_images: selectedPastedImages.map((image) => ({
+            name: image.label,
+            data_url: image.dataUrl,
+          })),
           criteria,
           provider: providerPayload,
         }),
@@ -316,22 +438,61 @@ const VisionAnalysisSidebar = ({
 
         {viewUrls ? (
           <div className="vision-sidebar__thumb-grid">
-            <div className="vision-sidebar__thumb-card">
-              <span>X</span>
-              <img src={viewUrls.x} alt="Vision X view" />
-            </div>
-            <div className="vision-sidebar__thumb-card">
-              <span>Y</span>
-              <img src={viewUrls.y} alt="Vision Y view" />
-            </div>
-            <div className="vision-sidebar__thumb-card">
-              <span>Z</span>
-              <img src={viewUrls.z} alt="Vision Z view" />
-            </div>
+            {GENERATED_VIEW_NAMES.map((viewName) => (
+              <div className="vision-sidebar__thumb-card" key={viewName}>
+                <label className="vision-sidebar__thumb-select">
+                  <input
+                    type="checkbox"
+                    checked={selectedGeneratedViews[viewName]}
+                    onChange={(event) => toggleGeneratedView(viewName, event.target.checked)}
+                  />
+                  <span>{viewName.toUpperCase()}</span>
+                </label>
+                <img src={viewUrls[viewName]} alt={`Vision ${viewName.toUpperCase()} view`} />
+              </div>
+            ))}
           </div>
         ) : (
           <p className="vision-sidebar__hint">Generate a frozen x/y/z view set first.</p>
         )}
+
+        <label className="vision-sidebar__field">
+          <span>Paste screenshot (optional)</span>
+          <textarea
+            className="vision-sidebar__criteria-input vision-sidebar__paste-target"
+            rows={3}
+            onPaste={handlePasteScreenshot}
+            placeholder="Click here and paste image from clipboard (Ctrl+V)."
+          />
+          <p className="vision-sidebar__hint">
+            Paste one or more screenshots, then check which generated/pasted images to send to the model.
+          </p>
+        </label>
+
+        {pastedImages.length ? (
+          <div className="vision-sidebar__thumb-grid vision-sidebar__thumb-grid--pasted">
+            {pastedImages.map((image) => (
+              <div className="vision-sidebar__thumb-card" key={image.id}>
+                <label className="vision-sidebar__thumb-select">
+                  <input
+                    type="checkbox"
+                    checked={image.selected}
+                    onChange={(event) => togglePastedImage(image.id, event.target.checked)}
+                  />
+                  <span>{image.label}</span>
+                </label>
+                <button
+                  type="button"
+                  className="vision-sidebar__thumb-remove"
+                  onClick={() => removePastedImage(image.id)}
+                >
+                  Remove
+                </button>
+                <img src={image.dataUrl} alt={`Pasted screenshot ${image.label}`} />
+              </div>
+            ))}
+          </div>
+        ) : null}
 
         <label className="vision-sidebar__field">
           <span>Criteria profile</span>
@@ -461,24 +622,44 @@ const VisionAnalysisSidebar = ({
           />
         </label>
 
-        {route === "local" ? (
-          <label className="vision-sidebar__field">
-            <span>Local base URL (optional override)</span>
-            <input
-              className="vision-sidebar__criteria-input"
-              type="text"
-              value={localBaseUrl}
-              onChange={(event) => setLocalBaseUrl(event.target.value)}
-              placeholder="http://127.0.0.1:1234/v1"
-            />
-          </label>
-        ) : null}
+        <label className="vision-sidebar__field">
+          <span>Endpoint base URL (optional override)</span>
+          <input
+            className="vision-sidebar__criteria-input"
+            type="text"
+            value={baseUrlOverride}
+            onChange={(event) => setBaseUrlOverride(event.target.value)}
+            placeholder={routeDefaultBaseUrl}
+          />
+          <p className="vision-sidebar__hint">By default API key is read from backend env.</p>
+        </label>
+
+        <label className="vision-sidebar__field">
+          <span>API key override (optional)</span>
+          <input
+            className="vision-sidebar__criteria-input"
+            type="password"
+            value={apiKeyOverride}
+            onChange={(event) => setApiKeyOverride(event.target.value)}
+            placeholder="Paste provider API key for this run"
+            autoComplete="off"
+          />
+          <p className="vision-sidebar__hint">Hidden input. Used only for this request.</p>
+        </label>
 
         <button
           type="button"
           className="vision-sidebar__submit"
           onClick={handleConductAnalysis}
-          disabled={runningAnalysis || generatingViews || !viewSet || !modelId || !selectedComponent || !routeCanRun}
+          disabled={
+            runningAnalysis ||
+            generatingViews ||
+            !viewSet ||
+            !modelId ||
+            !selectedComponent ||
+            !routeCanRun ||
+            !hasAnySelectedImages
+          }
         >
           {runningAnalysis ? "Conducting analysis..." : "Conduct Analysis"}
         </button>
@@ -551,6 +732,13 @@ const VisionAnalysisSidebar = ({
                 <li>Base URL: {report.provider_applied.base_url_used}</li>
               </ul>
             </div>
+
+            <div className="vision-sidebar__assumptions">
+              <h3>Raw Model Output</h3>
+              <pre className="vision-sidebar__raw-output">
+                {report.raw_output_text?.trim() || "No raw provider output captured for this run."}
+              </pre>
+            </div>
           </>
         ) : (
           <p className="vision-sidebar__hint">Generate a view set, then conduct vision analysis.</p>
@@ -563,3 +751,5 @@ const VisionAnalysisSidebar = ({
 };
 
 export default VisionAnalysisSidebar;
+
+

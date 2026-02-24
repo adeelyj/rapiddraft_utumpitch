@@ -330,6 +330,12 @@ def test_review_v2_geometry_mode_filters_drawing_spec_rules():
         "drawing_" not in ",".join(finding.get("evidence", {}).get("missing_inputs", []))
         for finding in route["findings"]
     )
+    trace = {entry["ref_id"]: entry for entry in response.get("standards_trace_union", [])}
+    assert "REF-HYG-1" in trace
+    assert trace["REF-HYG-1"]["active_in_mode"] is True
+    assert trace["REF-HYG-1"]["design_risk_findings"] >= 1
+    assert "REF-FOOD-EN" in trace
+    assert trace["REF-FOOD-EN"]["active_in_mode"] is False
 
 
 def test_review_v2_zero_corner_radius_is_reported_as_violation():
@@ -387,3 +393,91 @@ def test_review_v2_zero_corner_radius_is_reported_as_violation():
         if finding.get("finding_type") == "rule_violation"
     ]
     assert any(finding.get("rule_id") == "CNC-005" for finding in violations)
+
+
+def test_review_v2_pilot_findings_include_traceable_source_fields():
+    bundle = _bundle()
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="model-pilot-trace-fields",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Part 1",
+            "profile": {
+                "material": "Aluminum",
+                "manufacturingProcess": "CNC Milling",
+                "industry": "Aerospace",
+            },
+        },
+        planning_inputs={
+            "extracted_part_facts": {},
+            "analysis_mode": "geometry_dfm",
+            "selected_process_override": "cnc_milling",
+            "selected_overlay": "pilot_prototype",
+            "process_selection_mode": "override",
+            "overlay_selection_mode": "override",
+            "selected_role": "general_dfm",
+            "selected_template": "executive_1page",
+            "run_both_if_mismatch": False,
+        },
+        context_payload={},
+    )
+
+    pilot_findings = [
+        finding
+        for finding in response["routes"][0]["findings"]
+        if str(finding.get("rule_id", "")).startswith("PSTD-")
+    ]
+    assert pilot_findings, "Expected pilot findings from the pilot overlay."
+    assert any(
+        str(finding.get("source_rule_id", "")).startswith("PILOTSTD-")
+        for finding in pilot_findings
+    )
+
+
+def test_review_v2_pilot_geometry_rules_emit_rule_violations_when_inputs_present():
+    bundle = _bundle()
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="model-pilot-geometry-violations",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Part 1",
+            "profile": {
+                "material": "Aluminum",
+                "manufacturingProcess": "CNC Milling",
+                "industry": "Food Machinery and Hygienic Design",
+            },
+        },
+        planning_inputs={
+            "extracted_part_facts": {
+                "geometry_features": True,
+                "hole_features": True,
+                "cad.robot_interface.conformance_flag": False,
+                "cad.fits.all_pairs_intended_fit_type_met": False,
+                "cad.threads.iso228_all_conformant": False,
+                "cad.hygienic_design.enclosed_voids_in_product_zone_count": 2,
+                "cad.hygienic_design.trapped_volume_count": 1,
+                "cad.hygienic_design.crevice_count": 3,
+            },
+            "analysis_mode": "geometry_dfm",
+            "selected_process_override": "cnc_milling",
+            "selected_overlay": "pilot_prototype",
+            "process_selection_mode": "override",
+            "overlay_selection_mode": "override",
+            "selected_role": "general_dfm",
+            "selected_template": "executive_1page",
+            "run_both_if_mismatch": False,
+        },
+        context_payload={},
+    )
+
+    violations = [
+        finding
+        for finding in response["routes"][0]["findings"]
+        if finding.get("finding_type") == "rule_violation"
+    ]
+    violation_ids = {finding.get("rule_id") for finding in violations}
+    assert {"PSTD-001", "PSTD-004", "PSTD-008", "PSTD-009", "PSTD-012", "PSTD-019"}.issubset(
+        violation_ids
+    )

@@ -1,0 +1,2283 @@
+{
+  "metadata": {
+    "generated_at_utc": "2026-02-24T11:24:15Z",
+    "method": "deep_research",
+    "notes": "Updated pilot scope includes explicit ISO 5459 and ISO 1302 plus explicit ISO 2768-1/-2 and ISO 965-1 lane; new ref_ids proposed for missing standards: REF-GPS-6 (ISO 5459) and REF-GPS-7 (ISO 1302). Key freshness findings: ISO 2768-2 is withdrawn and ISO 22081 cancels/replaces it; ISO 965-1 revision is under publication; Machinery Directive 2006/42/EC is replaced by Regulation (EU) 2023/1230 applying from 20 Jan 2027."
+  },
+  "reference_resolution": [
+    {
+      "standard_name": "VDI 3405",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "ref_id": "REF-ADD-VDI-3405",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "ISO 7599",
+      "pilot_sets": [
+        "SET_A_MECH_ROBOT"
+      ],
+      "ref_id": "REF-COAT-7599",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "EU 10/2011",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "ref_id": "REF-FCM-EU-10-2011",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "EU 1935/2004",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "ref_id": "REF-FCM-EU-1935-2004",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "EN 1672-2:2020",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "ref_id": "REF-FOOD-EN",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "EN 13870",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "ref_id": "REF-FOOD-EN13870",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "EN ISO 14159",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "ref_id": "REF-FOOD-ISO",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "ISO 8015",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "ref_id": "REF-GPS-1",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "ISO 1101",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "ref_id": "REF-GPS-2",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "ISO 2768-1",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "ref_id": "REF-GPS-3",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "ISO 2768-2",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "ref_id": "REF-GPS-4",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "ISO 5459",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "ref_id": "REF-GPS-6",
+      "is_existing_ref": false,
+      "needs_new_ref": true
+    },
+    {
+      "standard_name": "ISO 1302",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "ref_id": "REF-GPS-7",
+      "is_existing_ref": false,
+      "needs_new_ref": true
+    },
+    {
+      "standard_name": "EHEDG Doc 8",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "ref_id": "REF-HYG-1",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "2006/42/EC",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "ref_id": "REF-MACH-DIR-2006-42",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "EN 10088-3",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "ref_id": "REF-MAT-EN10088-3",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "ISO 286",
+      "pilot_sets": [
+        "SET_A_MECH_ROBOT"
+      ],
+      "ref_id": "REF-FIT-286",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "ISO 9409-1",
+      "pilot_sets": [
+        "SET_A_MECH_ROBOT"
+      ],
+      "ref_id": "REF-ROBOT-9409-1",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "ISO 965-1",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "ref_id": "REF-THR-1",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "ISO 228-1",
+      "pilot_sets": [
+        "SET_A_MECH_ROBOT"
+      ],
+      "ref_id": "REF-THR-228-1",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "ISO 2768-fH",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "ref_id": "REF-TOL-2768-FH",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    },
+    {
+      "standard_name": "ISO 2768-mK",
+      "pilot_sets": [
+        "SET_A_MECH_ROBOT"
+      ],
+      "ref_id": "REF-TOL-2768-MK",
+      "is_existing_ref": true,
+      "needs_new_ref": false
+    }
+  ],
+  "references_patch": [
+    {
+      "ref_id": "REF-ROBOT-9409-1",
+      "title": "ISO 9409-1:2004 \u2014 Manipulating industrial robots \u2014 Mechanical interfaces \u2014 Part 1: Plates",
+      "url": "https://www.iso.org/standard/36578.html",
+      "type": "standard",
+      "notes": "ISO standard defining mechanical interface plate requirements to enable interchangeability between robot manipulators and end-effectors.",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": false
+    },
+    {
+      "ref_id": "REF-FIT-286",
+      "title": "ISO 286 (series) \u2014 ISO code system for tolerances on linear sizes (limits & fits; used for H7/m6-style fit designations)",
+      "url": "https://www.iso.org/standard/45975.html",
+      "type": "standard",
+      "notes": "Series provides the code system for tolerances and deviations (Part 1) and tables of standard tolerance classes/limit deviations for holes and shafts (Part 2).",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": false
+    },
+    {
+      "ref_id": "REF-TOL-2768-MK",
+      "title": "ISO 2768 (general tolerances) \u2014 drawing notation ISO 2768-mK (ISO 2768-1 class m + ISO 2768-2 class K; legacy because ISO 2768-2 is withdrawn)",
+      "url": "https://www.iso.org/standard/7748.html",
+      "type": "standard",
+      "notes": "ISO 2768-1 defines general tolerances for linear and angular dimensions (classes f/m/c/v). ISO 2768-2 (geometrical tolerances) is withdrawn and is replaced by ISO 22081 for general geometrical/size specifications, so legacy notes like 'mK' need careful referencing.",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "ref_id": "REF-COAT-7599",
+      "title": "ISO 7599:2018 \u2014 Anodizing of aluminium and its alloys \u2014 Method for specifying decorative and protective anodic oxidation coatings on aluminium",
+      "url": "https://www.iso.org/standard/70156.html",
+      "type": "standard",
+      "notes": "Defines how to specify decorative/protective anodic oxidation coatings, characteristic properties, referenced test methods, and minimum performance requirements.",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": false
+    },
+    {
+      "ref_id": "REF-THR-228-1",
+      "title": "ISO 228-1:2000 \u2014 Pipe threads where pressure-tight joints are not made on the threads \u2014 Dimensions, tolerances and designation",
+      "url": "https://www.iso.org/standard/33652.html",
+      "type": "standard",
+      "notes": "Defines dimensions/tolerances and designation for 'G' (parallel) pipe threads intended for joints where thread flanks do not provide pressure tightness.",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": false
+    },
+    {
+      "ref_id": "REF-FOOD-EN",
+      "title": "EN 1672-2:2020 \u2014 Food processing machinery \u2014 Basic concepts \u2014 Part 2: Hygiene and cleanability requirements",
+      "url": "https://www.dinmedia.de/en/standard/din-en-1672-2/327452751",
+      "type": "standard",
+      "notes": "European standard specifying common hygiene/cleanability requirements for food-processing machinery and components to minimize food-safety risks via hygienic design.",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": false
+    },
+    {
+      "ref_id": "REF-FOOD-EN13870",
+      "title": "EN 13870 (current edition includes EN 13870:2015+A1:2021) \u2014 Food processing machinery \u2014 Portion cutting machines \u2014 Safety and hygiene requirements",
+      "url": "https://www.dinmedia.de/en/standard/din-en-13870/291328038",
+      "type": "standard",
+      "notes": "Type-C European standard for portion cutting machines; the DIN listing shows the current document as DIN EN 13870:2022-03 implementing EN 13870:2015+A1:2021 and replacing the 2015 edition.",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": false
+    },
+    {
+      "ref_id": "REF-HYG-1",
+      "title": "EHEDG Guideline 8 (Doc 8) \u2014 Hygienic design principles (guidance)",
+      "url": "https://www.ehedg.org/guidelines-working-groups/guidelines/guidelines/detail/hygienic-design-principles",
+      "type": "guide",
+      "notes": "EHEDG guidance outlining risk-based hygienic design considerations for entities intended for food manufacturing, emphasizing cleanability and contamination prevention.",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": false
+    },
+    {
+      "ref_id": "REF-FCM-EU-1935-2004",
+      "title": "Regulation (EC) No 1935/2004 \u2014 Food contact materials framework regulation",
+      "url": "https://eur-lex.europa.eu/eli/reg/2004/1935/oj/eng",
+      "type": "eu_reg",
+      "notes": "Framework rules for materials/articles intended to come into contact with food; includes general safety (Article 3) and traceability (Article 17). Tooling note: EUR-Lex pages were JS-gated in this session; full-text evidence was taken from the UK legislation mirror.",
+      "evidence_quality": "official_full_text",
+      "needs_manual_confirmation": false
+    },
+    {
+      "ref_id": "REF-FCM-EU-10-2011",
+      "title": "Commission Regulation (EU) No 10/2011 \u2014 Plastic materials and articles intended to come into contact with food",
+      "url": "https://eur-lex.europa.eu/eli/reg/2011/10/oj/eng",
+      "type": "eu_reg",
+      "notes": "Specific measure for food-contact plastics; includes requirements for written declaration of compliance and supporting documentation (Chapter IV; Articles 15\u201316; Annex IV). Tooling note: EUR-Lex pages were JS-gated in this session; full-text evidence was taken from the UK legislation mirror (2019-08-29 consolidated text).",
+      "evidence_quality": "official_full_text",
+      "needs_manual_confirmation": true
+    },
+    {
+      "ref_id": "REF-MAT-EN10088-3",
+      "title": "EN 10088-3:2023 \u2014 Stainless steels \u2014 Part 3: Technical delivery conditions for semi-finished products, bars, rods, wire, sections and bright products of corrosion resistant steels",
+      "url": "https://www.dinmedia.de/en/standard/din-en-10088-3/367623815",
+      "type": "standard",
+      "notes": "European standard specifying technical delivery conditions for corrosion-resistant (stainless) steels in bar/rod/wire/section forms (DIN listing references EN 10088-3:2023).",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": false
+    },
+    {
+      "ref_id": "REF-TOL-2768-FH",
+      "title": "ISO 2768 (general tolerances) \u2014 drawing notation ISO 2768-fH (ISO 2768-1 class f + ISO 2768-2 class H; legacy because ISO 2768-2 is withdrawn)",
+      "url": "https://www.iso.org/standard/7748.html",
+      "type": "standard",
+      "notes": "Common drawing shorthand combining ISO 2768-1 (linear/angular) with ISO 2768-2 (geometrical, withdrawn). If used, treat as a legacy reference and confirm intended successor approach (e.g., ISO 22081 for general geometrical/size specs).",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "ref_id": "REF-MACH-DIR-2006-42",
+      "title": "Directive 2006/42/EC \u2014 Machinery Directive",
+      "url": "https://eur-lex.europa.eu/eli/dir/2006/42/oj/eng",
+      "type": "eu_reg",
+      "notes": "EU machinery safety directive (EHSR in Annex I; manufacturer obligations incl. technical file and instructions). Note: repealed by Regulation (EU) 2023/1230, which applies from 20 Jan 2027; until 19 Jan 2027, the directive remains the applied legal framework per transition schedule. Tooling note: EUR-Lex pages were JS-gated in this session; full-text evidence was taken from the UK legislation mirror; transition note supported by DGUV summary.",
+      "evidence_quality": "official_full_text",
+      "needs_manual_confirmation": false
+    },
+    {
+      "ref_id": "REF-FOOD-ISO",
+      "title": "EN ISO 14159 (ISO 14159:2002; EN adoption 2008) \u2014 Safety of machinery \u2014 Hygiene requirements for the design of machinery",
+      "url": "https://www.dinmedia.de/en/standard/din-en-iso-14159/108215480",
+      "type": "standard",
+      "notes": "Hygiene requirements for machinery design as an EN-adopted ISO standard (DIN listing shows EN ISO 14159:2008 based on ISO 14159:2002).",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": false
+    },
+    {
+      "ref_id": "REF-ADD-VDI-3405",
+      "title": "VDI 3405 \u2014 Additive manufacturing processes \u2014 Rapid manufacturing (basics, definitions, processes)",
+      "url": "https://www.vdi.de/en/home/vdi-standards/details/vdi-3405-additive-manufacturing-processes-rapid-manufacturing-basics-definitions-processes",
+      "type": "standard",
+      "notes": "VDI guideline covering design, fabrication and assessment of additive-manufactured parts, including quality parameters, testing considerations, and supply-agreement aspects.",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": false
+    },
+    {
+      "ref_id": "REF-GPS-1",
+      "title": "ISO 8015:2011 \u2014 Geometrical product specifications (GPS) \u2014 Fundamentals \u2014 Concepts, principles and rules",
+      "url": "https://www.iso.org/standard/55979.html",
+      "type": "standard",
+      "notes": "Defines fundamental GPS concepts/principles/rules used for creating and interpreting geometrical product specifications.",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": false
+    },
+    {
+      "ref_id": "REF-GPS-2",
+      "title": "ISO 1101:2017 \u2014 Geometrical product specifications (GPS) \u2014 Geometrical tolerancing \u2014 Tolerances of form, orientation, location and run-out",
+      "url": "https://www.iso.org/standard/66777.html",
+      "type": "standard",
+      "notes": "Defines the symbol language for geometrical tolerancing and the rules for interpreting those specifications.",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": false
+    },
+    {
+      "ref_id": "REF-GPS-3",
+      "title": "ISO 2768-1:1989 \u2014 General tolerances \u2014 Part 1: Tolerances for linear and angular dimensions without individual tolerance indications",
+      "url": "https://www.iso.org/standard/7748.html",
+      "type": "standard",
+      "notes": "Specifies general tolerances for linear/angular dimensions without individual tolerances, in four tolerance classes, to simplify drawing indications.",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": false
+    },
+    {
+      "ref_id": "REF-GPS-4",
+      "title": "ISO 2768-2:1989 \u2014 General tolerances \u2014 Part 2: Geometrical tolerances for features without individual tolerance indications (withdrawn)",
+      "url": "https://www.iso.org/standard/7749.html",
+      "type": "standard",
+      "notes": "ISO catalog indicates ISO 2768-2:1989 is withdrawn; ISO 22081:2021 is stated to cancel/replace it for general geometrical and size specifications.",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": false
+    },
+    {
+      "ref_id": "REF-THR-1",
+      "title": "ISO 965-1:2013 \u2014 ISO general purpose metric screw threads \u2014 Tolerances \u2014 Part 1: Principles and basic data",
+      "url": "https://www.iso.org/standard/57721.html",
+      "type": "standard",
+      "notes": "Provides principles and basic data for thread tolerancing in ISO metric screw thread system; ISO catalog shows a new revision is under publication intended to replace the 2013 edition.",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": false
+    },
+    {
+      "ref_id": "REF-GPS-6",
+      "title": "ISO 5459:2024 \u2014 Geometrical product specifications (GPS) \u2014 Geometrical tolerancing \u2014 Datums and datum systems",
+      "url": "https://www.iso.org/standard/87855.html",
+      "type": "standard",
+      "notes": "Specifies terminology, rules and methodology for indicating and understanding datums and datum systems in technical product documentation.",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": false
+    },
+    {
+      "ref_id": "REF-GPS-7",
+      "title": "ISO 1302:2002 \u2014 Geometrical product specifications (GPS) \u2014 Indication of surface texture in technical product documentation",
+      "url": "https://www.iso.org/standard/28089.html",
+      "type": "standard",
+      "notes": "Specifies rules for indicating surface texture in technical product documentation using graphical symbols and textual indications.",
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": false
+    }
+  ],
+  "standards_matrix": [
+    {
+      "ref_id": "REF-ROBOT-9409-1",
+      "standard_name": "ISO 9409-1",
+      "pilot_sets": [
+        "SET_A_MECH_ROBOT"
+      ],
+      "geometry_relevant": true,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-ISO9409-1-001",
+          "clause_id": null,
+          "requirement_text_paraphrased": "If a robot/end-effector connection is specified as ISO 9409-1, the interface geometry (hole pattern, centring features, and associated dimensions) must match the selected ISO 9409-1 interface configuration so tooling remains interchangeable.",
+          "check_type": "geometry",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/36578.html"
+          ]
+        },
+        {
+          "req_id": "REQ-ISO9409-1-002",
+          "clause_id": null,
+          "requirement_text_paraphrased": "Technical product documentation should unambiguously indicate the ISO 9409-1 interface used (e.g., by naming ISO 9409-1 and the intended interface size/type) to avoid mismatched mating plates.",
+          "check_type": "drawing_spec",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/36578.html"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-FIT-286",
+      "standard_name": "ISO 286 (ISO 286-1/-2)",
+      "pilot_sets": [
+        "SET_A_MECH_ROBOT"
+      ],
+      "geometry_relevant": true,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-ISO286-001",
+          "clause_id": null,
+          "requirement_text_paraphrased": "Fits and tolerances for features of size should use the ISO code system of tolerances and deviations (ISO 286-1) so intended clearance/interference fits are consistently interpreted across design, manufacturing, and inspection.",
+          "check_type": "drawing_spec",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/45975.html"
+          ]
+        },
+        {
+          "req_id": "REQ-ISO286-002",
+          "clause_id": null,
+          "requirement_text_paraphrased": "When applying specific fit designations (e.g., H7/m6), the corresponding limit deviations for holes and shafts should be taken from the ISO 286-2 tables and applied to the nominal size ranges used in the design.",
+          "check_type": "geometry",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/54915.html"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-TOL-2768-MK",
+      "standard_name": "ISO 2768-mK (drawing notation; ISO 2768-1 + ISO 2768-2 legacy)",
+      "pilot_sets": [
+        "SET_A_MECH_ROBOT"
+      ],
+      "geometry_relevant": false,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-ISO2768-MK-001",
+          "clause_id": null,
+          "requirement_text_paraphrased": "If general tolerances are invoked via ISO 2768-1 (e.g., via the drawing notation 'ISO 2768-mK'), unspecified linear and angular dimensions must be interpreted according to the selected tolerance class (m) rather than assumed shop defaults.",
+          "check_type": "drawing_spec",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/7748.html"
+          ]
+        },
+        {
+          "req_id": "REQ-ISO2768-MK-002",
+          "clause_id": "catalog status",
+          "requirement_text_paraphrased": "Because ISO 2768-2:1989 is withdrawn and ISO 22081:2021 is stated to cancel/replace it, any notation that relies on an ISO 2768-2 class (e.g., '...K') should be treated as legacy and reviewed for how general geometrical tolerancing is intended to be applied.",
+          "check_type": "documentation",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": false,
+          "sources": [
+            "https://www.iso.org/standard/7749.html",
+            "https://www.iso.org/obp/ui/en/",
+            "https://www.iso.org/standard/72514.html"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-COAT-7599",
+      "standard_name": "ISO 7599",
+      "pilot_sets": [
+        "SET_A_MECH_ROBOT"
+      ],
+      "geometry_relevant": false,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-ISO7599-001",
+          "clause_id": null,
+          "requirement_text_paraphrased": "When anodic oxidation coatings on aluminium are specified per ISO 7599, the specification should identify the coating characteristics and required performance properties rather than leaving coating details ambiguous.",
+          "check_type": "drawing_spec",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/70156.html"
+          ]
+        },
+        {
+          "req_id": "REQ-ISO7599-002",
+          "clause_id": null,
+          "requirement_text_paraphrased": "Verification of anodic oxidation coatings should follow the methods of test and minimum performance requirements referenced in ISO 7599 when the coating is a functional requirement (e.g., corrosion resistance, appearance).",
+          "check_type": "documentation",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/70156.html"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-THR-228-1",
+      "standard_name": "ISO 228-1",
+      "pilot_sets": [
+        "SET_A_MECH_ROBOT"
+      ],
+      "geometry_relevant": true,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-ISO228-1-001",
+          "clause_id": null,
+          "requirement_text_paraphrased": "If a pipe thread is specified as ISO 228-1, the design must use ISO 228-1 thread form/dimensions/tolerances and the correct designation so suppliers/manufacturers produce matching threaded parts.",
+          "check_type": "geometry",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/33652.html"
+          ]
+        },
+        {
+          "req_id": "REQ-ISO228-1-002",
+          "clause_id": null,
+          "requirement_text_paraphrased": "Because ISO 228-1 applies to pipe threads where pressure-tight joints are not achieved on the thread flanks, the sealing method (e.g., gasket, O-ring, face seal) should be defined elsewhere in the design/drawing if pressure sealing is needed.",
+          "check_type": "drawing_spec",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/33652.html"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-FOOD-EN",
+      "standard_name": "EN 1672-2:2020",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "geometry_relevant": true,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-EN1672-2-001",
+          "clause_id": null,
+          "requirement_text_paraphrased": "Food processing machinery should be designed and constructed to meet hygiene and cleanability requirements that minimize food-safety risk (contagion/infection/illness/injury risks associated with food) for intended use.",
+          "check_type": "geometry",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.dinmedia.de/en/standard/din-en-1672-2/327452751",
+            "https://webstore.ansi.org/standards/din/dinen16722021de"
+          ]
+        },
+        {
+          "req_id": "REQ-EN1672-2-002",
+          "clause_id": null,
+          "requirement_text_paraphrased": "Documentation should capture the hygienic design assumptions needed for correct use and cleaning (e.g., what is intended to be cleanable, and how) so downstream manufacturing and validation are aligned.",
+          "check_type": "documentation",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.dinmedia.de/en/standard/din-en-1672-2/327452751"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-FOOD-EN13870",
+      "standard_name": "EN 13870 (incl. EN 13870:2015+A1:2021)",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "geometry_relevant": false,
+      "drawing_relevant": true,
+      "manufacturing_relevant": false,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-EN13870-001",
+          "clause_id": null,
+          "requirement_text_paraphrased": "If the product is a portion cutting machine within the scope of EN 13870, the design should address the significant hazards and safety/hygiene requirements covered by that type-C standard for intended and reasonably foreseeable misuse conditions.",
+          "check_type": "documentation",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.dinmedia.de/en/standard/din-en-13870/291328038"
+          ]
+        },
+        {
+          "req_id": "REQ-EN13870-002",
+          "clause_id": "DIN metadata / replacement",
+          "requirement_text_paraphrased": "Project documentation should reference the current EN 13870 edition (DIN entry indicates EN 13870:2015 was replaced by the amended 2022 document implementing EN 13870:2015+A1:2021).",
+          "check_type": "documentation",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": false,
+          "sources": [
+            "https://www.dinmedia.de/en/standard/din-en-13870/232032451",
+            "https://www.dinmedia.de/en/standard/din-en-13870/291328038"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-HYG-1",
+      "standard_name": "EHEDG Doc 8 / Guideline 8",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "geometry_relevant": true,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-EHEDG8-001",
+          "clause_id": null,
+          "requirement_text_paraphrased": "Hygienic design should be treated as a risk-based design objective: product-contact and splash zones should be designed for effective cleaning and to avoid contamination traps, consistent with EHEDG hygienic design guidance.",
+          "check_type": "geometry",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.ehedg.org/guidelines-working-groups/guidelines/guidelines/detail/hygienic-design-principles"
+          ]
+        },
+        {
+          "req_id": "REQ-EHEDG8-002",
+          "clause_id": null,
+          "requirement_text_paraphrased": "Claims of hygienic design compliance should be backed by documented rationale (cleaning concept, intended use, validation approach) rather than only informal statements, since EHEDG guidance is implementation-oriented.",
+          "check_type": "documentation",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.ehedg.org/guidelines-working-groups/guidelines/guidelines/detail/hygienic-design-principles"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-FCM-EU-1935-2004",
+      "standard_name": "EU 1935/2004",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "geometry_relevant": false,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-EU1935-2004-ART3-001",
+          "clause_id": "Article 3(1)",
+          "requirement_text_paraphrased": "Food-contact materials/articles must be manufactured under GMP and must not transfer constituents to food in quantities that could endanger health, cause unacceptable composition change, or deteriorate organoleptic characteristics under normal/foreseeable use.",
+          "check_type": "documentation",
+          "evidence_quality": "official_full_text",
+          "needs_manual_confirmation": false,
+          "sources": [
+            "https://www.legislation.gov.uk/eur/2004/1935/pdfs/eur_20041935_2021-03-27_en.pdf"
+          ]
+        },
+        {
+          "req_id": "REQ-EU1935-2004-ART17-001",
+          "clause_id": "Article 17(1)-(2)",
+          "requirement_text_paraphrased": "Business operators must ensure traceability of materials/articles at all stages and maintain systems/procedures enabling identification (to facilitate control, recall, consumer information, and responsibility attribution).",
+          "check_type": "documentation",
+          "evidence_quality": "official_full_text",
+          "needs_manual_confirmation": false,
+          "sources": [
+            "https://www.legislation.gov.uk/eur/2004/1935/pdfs/eur_20041935_2021-03-27_en.pdf"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-FCM-EU-10-2011",
+      "standard_name": "EU 10/2011",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "geometry_relevant": false,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-EU10-2011-ART15-001",
+          "clause_id": "Article 15(1)-(3)",
+          "requirement_text_paraphrased": "At marketing stages other than retail, plastic food-contact materials/articles and relevant intermediate products must have a written declaration of compliance that includes the annexed information and is renewed when changes affecting compliance occur or when new scientific data becomes available.",
+          "check_type": "documentation",
+          "evidence_quality": "official_full_text",
+          "needs_manual_confirmation": false,
+          "sources": [
+            "https://www.legislation.gov.uk/eur/2011/10/pdfs/eur_20110010_2019-08-29_en.pdf"
+          ]
+        },
+        {
+          "req_id": "REQ-EU10-2011-ART16-001",
+          "clause_id": "Article 16(1)-(2) + Annex IV",
+          "requirement_text_paraphrased": "Business operators must keep appropriate supporting documentation demonstrating compliance (including conditions/results of testing and detailed substance information) and provide it to competent authorities on request; the declaration content requirements are detailed in Annex IV.",
+          "check_type": "documentation",
+          "evidence_quality": "official_full_text",
+          "needs_manual_confirmation": false,
+          "sources": [
+            "https://www.legislation.gov.uk/eur/2011/10/pdfs/eur_20110010_2019-08-29_en.pdf"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-MAT-EN10088-3",
+      "standard_name": "EN 10088-3",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "geometry_relevant": false,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-EN10088-3-001",
+          "clause_id": null,
+          "requirement_text_paraphrased": "When corrosion-resistant (stainless) steel supply is specified for bars/rods/wire/sections/bright products, technical delivery conditions should align with EN 10088-3 so procurement and inspection criteria are consistent.",
+          "check_type": "documentation",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.dinmedia.de/en/standard/din-en-10088-3/367623815"
+          ]
+        },
+        {
+          "req_id": "REQ-EN10088-3-002",
+          "clause_id": null,
+          "requirement_text_paraphrased": "Material specifications should include the steel grade and delivery condition details appropriate to product form to avoid under-specification for food-industry use cases.",
+          "check_type": "drawing_spec",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.dinmedia.de/en/standard/din-en-10088-3/367623815"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-TOL-2768-FH",
+      "standard_name": "ISO 2768-fH (drawing notation; ISO 2768-1 + ISO 2768-2 legacy)",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "geometry_relevant": false,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-ISO2768-FH-001",
+          "clause_id": null,
+          "requirement_text_paraphrased": "If general tolerances are invoked via ISO 2768-1 using a fine class (f), unspecified dimensions must be interpreted via the selected class and not treated as unspecified or 'tight by default'.",
+          "check_type": "drawing_spec",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/7748.html"
+          ]
+        },
+        {
+          "req_id": "REQ-ISO2768-FH-002",
+          "clause_id": "catalog status",
+          "requirement_text_paraphrased": "Because ISO 2768-2:1989 is withdrawn (and ISO 22081:2021 cancels/replaces it), any use of an ISO 2768-2 class (e.g., '...H') should be handled as a legacy reference requiring explicit decision on successor/general GPS approach.",
+          "check_type": "documentation",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": false,
+          "sources": [
+            "https://www.iso.org/standard/7749.html",
+            "https://www.iso.org/standard/72514.html",
+            "https://www.iso.org/obp/ui/en/"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-MACH-DIR-2006-42",
+      "standard_name": "EU Machinery Directive 2006/42/EC",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "geometry_relevant": false,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-MD-2006-42-ART5-001",
+          "clause_id": "Article 5(1)(a)-(f)",
+          "requirement_text_paraphrased": "Before placing machinery on the market/putting into service, the manufacturer (or authorised representative) must ensure EHSR compliance, compile/hold the technical file, provide necessary information (incl. instructions), perform conformity assessment, draw up the EC declaration of conformity, and affix CE marking.",
+          "check_type": "documentation",
+          "evidence_quality": "official_full_text",
+          "needs_manual_confirmation": false,
+          "sources": [
+            "https://www.legislation.gov.uk/eudr/2006/42/pdfs/eudr_20060042_2016-04-20_en.pdf"
+          ]
+        },
+        {
+          "req_id": "REQ-MD-2006-42-ANNEXI-001",
+          "clause_id": "Annex I, 1.7.4",
+          "requirement_text_paraphrased": "All machinery must be accompanied by instructions in the required language(s), with rules for original instructions vs translations and minimum contents addressing intended use and foreseeable misuse.",
+          "check_type": "documentation",
+          "evidence_quality": "official_full_text",
+          "needs_manual_confirmation": false,
+          "sources": [
+            "https://www.legislation.gov.uk/eudr/2006/42/pdfs/eudr_20060042_2016-04-20_en.pdf"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-FOOD-ISO",
+      "standard_name": "EN ISO 14159",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "geometry_relevant": true,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-ENISO14159-001",
+          "clause_id": null,
+          "requirement_text_paraphrased": "Machinery intended for hygienic applications should incorporate hygiene requirements into design (materials, surfaces, layout, cleanability) consistent with ISO 14159-based EN adoption.",
+          "check_type": "geometry",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.dinmedia.de/en/standard/din-en-iso-14159/108215480"
+          ]
+        },
+        {
+          "req_id": "REQ-ENISO14159-002",
+          "clause_id": null,
+          "requirement_text_paraphrased": "Documentation should state hygiene-related information needed for safe use and cleaning/maintenance where hygiene is a relevant risk.",
+          "check_type": "documentation",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.dinmedia.de/en/standard/din-en-iso-14159/108215480"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-ADD-VDI-3405",
+      "standard_name": "VDI 3405",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "geometry_relevant": false,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-VDI3405-001",
+          "clause_id": null,
+          "requirement_text_paraphrased": "Additive manufacturing projects should document the selected AM process and its relevant quality parameters so part assessment and verification are feasible (design/fabrication/assessment considerations).",
+          "check_type": "documentation",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.vdi.de/en/home/vdi-standards/details/vdi-3405-additive-manufacturing-processes-rapid-manufacturing-basics-definitions-processes"
+          ]
+        },
+        {
+          "req_id": "REQ-VDI3405-002",
+          "clause_id": null,
+          "requirement_text_paraphrased": "Supply agreements and part testing expectations should be aligned with documented AM quality parameters to avoid non-verifiable requirements for as-built parts.",
+          "check_type": "documentation",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.vdi.de/en/home/vdi-standards/details/vdi-3405-additive-manufacturing-processes-rapid-manufacturing-basics-definitions-processes"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-GPS-2",
+      "standard_name": "ISO 1101",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "geometry_relevant": false,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-ISO1101-001",
+          "clause_id": null,
+          "requirement_text_paraphrased": "Geometrical tolerances on drawings should use the ISO 1101 symbol language and be interpretable by its rules (feature control frames, symbols, and interpretation conventions).",
+          "check_type": "drawing_spec",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/66777.html"
+          ]
+        },
+        {
+          "req_id": "REQ-ISO1101-002",
+          "clause_id": null,
+          "requirement_text_paraphrased": "When GD&T is present, it should be complete enough to be unambiguous for verification (e.g., tolerance type/value and applicable datum references where required).",
+          "check_type": "drawing_spec",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/66777.html"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-GPS-6",
+      "standard_name": "ISO 5459",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "geometry_relevant": false,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-ISO5459-001",
+          "clause_id": null,
+          "requirement_text_paraphrased": "Datums and datum systems used in technical product documentation should be indicated and understood according to ISO 5459 terminology and rules, so datum references in GPS are consistent.",
+          "check_type": "drawing_spec",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/87855.html"
+          ]
+        },
+        {
+          "req_id": "REQ-ISO5459-002",
+          "clause_id": null,
+          "requirement_text_paraphrased": "Where a datum system is referenced by a specification (e.g., GD&T), the documentation should define the datum features and their hierarchy/combination clearly to avoid misinterpretation.",
+          "check_type": "drawing_spec",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/87855.html"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-GPS-1",
+      "standard_name": "ISO 8015",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "geometry_relevant": false,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-ISO8015-001",
+          "clause_id": null,
+          "requirement_text_paraphrased": "GPS specifications should be created and interpreted using the fundamental concepts and rules of ISO 8015 to ensure consistent meaning across referenced GPS standards.",
+          "check_type": "drawing_spec",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/55979.html"
+          ]
+        },
+        {
+          "req_id": "REQ-ISO8015-002",
+          "clause_id": null,
+          "requirement_text_paraphrased": "If a drawing deviates from default GPS principles (e.g., by imposing additional relationships beyond the default rules), that deviation should be explicitly documented rather than assumed.",
+          "check_type": "drawing_spec",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/55979.html"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-GPS-3",
+      "standard_name": "ISO 2768-1",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "geometry_relevant": false,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-ISO2768-1-001",
+          "clause_id": null,
+          "requirement_text_paraphrased": "If ISO 2768-1 is referenced for general tolerances, the drawing must indicate the selected tolerance class so default tolerances for unspecified linear and angular dimensions are determinate.",
+          "check_type": "drawing_spec",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/7748.html"
+          ]
+        },
+        {
+          "req_id": "REQ-ISO2768-1-002",
+          "clause_id": null,
+          "requirement_text_paraphrased": "ISO 2768-1 general tolerances are intended to simplify drawing indications for typical manufacturing (metal removal or sheet metal forming); if the manufacturing process is outside that norm, general tolerances should be reviewed for suitability.",
+          "check_type": "documentation",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/7748.html"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-GPS-4",
+      "standard_name": "ISO 2768-2",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "geometry_relevant": false,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-ISO2768-2-STATUS-001",
+          "clause_id": "catalog status",
+          "requirement_text_paraphrased": "ISO 2768-2:1989 is marked withdrawn in the ISO catalog; use of this reference in new documentation should be consciously justified (legacy support) or migrated to the successor approach.",
+          "check_type": "documentation",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": false,
+          "sources": [
+            "https://www.iso.org/standard/7749.html"
+          ]
+        },
+        {
+          "req_id": "REQ-ISO2768-2-REPL-001",
+          "clause_id": "foreword/intro note (catalog preview)",
+          "requirement_text_paraphrased": "ISO 22081:2021 states it cancels and replaces ISO 2768-2:1989; if general geometrical tolerancing without individual indications is desired, the project should decide whether to adopt ISO 22081 (or otherwise explicitly freeze to ISO 2768-2:1989).",
+          "check_type": "documentation",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": false,
+          "sources": [
+            "https://www.iso.org/obp/ui/en/",
+            "https://www.iso.org/standard/72514.html"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-GPS-7",
+      "standard_name": "ISO 1302",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "geometry_relevant": false,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-ISO1302-001",
+          "clause_id": null,
+          "requirement_text_paraphrased": "Surface texture requirements in technical product documentation should be expressed using ISO 1302 graphical symbols and textual indications so surface requirements are unambiguous and machine-readable.",
+          "check_type": "drawing_spec",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/28089.html"
+          ]
+        },
+        {
+          "req_id": "REQ-ISO1302-002",
+          "clause_id": null,
+          "requirement_text_paraphrased": "If surface texture is critical to function, the indication should provide the necessary parameters (e.g., roughness parameter and value, and any additional qualifiers) rather than using incomplete symbols.",
+          "check_type": "drawing_spec",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/28089.html"
+          ]
+        }
+      ]
+    },
+    {
+      "ref_id": "REF-THR-1",
+      "standard_name": "ISO 965 (mapped to ISO 965-1)",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "geometry_relevant": false,
+      "drawing_relevant": true,
+      "manufacturing_relevant": true,
+      "top_requirements_paraphrased": [
+        {
+          "req_id": "REQ-ISO965-1-001",
+          "clause_id": null,
+          "requirement_text_paraphrased": "Metric screw thread tolerancing should follow ISO 965-1 principles and basic data so thread tolerance classes/positions on drawings map to a consistent interpretation for manufacture and gaging.",
+          "check_type": "drawing_spec",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": true,
+          "sources": [
+            "https://www.iso.org/standard/57721.html"
+          ]
+        },
+        {
+          "req_id": "REQ-ISO965-1-STATUS-002",
+          "clause_id": "catalog status",
+          "requirement_text_paraphrased": "ISO catalog indicates a revision of ISO 965-1 is under publication and intended to replace the 2013 edition; projects relying on detailed mappings should monitor and update references when the new edition is published.",
+          "check_type": "documentation",
+          "evidence_quality": "official_abstract",
+          "needs_manual_confirmation": false,
+          "sources": [
+            "https://www.iso.org/standard/57721.html",
+            "https://www.iso.org/standard/57721.html?browse=tc"
+          ]
+        }
+      ]
+    }
+  ],
+  "rule_candidates": [
+    {
+      "rule_id": "PILOTSTD-001",
+      "pack_id": "F_OVERLAY",
+      "title": "ISO 9409-1 robot interface geometry must match selected flange pattern",
+      "description": "Verifies that an ISO 9409-1 robot mechanical interface is implemented with the correct hole pattern and locating features for interchangeability.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "geometry_dfm",
+      "inputs_required": [
+        "cad.robot_interface.standard",
+        "cad.robot_interface.variant",
+        "cad.robot_interface.conformance_flag"
+      ],
+      "check_logic": {
+        "type": "hybrid",
+        "predicate": {
+          "left": "cad.robot_interface.conformance_flag",
+          "op": "==",
+          "right": true
+        },
+        "evaluator_hint": "Compute bolt pattern + locating features and compare against the selected ISO 9409-1 interface variant library (size/type)."
+      },
+      "severity": "critical",
+      "fix_template": "Select a valid ISO 9409-1 interface size/type and regenerate the flange geometry to match; update the mating plate accordingly.",
+      "refs": [
+        "REF-ROBOT-9409-1"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "rule_violation",
+      "pilot_sets": [
+        "SET_A_MECH_ROBOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-002",
+      "pack_id": "F_OVERLAY",
+      "title": "Robot/end-effector drawings must reference ISO 9409-1 when that interface is used",
+      "description": "Ensures the drawing references ISO 9409-1 to avoid supplier ambiguity for robot flange interfaces.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "drawing.text_all"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "drawing.text_all",
+          "op": "contains",
+          "right": "ISO 9409-1"
+        },
+        "evaluator_hint": "Extract title block and interface callouts; flag if ISO 9409-1 is missing."
+      },
+      "severity": "major",
+      "fix_template": "Add a note/callout referencing ISO 9409-1 and include the intended interface designation (size/type).",
+      "refs": [
+        "REF-ROBOT-9409-1"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "evidence_gap",
+      "pilot_sets": [
+        "SET_A_MECH_ROBOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-003",
+      "pack_id": "F_OVERLAY",
+      "title": "Fit-critical mating holes/shafts must have an ISO 286 fit designation",
+      "description": "Checks that fit-critical mating features are annotated with ISO 286 tolerance classes (e.g., H7/h6) rather than relying only on general tolerances.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "drawing.features_of_size.mating_without_fit_callout_count"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "drawing.features_of_size.mating_without_fit_callout_count",
+          "op": "==",
+          "right": 0
+        },
+        "evaluator_hint": "Requires upstream tagging of fit-critical mating pairs; if unavailable, treat as evidence_gap and request tagging."
+      },
+      "severity": "major",
+      "fix_template": "Add ISO 286 fit callouts for each fit-critical pair (hole and shaft) and confirm nominal size range matches the ISO tables.",
+      "refs": [
+        "REF-FIT-286"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "evidence_gap",
+      "pilot_sets": [
+        "SET_A_MECH_ROBOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-004",
+      "pack_id": "F_OVERLAY",
+      "title": "Computed ISO 286 fit outcome must match the intended fit type",
+      "description": "Validates that the selected ISO 286 tolerance classes produce the intended clearance/transition/interference range for each tagged mating pair.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "geometry_dfm",
+      "inputs_required": [
+        "cad.fits.all_pairs_intended_fit_type_met"
+      ],
+      "check_logic": {
+        "type": "hybrid",
+        "predicate": {
+          "left": "cad.fits.all_pairs_intended_fit_type_met",
+          "op": "==",
+          "right": true
+        },
+        "evaluator_hint": "For each tagged mating pair, compute min/max clearance from ISO 286-derived limit deviations and compare against intended fit type configured by the designer."
+      },
+      "severity": "critical",
+      "fix_template": "Adjust tolerance classes or nominal sizes (e.g., change from m6 to k6) until min/max clearance meets the intended functional fit; update drawing callouts.",
+      "refs": [
+        "REF-FIT-286"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "rule_violation",
+      "pilot_sets": [
+        "SET_A_MECH_ROBOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-005",
+      "pack_id": "F_OVERLAY",
+      "title": "General tolerance note must be present when ISO 2768-mK is used",
+      "description": "Ensures the drawing explicitly states the default general tolerance class ISO 2768-mK so suppliers do not apply unspecified shop defaults.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "drawing.title_block.general_tolerance_note"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "drawing.title_block.general_tolerance_note",
+          "op": "contains",
+          "right": "ISO 2768-mK"
+        },
+        "evaluator_hint": "Also recommend explicitly dating any ISO 2768-2 reference component because ISO 2768-2 is withdrawn; treat undated references as needing manual review."
+      },
+      "severity": "major",
+      "fix_template": "Add to title block: 'General tolerances ISO 2768-mK' (and, if referencing ISO 2768-2, add ':1989' or adopt ISO 22081 explicitly).",
+      "refs": [
+        "REF-TOL-2768-MK"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "evidence_gap",
+      "pilot_sets": [
+        "SET_A_MECH_ROBOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-006",
+      "pack_id": "F_OVERLAY",
+      "title": "Anodizing callouts must reference ISO 7599 when anodic oxidation is specified",
+      "description": "If anodizing is specified as a controlled surface treatment, the drawing should reference ISO 7599 and state the required coating attributes (e.g., grade/thickness/performance).",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "drawing.surface_treatments.anodizing.present",
+        "drawing.surface_treatments.anodizing.references"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "drawing.surface_treatments.anodizing.references",
+          "op": "contains",
+          "right": "ISO 7599"
+        },
+        "evaluator_hint": "Parse surface treatment notes; if anodizing is present but ISO 7599 is absent, raise evidence gap."
+      },
+      "severity": "major",
+      "fix_template": "Update the surface treatment callout to include ISO 7599 and key coating properties required for the application; align with supplier capability.",
+      "refs": [
+        "REF-COAT-7599"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "evidence_gap",
+      "pilot_sets": [
+        "SET_A_MECH_ROBOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-007",
+      "pack_id": "F_OVERLAY",
+      "title": "Pipe thread callouts must explicitly state ISO 228-1 for G-threads",
+      "description": "Ensures pipe threads intended as ISO 228-1 are called out as ISO 228-1 to avoid confusion with pressure-tight thread standards.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "drawing.thread_callouts.pipe_threads_text"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "drawing.thread_callouts.pipe_threads_text",
+          "op": "contains",
+          "right": "ISO 228-1"
+        },
+        "evaluator_hint": "Also verify that the thread designation uses 'G' for ISO 228-1 parallel pipe threads."
+      },
+      "severity": "major",
+      "fix_template": "Revise pipe thread notes to include 'ISO 228-1' and the proper designation (e.g., 'G 1/2'). Specify sealing method elsewhere if joint must be pressure tight.",
+      "refs": [
+        "REF-THR-228-1"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "evidence_gap",
+      "pilot_sets": [
+        "SET_A_MECH_ROBOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-008",
+      "pack_id": "F_OVERLAY",
+      "title": "ISO 228-1 pipe threads must be parallel and match designated size",
+      "description": "Checks that modeled ISO 228-1 pipe threads are parallel (not tapered) and match the designated nominal size for manufacturability and assembly interchangeability.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "geometry_dfm",
+      "inputs_required": [
+        "cad.threads.iso228_all_conformant"
+      ],
+      "check_logic": {
+        "type": "hybrid",
+        "predicate": {
+          "left": "cad.threads.iso228_all_conformant",
+          "op": "==",
+          "right": true
+        },
+        "evaluator_hint": "Detect and classify pipe threads; for ISO 228-1, verify parallel geometry and nominal designation against the selected size."
+      },
+      "severity": "critical",
+      "fix_template": "Replace tapered threads with ISO 228-1 parallel geometry (or change the callout standard) and confirm the mating component uses the same designation.",
+      "refs": [
+        "REF-THR-228-1"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "rule_violation",
+      "pilot_sets": [
+        "SET_A_MECH_ROBOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-009",
+      "pack_id": "F_OVERLAY",
+      "title": "Food-contact designs must not include enclosed/trapped volumes in product/splash zones",
+      "description": "Flags enclosed cavities or trapped volumes in product-contact or splash zones that are difficult to clean, supporting EN 1672-2 hygienic/cleanability intent.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "geometry_dfm",
+      "inputs_required": [
+        "cad.hygienic_design.enclosed_voids_in_product_zone_count"
+      ],
+      "check_logic": {
+        "type": "hybrid",
+        "predicate": {
+          "left": "cad.hygienic_design.enclosed_voids_in_product_zone_count",
+          "op": "==",
+          "right": 0
+        },
+        "evaluator_hint": "Use computational geometry to detect enclosed voids and non-drainable pockets in tagged hygienic zones; require zone tagging if absent."
+      },
+      "severity": "major",
+      "fix_template": "Eliminate enclosed cavities in hygienic zones (open, vent, drain, or redesign); if a cavity is necessary, document cleaning/inspection access and validation.",
+      "refs": [
+        "REF-FOOD-EN"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "rule_violation",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-010",
+      "pack_id": "F_OVERLAY",
+      "title": "Food machinery drawings must state hygiene/cleanability assumptions needed for correct use",
+      "description": "Ensures the drawing pack or associated documentation states hygienic zoning and intended cleaning method so manufacturing and verification are aligned.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "drawing.hygiene.zone_tagging_present"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "drawing.hygiene.zone_tagging_present",
+          "op": "==",
+          "right": true
+        },
+        "evaluator_hint": "Accept either explicit zone marking on drawings or a linked hygiene zoning document referenced in drawing notes/BOM."
+      },
+      "severity": "major",
+      "fix_template": "Add hygiene zoning (product-contact/splash/non-contact) and intended cleaning method reference to the drawing notes or linked spec; align with EN 1672-2 compliance rationale.",
+      "refs": [
+        "REF-FOOD-EN"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "evidence_gap",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-011",
+      "pack_id": "F_OVERLAY",
+      "title": "If the product is a portion cutting machine, documentation must reference EN 13870",
+      "description": "EN 13870 is a type-C standard for portion cutting machines; if applicable, ensure the documentation references EN 13870 and uses the current edition.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "project.product_category",
+        "drawing.text_all"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "drawing.text_all",
+          "op": "contains",
+          "right": "EN 13870"
+        },
+        "evaluator_hint": "Apply only when project.product_category indicates a portion cutting machine (or equivalent). If not applicable, suppress."
+      },
+      "severity": "info",
+      "fix_template": "If applicable, add 'EN 13870:2015+A1:2021' (or local adoption) to the standards list in the drawing pack and align risk assessment accordingly.",
+      "refs": [
+        "REF-FOOD-EN13870"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "evidence_gap",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-012",
+      "pack_id": "F_OVERLAY",
+      "title": "Hygienic designs should avoid non-drainable pockets and inaccessible crevices in hygienic zones",
+      "description": "Checks for trapped volumes and inaccessible crevices in hygienic zones as a proxy for EHEDG hygienic design guidance.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "geometry_dfm",
+      "inputs_required": [
+        "cad.hygienic_design.trapped_volume_count"
+      ],
+      "check_logic": {
+        "type": "hybrid",
+        "predicate": {
+          "left": "cad.hygienic_design.trapped_volume_count",
+          "op": "==",
+          "right": 0
+        },
+        "evaluator_hint": "Compute trapped volume / dead-pocket metrics in tagged hygienic zones (product-contact and splash). If hygienic zones are not tagged, raise evidence_gap first."
+      },
+      "severity": "major",
+      "fix_template": "Redesign pockets/crevices to be drainable and cleanable (e.g., add drainage, open access, or redesign geometry). Document any unavoidable non-drainable features and their validated cleaning method.",
+      "refs": [
+        "REF-HYG-1"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "rule_violation",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-013",
+      "pack_id": "F_OVERLAY",
+      "title": "Food equipment docs should reference EHEDG hygienic design guidance when claimed",
+      "description": "If hygienic design compliance is claimed or required, the documentation should reference the applied guidance (e.g., EHEDG Doc 8) and link to the design rationale/validation evidence.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "drawing.text_all"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "drawing.text_all",
+          "op": "contains",
+          "right": "EHEDG"
+        },
+        "evaluator_hint": "Accept either explicit 'EHEDG' reference in drawing notes or a linked hygiene specification document referenced by the drawing pack."
+      },
+      "severity": "info",
+      "fix_template": "Add a note in the drawing pack naming EHEDG Guideline 8 (Doc 8) as applied guidance and link to the hygienic design rationale/cleanability validation report.",
+      "refs": [
+        "REF-HYG-1"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "evidence_gap",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-014",
+      "pack_id": "F_OVERLAY",
+      "title": "Food-contact materials must have framework FCM compliance evidence and traceability controls",
+      "description": "Requires evidence that food-contact materials/articles are compliant with EU 1935/2004 general safety requirements and that traceability systems exist for recall and responsibility attribution.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "full",
+      "inputs_required": [
+        "docs.fcm.framework_1935_2004.compliance_statement_present",
+        "docs.fcm.traceability_system_present"
+      ],
+      "check_logic": {
+        "type": "hybrid",
+        "predicate": {
+          "left": "docs.fcm.framework_1935_2004.compliance_statement_present",
+          "op": "==",
+          "right": true
+        },
+        "evaluator_hint": "Check for a stored compliance statement or supplier declaration tying the part/material to EU 1935/2004; separately confirm traceability (batch/lot linkage)."
+      },
+      "severity": "critical",
+      "fix_template": "Obtain and attach supplier/manufacturer documentation supporting EU 1935/2004 compliance and implement lot/batch traceability in ERP/QMS; add references in the technical file.",
+      "refs": [
+        "REF-FCM-EU-1935-2004"
+      ],
+      "standard_clause": "Article 3; Article 17",
+      "finding_type_default": "evidence_gap",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_full_text",
+      "needs_manual_confirmation": false
+    },
+    {
+      "rule_id": "PILOTSTD-015",
+      "pack_id": "F_OVERLAY",
+      "title": "Food-contact plastics must have EU 10/2011 declaration of compliance and supporting documentation",
+      "description": "Requires a written declaration of compliance and supporting documentation for plastic food-contact materials/articles and relevant intermediate products when EU 10/2011 applies.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "full",
+      "inputs_required": [
+        "docs.fcm.eu10_2011.declaration_present",
+        "docs.fcm.eu10_2011.supporting_docs_present"
+      ],
+      "check_logic": {
+        "type": "hybrid",
+        "predicate": {
+          "left": "docs.fcm.eu10_2011.declaration_present",
+          "op": "==",
+          "right": true
+        },
+        "evaluator_hint": "Verify presence of DoC and that it includes Annex IV information; verify supporting test/risk documentation is stored and retrievable for authorities."
+      },
+      "severity": "critical",
+      "fix_template": "Collect the EU 10/2011 Declaration of Compliance (with Annex IV fields) and store supporting migration/testing documentation; update supplier requirements if missing.",
+      "refs": [
+        "REF-FCM-EU-10-2011"
+      ],
+      "standard_clause": "Article 15\u201316; Annex IV",
+      "finding_type_default": "evidence_gap",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_full_text",
+      "needs_manual_confirmation": false
+    },
+    {
+      "rule_id": "PILOTSTD-016",
+      "pack_id": "F_OVERLAY",
+      "title": "Stainless steel material specs must be stated per EN 10088-3 where applicable",
+      "description": "Ensures stainless steel bars/rods/wire/sections used for parts are specified with an EN 10088-3-compliant grade/delivery condition in the drawing/BOM so procurement and inspection are consistent.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "bom.materials.stainless_spec_text"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "bom.materials.stainless_spec_text",
+          "op": "contains",
+          "right": "EN 10088-3"
+        },
+        "evaluator_hint": "If the project uses stainless steels in the EN 10088-3 product forms, require explicit EN 10088-3 referencing and grade identification; otherwise suppress."
+      },
+      "severity": "major",
+      "fix_template": "Update the BOM/material callout to include EN 10088-3 (or appropriate EN 10088 part for the product form) and specify the required steel grade/delivery condition.",
+      "refs": [
+        "REF-MAT-EN10088-3"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "evidence_gap",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-017",
+      "pack_id": "F_OVERLAY",
+      "title": "General tolerance note must be present when ISO 2768-fH is used",
+      "description": "Ensures the drawing explicitly states ISO 2768-fH as the default general tolerance class for unspecified dimensions, to avoid uncontrolled tolerance assumptions.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "drawing.title_block.general_tolerance_note"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "drawing.title_block.general_tolerance_note",
+          "op": "contains",
+          "right": "ISO 2768-fH"
+        },
+        "evaluator_hint": "Also recommend explicitly dating any ISO 2768-2 reference component because ISO 2768-2 is withdrawn; treat use of geometrical class (H) as legacy unless matched to a successor approach."
+      },
+      "severity": "major",
+      "fix_template": "Add to title block: 'General tolerances ISO 2768-fH' (and, if referencing ISO 2768-2, add ':1989' or adopt ISO 22081 explicitly).",
+      "refs": [
+        "REF-TOL-2768-FH"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "evidence_gap",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-018",
+      "pack_id": "F_OVERLAY",
+      "title": "Machinery Directive technical file and EC declaration must exist for CE-marked machinery",
+      "description": "Requires evidence that the technical file, instructions, and EC declaration of conformity exist when Machinery Directive conformity is claimed.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "full",
+      "inputs_required": [
+        "docs.ce.ec_declaration_present",
+        "docs.ce.technical_file_present",
+        "docs.ce.instructions_present"
+      ],
+      "check_logic": {
+        "type": "hybrid",
+        "predicate": {
+          "left": "docs.ce.ec_declaration_present",
+          "op": "==",
+          "right": true
+        },
+        "evaluator_hint": "Confirm Article 5 obligations are met via document presence and version control; treat missing documents as critical evidence gaps."
+      },
+      "severity": "critical",
+      "fix_template": "Create/collect the EC Declaration of Conformity, technical file (incl. risk assessment), and instructions; store them under revision control and reference applied standards.",
+      "refs": [
+        "REF-MACH-DIR-2006-42"
+      ],
+      "standard_clause": "Article 5; Annex I 1.7.4",
+      "finding_type_default": "evidence_gap",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_full_text",
+      "needs_manual_confirmation": false
+    },
+    {
+      "rule_id": "PILOTSTD-019",
+      "pack_id": "F_OVERLAY",
+      "title": "Hygienic-zone geometry must minimize crevices and inaccessible joints",
+      "description": "Checks for narrow gaps/crevices and inaccessible joints in hygienic zones as a proxy for meeting ISO 14159 hygienic design intent.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "geometry_dfm",
+      "inputs_required": [
+        "cad.hygienic_design.crevice_count"
+      ],
+      "check_logic": {
+        "type": "hybrid",
+        "predicate": {
+          "left": "cad.hygienic_design.crevice_count",
+          "op": "==",
+          "right": 0
+        },
+        "evaluator_hint": "Detect gaps below a configurable threshold and inaccessible joints in tagged hygienic zones; require zone tagging if absent."
+      },
+      "severity": "major",
+      "fix_template": "Redesign joints to eliminate crevices (e.g., continuous/sealed welds, hygienic fasteners, open access) and ensure surfaces are accessible for cleaning/inspection.",
+      "refs": [
+        "REF-FOOD-ISO"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "rule_violation",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-020",
+      "pack_id": "F_OVERLAY",
+      "title": "Hygienic machinery documentation must include cleaning/maintenance information",
+      "description": "Ensures drawing pack or linked docs include the cleaning/maintenance information necessary to support hygienic use when ISO 14159 is in scope.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "drawing.hygiene.cleaning_instructions_present"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "drawing.hygiene.cleaning_instructions_present",
+          "op": "==",
+          "right": true
+        },
+        "evaluator_hint": "Accept either explicit cleaning instructions in the drawing pack or a referenced cleaning procedure document ID."
+      },
+      "severity": "major",
+      "fix_template": "Add cleaning/maintenance instructions reference (document ID) to the drawing pack and ensure it is controlled and accessible to users.",
+      "refs": [
+        "REF-FOOD-ISO"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "evidence_gap",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-021",
+      "pack_id": "F_OVERLAY",
+      "title": "Additive manufacturing drawings must document AM process and key quality parameters when VDI 3405 is applied",
+      "description": "If a part is produced by additive manufacturing, ensure the drawing/spec includes process identification and quality parameters (as-built expectations) so inspection and acceptance are feasible.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "project.manufacturing.process",
+        "drawing.manufacturing.notes"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "drawing.manufacturing.notes",
+          "op": "contains",
+          "right": "VDI 3405"
+        },
+        "evaluator_hint": "Apply when project.manufacturing.process == 'additive'; otherwise suppress. If VDI 3405 is the governing guideline, require reference and parameter list (at least as a linked spec)."
+      },
+      "severity": "major",
+      "fix_template": "Add 'VDI 3405' reference and link to the AM process parameter sheet (process type, layer parameters, post-processing, inspection method) in the drawing pack.",
+      "refs": [
+        "REF-ADD-VDI-3405"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "evidence_gap",
+      "pilot_sets": [
+        "SET_B_FOOD_PILOT"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-022",
+      "pack_id": "F_OVERLAY",
+      "title": "GD&T feature control frames must be syntactically complete per ISO 1101",
+      "description": "Flags incomplete or non-parsable GD&T feature control frames (missing tolerance value, missing datum references where required, malformed symbols).",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "drawing.gdt.invalid_frame_count"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "drawing.gdt.invalid_frame_count",
+          "op": "==",
+          "right": 0
+        },
+        "evaluator_hint": "Implement a parser for ISO 1101-like feature control frames; treat unrecognized patterns as invalid."
+      },
+      "severity": "major",
+      "fix_template": "Fix malformed GD&T callouts so each frame includes the required ISO 1101 fields (symbol, tolerance value, and required datum references/modifiers).",
+      "refs": [
+        "REF-GPS-2"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "rule_violation",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-023",
+      "pack_id": "F_OVERLAY",
+      "title": "Datum references used in GD&T must be defined per ISO 5459",
+      "description": "Ensures every datum identifier referenced by a GD&T callout is associated with a defined datum feature and datum system.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "drawing.gdt.undefined_datum_reference_count"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "drawing.gdt.undefined_datum_reference_count",
+          "op": "==",
+          "right": 0
+        },
+        "evaluator_hint": "Extract datum symbols and datum feature identifiers, then cross-check every datum letter used in feature control frames is defined somewhere on the drawing."
+      },
+      "severity": "major",
+      "fix_template": "Define missing datum features/datum system on the drawing (datum feature symbol + leader) so every referenced datum is unambiguous.",
+      "refs": [
+        "REF-GPS-6"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "rule_violation",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-024",
+      "pack_id": "F_OVERLAY",
+      "title": "GPS drawings should reference ISO 8015 when ISO GPS rules are intended to apply",
+      "description": "A lightweight check that the drawing pack references ISO 8015 so GPS default concepts/rules are explicit.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "drawing.text_all"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "drawing.text_all",
+          "op": "contains",
+          "right": "ISO 8015"
+        },
+        "evaluator_hint": "Look for ISO 8015 in title block standards list or general notes."
+      },
+      "severity": "info",
+      "fix_template": "Add 'ISO 8015' to the drawing standards list if ISO GPS principles are intended to apply across the drawing.",
+      "refs": [
+        "REF-GPS-1"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "evidence_gap",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-025",
+      "pack_id": "F_OVERLAY",
+      "title": "If general tolerances are used, the drawing must reference ISO 2768-1 and the tolerance class",
+      "description": "Ensures explicit ISO 2768-1 reference and tolerance class (f/m/c/v) for general linear/angular tolerances when individual tolerances are not fully specified.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "drawing.title_block.general_tolerance_note"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "drawing.title_block.general_tolerance_note",
+          "op": "contains",
+          "right": "ISO 2768-1"
+        },
+        "evaluator_hint": "Check that the general tolerance note includes ISO 2768-1 and a class identifier; if only 'ISO 2768' is used, treat as ambiguous and raise evidence gap."
+      },
+      "severity": "major",
+      "fix_template": "Update the general tolerance note to include ISO 2768-1 and the selected class (e.g., 'ISO 2768-1 m'). If also using geometrical general tolerances, explicitly decide how to handle ISO 2768-2 withdrawal.",
+      "refs": [
+        "REF-GPS-3"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "evidence_gap",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-026",
+      "pack_id": "F_OVERLAY",
+      "title": "If ISO 2768-2 is referenced, it must be explicitly dated or migrated because ISO 2768-2 is withdrawn",
+      "description": "ISO 2768-2:1989 is withdrawn; this rule flags ambiguous or undated references to ISO 2768-2 in drawings and requires an explicit decision (freeze to :1989 or adopt a successor approach).",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "drawing.title_block.general_tolerance_note"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "drawing.title_block.general_tolerance_note",
+          "op": "contains",
+          "right": "ISO 2768-2"
+        },
+        "evaluator_hint": "If ISO 2768-2 appears without an edition (e.g., ':1989'), raise evidence gap and recommend explicitly freezing the reference or adopting ISO 22081."
+      },
+      "severity": "major",
+      "fix_template": "Replace 'ISO 2768-2' with 'ISO 2768-2:1989' if legacy use is intended, or update the general GPS approach (e.g., adopt ISO 22081) and revise drawing notes accordingly.",
+      "refs": [
+        "REF-GPS-4"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "evidence_gap",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": false
+    },
+    {
+      "rule_id": "PILOTSTD-027",
+      "pack_id": "F_OVERLAY",
+      "title": "Surface texture indications must include parameter/value per ISO 1302 when used",
+      "description": "Flags surface texture symbols/callouts missing the required parameter/value information, to keep surface finish requirements unambiguous.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "drawing.surface_texture.missing_value_count"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "drawing.surface_texture.missing_value_count",
+          "op": "==",
+          "right": 0
+        },
+        "evaluator_hint": "Parse ISO 1302-like surface texture symbols and ensure required fields (at least one parameter/value) exist for each callout."
+      },
+      "severity": "major",
+      "fix_template": "Complete each surface texture callout with the required parameter/value (e.g., Ra value) and any needed qualifiers/modifiers following ISO 1302 conventions.",
+      "refs": [
+        "REF-GPS-7"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "rule_violation",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    },
+    {
+      "rule_id": "PILOTSTD-028",
+      "pack_id": "F_OVERLAY",
+      "title": "Metric thread callouts must include tolerance class/position when ISO 965-1 is applied",
+      "description": "Ensures metric thread specifications include tolerance class/position (e.g., internal 6H, external 6g) so manufacturing and gaging are unambiguous.",
+      "applies_to": [
+        "compliance_overlay"
+      ],
+      "analysis_mode": "drawing_spec",
+      "inputs_required": [
+        "drawing.thread_callouts.metric_without_tolerance_class_count"
+      ],
+      "check_logic": {
+        "type": "deterministic",
+        "predicate": {
+          "left": "drawing.thread_callouts.metric_without_tolerance_class_count",
+          "op": "==",
+          "right": 0
+        },
+        "evaluator_hint": "Parse metric thread callouts (e.g., 'M10x1') and verify presence of ISO 965-style tolerance class (e.g., '6H', '6g')."
+      },
+      "severity": "major",
+      "fix_template": "Update thread callouts to include tolerance class (e.g., 'M10x1-6H' internal, 'M10x1-6g' external) consistent with ISO 965-1 and the intended fit/function.",
+      "refs": [
+        "REF-THR-1"
+      ],
+      "standard_clause": null,
+      "finding_type_default": "rule_violation",
+      "pilot_sets": [
+        "SET_C_GPS_DRAWING"
+      ],
+      "needs_new_metric": false,
+      "new_metric_definition": null,
+      "evidence_quality": "official_abstract",
+      "needs_manual_confirmation": true
+    }
+  ],
+  "overlay_patch": {
+    "overlay_id": "pilot_prototype",
+    "label": "Pilots",
+    "adds_refs": [
+      "REF-ADD-VDI-3405",
+      "REF-COAT-7599",
+      "REF-FCM-EU-10-2011",
+      "REF-FCM-EU-1935-2004",
+      "REF-FIT-286",
+      "REF-FOOD-EN",
+      "REF-FOOD-EN13870",
+      "REF-FOOD-ISO",
+      "REF-GPS-1",
+      "REF-GPS-2",
+      "REF-GPS-3",
+      "REF-GPS-4",
+      "REF-GPS-6",
+      "REF-GPS-7",
+      "REF-HYG-1",
+      "REF-MACH-DIR-2006-42",
+      "REF-MAT-EN10088-3",
+      "REF-ROBOT-9409-1",
+      "REF-THR-1",
+      "REF-THR-228-1",
+      "REF-TOL-2768-FH",
+      "REF-TOL-2768-MK"
+    ],
+    "rule_prefixes_to_include": [
+      "FOOD-",
+      "ALPMA-",
+      "ROBOT-",
+      "PILOT-",
+      "PILOTSTD-"
+    ]
+  },
+  "quality_gates": {
+    "all_input_standards_covered": true,
+    "missing_standards": [],
+    "geometry_rules_per_geometry_relevant_standard_min": 1,
+    "drawing_rules_per_drawing_relevant_standard_min": 1,
+    "standards_with_zero_rules": [],
+    "rules_requiring_new_metrics_count": 0
+  },
+  "gaps_and_unknowns": [
+    {
+      "ref_id": "REF-GPS-4",
+      "issue": "paywall_or_clause_uncertain_or_metric_missing",
+      "impact": "ISO 2768-2 is withdrawn; drawings that reference ISO 2768-2 (or shorthand classes K/H via 'mK'/'fH') can create ambiguity and potential contractual risk if the intended general geometrical tolerancing approach is not explicitly frozen or migrated.",
+      "recommended_action": "Decide a policy: (a) freeze legacy references by explicitly dating 'ISO 2768-2:1989' where used, or (b) add ISO 22081 to the references/rule library and migrate general geometrical/size specifications accordingly; update drawing templates."
+    },
+    {
+      "ref_id": "REF-TOL-2768-MK",
+      "issue": "paywall_or_clause_uncertain_or_metric_missing",
+      "impact": "ISO 2768-mK is a common drawing shorthand, not a standalone ISO publication; automated checks need a mapping to ISO 2768-1 tolerance class 'm' and a decided successor approach for the geometrical component previously covered by ISO 2768-2 class 'K'.",
+      "recommended_action": "Implement explicit parsing of 'ISO 2768-mK' into (ISO 2768-1 class m) + (legacy ISO 2768-2 class K). Require an explicit project-level choice for the general geometrical tolerancing regime (legacy vs updated)."
+    },
+    {
+      "ref_id": "REF-TOL-2768-FH",
+      "issue": "paywall_or_clause_uncertain_or_metric_missing",
+      "impact": "ISO 2768-fH depends on legacy ISO 2768-2 (withdrawn); automated tolerance enforcement for 'H' requires a legacy table and/or a migration strategy.",
+      "recommended_action": "Same as for ISO 2768-mK: parse into ISO 2768-1 class f plus a legacy/general geometrical tolerancing policy; require explicit dating if ISO 2768-2 is retained."
+    },
+    {
+      "ref_id": "REF-FCM-EU-10-2011",
+      "issue": "paywall_or_clause_uncertain_or_metric_missing",
+      "impact": "EU 10/2011 is frequently amended; the evidence source used here is a 2019 consolidated text mirror, so recent changes (e.g., 2025 amendments) may not be reflected in the derived rule candidates.",
+      "recommended_action": "In implementation, fetch and pin the currently applicable consolidated text from EUR-Lex (ELI) and update rule extraction for Article/Annex changes, especially DoC content, purity definitions, recycled plastic provisions, and documentation requirements."
+    },
+    {
+      "ref_id": "REF-MACH-DIR-2006-42",
+      "issue": "paywall_or_clause_uncertain_or_metric_missing",
+      "impact": "The Machinery Directive 2006/42/EC is being replaced by Regulation (EU) 2023/1230 with application from 20 Jan 2027; compliance overlays must handle the transitional period and avoid hardcoding outdated legal regimes.",
+      "recommended_action": "Add a date-aware legal applicability switch: until 19 Jan 2027, use 2006/42/EC rules; from 20 Jan 2027, migrate to Regulation (EU) 2023/1230 and update documentation requirements accordingly."
+    },
+    {
+      "ref_id": "REF-HYG-1",
+      "issue": "paywall_or_clause_uncertain_or_metric_missing",
+      "impact": "EHEDG Doc 8 is guidance and often distributed via membership/purchase; clause-level extraction and numeric thresholds (e.g., surface finish recommendations) are not reliably available from the public summary page.",
+      "recommended_action": "Obtain the official EHEDG Doc 8 publication for clause-level/numeric extraction, or keep rules as 'evidence gaps' requiring manual hygienic validation reports rather than enforcing numeric thresholds."
+    },
+    {
+      "ref_id": "REF-FOOD-EN13870",
+      "issue": "paywall_or_clause_uncertain_or_metric_missing",
+      "impact": "EN 13870 is a type-C standard applicable to portion cutting machines; applying it to unrelated food machinery could produce false positives.",
+      "recommended_action": "Gate EN 13870 rules behind a product taxonomy flag (e.g., project.product_category == portion_cutting_machine)."
+    },
+    {
+      "ref_id": "REF-THR-1",
+      "issue": "paywall_or_clause_uncertain_or_metric_missing",
+      "impact": "ISO 965-1 is under publication for a new revision; tolerance mapping or callout validation logic may change when the new edition is published.",
+      "recommended_action": "Monitor ISO publication status; when the new ISO 965-1 is released, update thread callout parsing rules and any tolerance lookup tables accordingly."
+    },
+    {
+      "ref_id": "REF-FOOD-EN",
+      "issue": "paywall_or_clause_uncertain_or_metric_missing",
+      "impact": "EN 1672-2 is paywalled; detailed clause-level requirements (and any numeric design criteria) cannot be fully extracted from public metadata alone, limiting deterministic rule precision.",
+      "recommended_action": "Acquire the full EN 1672-2 text for clause mapping; until then, treat geometry checks as heuristic/hybrid and emphasize evidence artifacts (hygiene zoning, cleanability validation)."
+    }
+  ]
+}
