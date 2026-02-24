@@ -1,6 +1,6 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap");
-
 :root {
+  --font-body: "Aptos", "Segoe UI", sans-serif;
+  --font-heading: "Aptos Display", "Aptos", "Segoe UI", sans-serif;
   --surface-0: #fff8f3;
   --surface-1: #fffdfb;
   --surface-2: #fff3e8;
@@ -17,7 +17,7 @@
   --shadow-2: 0 8px 20px rgba(9, 26, 51, 0.08);
   --button-glow: 0 10px 24px rgba(239, 101, 26, 0.22);
   --button-text: #f8fbff;
-  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  font-family: var(--font-body);
   color: var(--text-1);
   background-color: var(--surface-0);
   line-height: 1.45;
@@ -59,6 +59,7 @@ h1,
 h2,
 h3,
 h4 {
+  font-family: var(--font-heading);
   letter-spacing: 0.2px;
 }
 
@@ -199,7 +200,7 @@ h4 {
 
 .toolbar__button.global-pane__button {
   width: 100%;
-  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  font-family: var(--font-heading);
   padding-block: 9px;
   border-radius: 10px;
   border-color: rgba(239, 101, 26, 0.55);
