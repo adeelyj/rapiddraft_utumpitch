@@ -268,6 +268,8 @@ type AnalysisModeRuntime = "geometry_dfm" | "drawing_spec" | "full";
 type AnalysisMode = AnalysisModeRuntime;
 type StandardsProfileSelection = "profile_auto" | "none" | "pilot" | `overlay:${string}`;
 const PILOT_OVERLAY_ID = "pilot_prototype";
+const ALL_STANDARDS_OVERLAY_WITH_PILOT_ID = "all_standards_with_pilot";
+const ALL_STANDARDS_OVERLAY_NON_PILOT_ID = "all_standards_non_pilot";
 const PILOT_STRICT_ESSENTIAL_RULE_IDS = new Set<string>([
   "CNC-005",
   "CNC-006",
@@ -378,9 +380,25 @@ const DfmReviewSidebar = ({
     return dfmConfig?.overlays.find((overlay) => overlay.overlay_id === PILOT_OVERLAY_ID) ?? null;
   }, [dfmConfig]);
 
+  const allStandardsOverlayId = useMemo(() => {
+    const overlays = dfmConfig?.overlays ?? [];
+    if (overlays.some((overlay) => overlay.overlay_id === ALL_STANDARDS_OVERLAY_WITH_PILOT_ID)) {
+      return ALL_STANDARDS_OVERLAY_WITH_PILOT_ID;
+    }
+    if (overlays.some((overlay) => overlay.overlay_id === ALL_STANDARDS_OVERLAY_NON_PILOT_ID)) {
+      return ALL_STANDARDS_OVERLAY_NON_PILOT_ID;
+    }
+    return null;
+  }, [dfmConfig]);
+
   const standardsOverlayOptions = useMemo(() => {
     if (!dfmConfig?.overlays?.length) return [];
-    return dfmConfig.overlays.filter((overlay) => overlay.overlay_id !== PILOT_OVERLAY_ID);
+    return dfmConfig.overlays.filter(
+      (overlay) =>
+        overlay.overlay_id !== PILOT_OVERLAY_ID &&
+        overlay.overlay_id !== ALL_STANDARDS_OVERLAY_WITH_PILOT_ID &&
+        overlay.overlay_id !== ALL_STANDARDS_OVERLAY_NON_PILOT_ID
+    );
   }, [dfmConfig]);
 
   const mismatchBanner = useMemo(() => {
@@ -640,6 +658,7 @@ const DfmReviewSidebar = ({
             <option value="pilot" disabled={!pilotOverlay}>
               Pilots {pilotOverlay ? "" : "(not available)"}
             </option>
+            {allStandardsOverlayId ? <option value={`overlay:${allStandardsOverlayId}`}>All standards</option> : null}
             {standardsOverlayOptions.map((overlay) => (
               <option key={overlay.overlay_id} value={`overlay:${overlay.overlay_id}`}>
                 {overlay.label}
@@ -653,7 +672,11 @@ const DfmReviewSidebar = ({
               ? "No overlay selected."
               : standardsProfileSelection === "pilot"
               ? `Pilots: ${pilotOverlay?.label ?? "Overlay not available in bundle"}`
-              : `Custom overlay: ${overlayLabelById(dfmConfig?.overlays ?? [], standardsProfileSelection.slice("overlay:".length) || null)}`}
+              : `Custom overlay: ${
+                  standardsProfileSelection.slice("overlay:".length) === allStandardsOverlayId
+                    ? "All standards"
+                    : overlayLabelById(dfmConfig?.overlays ?? [], standardsProfileSelection.slice("overlay:".length) || null)
+                }`}
           </p>
         </label>
       );
@@ -889,7 +912,11 @@ const DfmReviewSidebar = ({
           )}
           {reviewV2Result?.effective_context?.overlay ? (
             <p className="dfm-sidebar__meta">
-              Rule set: {reviewV2Result.effective_context.overlay.effective_overlay_label || "None"} (source:{" "}
+              Rule set:{" "}
+              {reviewV2Result.effective_context.overlay.effective_overlay_id === allStandardsOverlayId
+                ? "All standards"
+                : reviewV2Result.effective_context.overlay.effective_overlay_label || "None"}{" "}
+              (source:{" "}
               {reviewV2Result.effective_context.overlay.source})
             </p>
           ) : (
