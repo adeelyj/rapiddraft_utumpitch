@@ -313,7 +313,6 @@ const DfmReviewSidebar = ({
   const [loadingModelTemplates, setLoadingModelTemplates] = useState(false);
   const [selectedAdvancedModel, setSelectedAdvancedModel] = useState("");
   const [runBothIfMismatch, setRunBothIfMismatch] = useState(true);
-  const [showEvidenceGaps, setShowEvidenceGaps] = useState(false);
   const [pilotStrictFilter, setPilotStrictFilter] = useState(false);
   const [reviewV2Result, setReviewV2Result] = useState<DfmReviewV2Response | null>(null);
 
@@ -874,6 +873,17 @@ const DfmReviewSidebar = ({
           </p>
           <div className="dfm-sidebar__flow-controls">
             {primaryControlIds.map((controlId) => renderFlowControl(controlId))}
+            <label className="dfm-sidebar__field dfm-sidebar__flow-step">
+              <span>Findings focus</span>
+              <select
+                value={pilotStrictFilter ? "pilot_strict" : "all"}
+                onChange={(event) => setPilotStrictFilter(event.target.value === "pilot_strict")}
+              >
+                <option value="all">All design risks</option>
+                <option value="pilot_strict">Pilot strict (PSTD + essential geometry)</option>
+              </select>
+              <p className="dfm-sidebar__meta">Display focus only; analysis run unchanged.</p>
+            </label>
           </div>
           {secondaryControlIds.length ? (
             <details className="dfm-sidebar__details">
@@ -1050,29 +1060,6 @@ const DfmReviewSidebar = ({
               <p className="dfm-sidebar__meta">
                 Routes: {reviewV2Result.route_count} | Findings: {reviewV2Result.finding_count_total}
               </p>
-              <label className="dfm-sidebar__field dfm-sidebar__toggle">
-                <span>Show drawing/spec evidence gaps</span>
-                <div className="dfm-sidebar__toggle-row">
-                  <input
-                    type="checkbox"
-                    checked={showEvidenceGaps}
-                    onChange={(event) => setShowEvidenceGaps(event.target.checked)}
-                  />
-                  <span>{showEvidenceGaps ? "Visible" : "Hidden by default"}</span>
-                </div>
-              </label>
-              <label className="dfm-sidebar__field dfm-sidebar__toggle">
-                <span>Pilot strict filter (PSTD + essential geometry)</span>
-                <div className="dfm-sidebar__toggle-row">
-                  <input
-                    type="checkbox"
-                    checked={pilotStrictFilter}
-                    onChange={(event) => setPilotStrictFilter(event.target.checked)}
-                  />
-                  <span>{pilotStrictFilter ? "Enabled" : "Disabled"}</span>
-                </div>
-              </label>
-              <p className="dfm-sidebar__hint">Display filter only; analysis run unchanged.</p>
               {reviewV2Result.routes.map((route) => {
                 const allDesignRiskFindings = route.findings.filter((finding) => finding.finding_type === "rule_violation");
                 const designRiskFindings =
@@ -1084,7 +1071,7 @@ const DfmReviewSidebar = ({
                       )
                     : allDesignRiskFindings;
                 const evidenceGapFindings = route.findings.filter((finding) => finding.finding_type !== "rule_violation");
-                const shownFindingCount = designRiskFindings.length + (showEvidenceGaps ? evidenceGapFindings.length : 0);
+                const shownFindingCount = designRiskFindings.length + evidenceGapFindings.length;
                 return (
                   <article key={`${route.plan_id}-${route.process_id}`} className="dfm-sidebar__route">
                     <header className="dfm-sidebar__route-header">
@@ -1109,7 +1096,7 @@ const DfmReviewSidebar = ({
                     ) : null}
                     {route.findings.length ? (
                       <div className="dfm-sidebar__findings-groups">
-                        <details className="dfm-sidebar__finding-group" open={designRiskFindings.length > 0}>
+                        <details className="dfm-sidebar__finding-group">
                           <summary>Design risks ({designRiskFindings.length})</summary>
                           {designRiskFindings.length ? (
                             <ul className="dfm-sidebar__findings">
@@ -1119,22 +1106,16 @@ const DfmReviewSidebar = ({
                             <p className="dfm-sidebar__hint">No design risk findings in this route.</p>
                           )}
                         </details>
-                        {showEvidenceGaps ? (
-                          <details className="dfm-sidebar__finding-group">
-                            <summary>Drawing/spec evidence gaps ({evidenceGapFindings.length})</summary>
-                            {evidenceGapFindings.length ? (
-                              <ul className="dfm-sidebar__findings">
-                                {evidenceGapFindings.slice(0, 20).map((finding) => renderFindingItem(route, finding))}
-                              </ul>
-                            ) : (
-                              <p className="dfm-sidebar__hint">No evidence gaps in this route.</p>
-                            )}
-                          </details>
-                        ) : (
-                          <p className="dfm-sidebar__hint">
-                            Drawing/spec evidence gaps hidden ({evidenceGapFindings.length}). Enable above to inspect.
-                          </p>
-                        )}
+                        <details className="dfm-sidebar__finding-group">
+                          <summary>Drawing/spec evidence gaps ({evidenceGapFindings.length})</summary>
+                          {evidenceGapFindings.length ? (
+                            <ul className="dfm-sidebar__findings">
+                              {evidenceGapFindings.slice(0, 20).map((finding) => renderFindingItem(route, finding))}
+                            </ul>
+                          ) : (
+                            <p className="dfm-sidebar__hint">No evidence gaps in this route.</p>
+                          )}
+                        </details>
                       </div>
                     ) : (
                       <p className="dfm-sidebar__hint">No findings for this route.</p>
