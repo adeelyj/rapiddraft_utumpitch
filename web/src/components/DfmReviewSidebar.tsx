@@ -313,7 +313,6 @@ const DfmReviewSidebar = ({
   const [loadingModelTemplates, setLoadingModelTemplates] = useState(false);
   const [selectedAdvancedModel, setSelectedAdvancedModel] = useState("");
   const [runBothIfMismatch, setRunBothIfMismatch] = useState(true);
-  const [pilotStrictFilter, setPilotStrictFilter] = useState(false);
   const [reviewV2Result, setReviewV2Result] = useState<DfmReviewV2Response | null>(null);
 
   const panelBindings = useMemo(() => {
@@ -412,7 +411,6 @@ const DfmReviewSidebar = ({
   useEffect(() => {
     setError(null);
     setReviewV2Result(null);
-    setPilotStrictFilter(false);
   }, [modelId, selectedComponent?.nodeName]);
 
   useEffect(() => {
@@ -873,17 +871,6 @@ const DfmReviewSidebar = ({
           </p>
           <div className="dfm-sidebar__flow-controls">
             {primaryControlIds.map((controlId) => renderFlowControl(controlId))}
-            <label className="dfm-sidebar__field dfm-sidebar__flow-step">
-              <span>Findings focus</span>
-              <select
-                value={pilotStrictFilter ? "pilot_strict" : "all"}
-                onChange={(event) => setPilotStrictFilter(event.target.value === "pilot_strict")}
-              >
-                <option value="all">All design risks</option>
-                <option value="pilot_strict">Pilot strict (PSTD + essential geometry)</option>
-              </select>
-              <p className="dfm-sidebar__meta">Display focus only; analysis run unchanged.</p>
-            </label>
           </div>
           {secondaryControlIds.length ? (
             <details className="dfm-sidebar__details">
@@ -1061,15 +1048,7 @@ const DfmReviewSidebar = ({
                 Routes: {reviewV2Result.route_count} | Findings: {reviewV2Result.finding_count_total}
               </p>
               {reviewV2Result.routes.map((route) => {
-                const allDesignRiskFindings = route.findings.filter((finding) => finding.finding_type === "rule_violation");
-                const designRiskFindings =
-                  pilotStrictFilter
-                    ? allDesignRiskFindings.filter(
-                        (finding) =>
-                          finding.rule_id.startsWith("PSTD-") ||
-                          PILOT_STRICT_ESSENTIAL_RULE_IDS.has(finding.rule_id)
-                      )
-                    : allDesignRiskFindings;
+                const designRiskFindings = route.findings.filter((finding) => finding.finding_type === "rule_violation");
                 const evidenceGapFindings = route.findings.filter((finding) => finding.finding_type !== "rule_violation");
                 const shownFindingCount = designRiskFindings.length + evidenceGapFindings.length;
                 return (
