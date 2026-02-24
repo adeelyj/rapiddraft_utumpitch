@@ -9,7 +9,12 @@ if str(REPO_ROOT) not in sys.path:
 
 from server.dfm_bundle import load_dfm_bundle
 from server.dfm_part_facts_bridge import NOT_APPLICABLE_INPUTS_KEY
-from server.dfm_review_v2 import generate_dfm_review_v2, _missing_required_inputs
+from server.dfm_review_v2 import (
+    RULE_VIOLATION_EVALUATORS,
+    _evaluate_rule_violation,
+    _missing_required_inputs,
+    generate_dfm_review_v2,
+)
 
 
 def _bundle():
@@ -481,3 +486,109 @@ def test_review_v2_pilot_geometry_rules_emit_rule_violations_when_inputs_present
     assert {"PSTD-001", "PSTD-004", "PSTD-008", "PSTD-009", "PSTD-012", "PSTD-019"}.issubset(
         violation_ids
     )
+
+
+def test_review_v2_evaluator_registry_includes_phase2_targets():
+    expected_targets = {"CNC-004", "CNC-020", "TURN-001", "TURN-004", "PSTD-016"}
+    assert expected_targets.issubset(set(RULE_VIOLATION_EVALUATORS.keys()))
+    assert len(RULE_VIOLATION_EVALUATORS) >= 24
+    pilot_evaluator_count = sum(
+        1 for rule_id in RULE_VIOLATION_EVALUATORS.keys() if rule_id.startswith("PSTD-")
+    )
+    assert pilot_evaluator_count >= 7
+
+
+def test_phase2_rule_evaluators_return_expected_outcomes():
+    cnc_004 = _evaluate_rule_violation(
+        {"rule_id": "CNC-004"},
+        {"hole_features": True, "blind_hole_flat_bottom_functional": True},
+    )
+    assert cnc_004 is not None
+    assert cnc_004["violated"] is True
+
+    cnc_020 = _evaluate_rule_violation(
+        {"rule_id": "CNC-020"},
+        {"wall_thickness_map": True, "min_wall_thickness": 0.6, "tight_tolerance_flag": True},
+    )
+    assert cnc_020 is not None
+    assert cnc_020["violated"] is True
+
+    turn_001 = _evaluate_rule_violation(
+        {"rule_id": "TURN-001"},
+        {"wall_thickness_map": True, "min_wall_thickness": 0.6, "material_spec": "Aluminum 6061"},
+    )
+    assert turn_001 is not None
+    assert turn_001["violated"] is True
+
+    turn_004 = _evaluate_rule_violation(
+        {"rule_id": "TURN-004"},
+        {"hole_features": True, "hole_diameter": 1.0},
+    )
+    assert turn_004 is not None
+    assert turn_004["violated"] is True
+
+    pstd_016_violation = _evaluate_rule_violation(
+        {"rule_id": "PSTD-016"},
+        {"material_spec": "Stainless Steel 316L"},
+    )
+    assert pstd_016_violation is not None
+    assert pstd_016_violation["violated"] is True
+
+    pstd_016_pass = _evaluate_rule_violation(
+        {"rule_id": "PSTD-016"},
+        {"material_spec": "Stainless Steel EN 10088-3 1.4404"},
+    )
+    assert pstd_016_pass is not None
+    assert pstd_016_pass["violated"] is False
+
+
+def test_review_v2_phase2_geometry_route_emits_new_violations_and_coverage_summary():
+    bundle = _bundle()
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="model-phase2-coverage",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Part 1",
+            "profile": {
+                "material": "Stainless Steel 316L",
+                "manufacturingProcess": "CNC Milling",
+                "industry": "Food Machinery and Hygienic Design",
+            },
+        },
+        planning_inputs={
+            "analysis_mode": "geometry_dfm",
+            "extracted_part_facts": {
+                "hole_features": True,
+                "hole_diameter": 1.0,
+                "wall_thickness_map": True,
+                "min_wall_thickness": 0.6,
+                "material_spec": "Stainless Steel 316L",
+                "sheet_thickness": 1.0,
+                "blind_hole_flat_bottom_functional": True,
+            },
+            "selected_process_override": "cnc_milling",
+            "selected_overlay": "pilot_prototype",
+            "selected_role": "general_dfm",
+            "selected_template": "executive_1page",
+            "run_both_if_mismatch": False,
+        },
+        context_payload={},
+    )
+
+    route = response["routes"][0]
+    violations = {
+        finding.get("rule_id")
+        for finding in route["findings"]
+        if finding.get("finding_type") == "rule_violation"
+    }
+    assert {"CNC-004", "CNC-020", "TURN-001", "TURN-004", "PSTD-016"}.issubset(violations)
+
+    coverage = route.get("coverage_summary")
+    assert isinstance(coverage, dict)
+    assert coverage["rules_considered"] >= coverage["checks_evaluated"]
+    assert coverage["checks_evaluated"] == coverage["checks_passed"] + coverage["design_risk_findings"]
+    assert coverage["rules_considered"] == (
+        coverage["checks_evaluated"] + coverage["blocked_by_missing_inputs"] + coverage["checks_unresolved"]
+    )
+    assert coverage["checks_no_evaluator"] <= coverage["checks_unresolved"]

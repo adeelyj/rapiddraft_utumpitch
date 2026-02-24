@@ -198,6 +198,18 @@ type DfmCostCompareRoutes = {
   cheaper_process_id: string;
 };
 
+type DfmRouteCoverageSummary = {
+  rules_considered: number;
+  checks_evaluated: number;
+  checks_passed: number;
+  design_risk_findings: number;
+  blocked_by_missing_inputs: number;
+  checks_unresolved: number;
+  checks_no_evaluator: number;
+  checks_unsupported_inputs: number;
+  evaluated_ratio: number;
+};
+
 type DfmReviewRoute = {
   plan_id: string;
   route_source: string;
@@ -207,6 +219,7 @@ type DfmReviewRoute = {
   pack_labels: (string | null)[];
   finding_count: number;
   findings: DfmReviewFinding[];
+  coverage_summary?: DfmRouteCoverageSummary;
   standards_used_auto: DfmStandardRef[];
   standards_trace?: DfmStandardTrace[];
   cost_estimate?: DfmCostEstimate | null;
@@ -904,6 +917,16 @@ const DfmReviewSidebar = ({
                   <p className="dfm-sidebar__meta">
                     Design risks: {designRiskFindings.length} | Drawing/spec evidence gaps: {evidenceGapFindings.length}
                   </p>
+                  {route.coverage_summary ? (
+                    <p className="dfm-sidebar__meta">
+                      Coverage: {route.coverage_summary.checks_evaluated}/{route.coverage_summary.rules_considered} evaluated
+                      {" | "}passed {route.coverage_summary.checks_passed}
+                      {" | "}violations {route.coverage_summary.design_risk_findings}
+                      {" | "}evidence gaps {route.coverage_summary.blocked_by_missing_inputs}
+                      {" | "}unresolved {route.coverage_summary.checks_unresolved} (no evaluator{" "}
+                      {route.coverage_summary.checks_no_evaluator})
+                    </p>
+                  ) : null}
                   {route.findings.length ? (
                     <div className="dfm-sidebar__findings-groups">
                       <details className="dfm-sidebar__finding-group">

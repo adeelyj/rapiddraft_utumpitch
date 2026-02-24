@@ -14,6 +14,11 @@ Plan 03 test gate:
 python -m pytest -q server/tests/test_dfm_review_v2.py server/tests/test_dfm_standards_auto.py server/tests/test_dfm_review_v2_golden_payloads.py
 ```
 
+Golden rebaseline (when canonical standards metadata changes):
+```powershell
+python scripts/rebaseline_dfm_review_v2_golden.py
+```
+
 Full backend regression gate:
 ```powershell
 $env:PATH = "C:\Program Files\FreeCAD 1.0\bin;$env:PATH"
@@ -30,3 +35,11 @@ Warning detail:
 ## Exit Artifacts
 - `plans/dfm_plan_03_review_golden_examples.json`
 - `plans/dfm_plan_03_standards_traceability.md`
+
+## Golden Maintenance Policy
+`server/tests/test_dfm_review_v2_golden_payloads.py` remains a strict full-payload contract check.  
+When `server/dfm/references.json` is updated (for example standards title/notes/url metadata refresh),
+the expected golden artifact may legitimately drift. In that case, refresh
+`plans/dfm_plan_03_review_golden_examples.json` using
+`scripts/rebaseline_dfm_review_v2_golden.py` and re-run the DFM test gate.
+Do not relax equality assertions in the golden test.

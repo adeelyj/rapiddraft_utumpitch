@@ -39,4 +39,9 @@ def test_review_v2_golden_payloads_match_runtime_output():
             context_payload=request.get("context_payload"),
         )
 
-        assert actual_response == expected_response, f"Golden mismatch for scenario '{scenario_name}'"
+        assert actual_response == expected_response, (
+            f"Golden mismatch for scenario '{scenario_name}'. "
+            "If this is expected standards catalog metadata drift (for example "
+            "title/notes/url updates in server/dfm/references.json), verify runtime behavior "
+            "and rebaseline with: python scripts/rebaseline_dfm_review_v2_golden.py"
+        )

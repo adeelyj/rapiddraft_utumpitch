@@ -372,6 +372,7 @@ def _evaluate_plan(
     not_applicable_inputs = _not_applicable_inputs(review_facts)
     pack_map = _index_by_id(bundle.rule_library.get("packs", []), "pack_id")
     standards_trace = _init_standards_trace(bundle=bundle, overlay_id=overlay_id)
+    coverage_summary = _init_route_coverage_summary()
 
     findings: list[dict[str, Any]] = []
     evaluated_pack_ids: list[str] = []
@@ -381,6 +382,7 @@ def _evaluate_plan(
         overlay_id,
         analysis_mode=analysis_mode,
     ):
+        coverage_summary["rules_considered"] = int(coverage_summary.get("rules_considered", 0)) + 1
         pack_id = _clean_optional_string(rule.get("pack_id"))
         if pack_id and pack_id not in evaluated_pack_ids:
             evaluated_pack_ids.append(pack_id)
@@ -394,8 +396,23 @@ def _evaluate_plan(
             not_applicable_inputs=not_applicable_inputs,
         )
         if not missing_inputs:
+            rule_id = _clean_optional_string(rule.get("rule_id"))
+            has_registered_evaluator = bool(
+                rule_id and rule_id in RULE_VIOLATION_EVALUATORS
+            )
             violation = _evaluate_rule_violation(rule, review_facts)
             if not violation:
+                coverage_summary["checks_unresolved"] = int(
+                    coverage_summary.get("checks_unresolved", 0)
+                ) + 1
+                if has_registered_evaluator:
+                    coverage_summary["checks_unsupported_inputs"] = int(
+                        coverage_summary.get("checks_unsupported_inputs", 0)
+                    ) + 1
+                else:
+                    coverage_summary["checks_no_evaluator"] = int(
+                        coverage_summary.get("checks_no_evaluator", 0)
+                    ) + 1
                 _update_standards_trace(
                     standards_trace=standards_trace,
                     bundle=bundle,
@@ -404,6 +421,9 @@ def _evaluate_plan(
                 )
                 continue
             if not violation.get("violated"):
+                coverage_summary["checks_passed"] = int(
+                    coverage_summary.get("checks_passed", 0)
+                ) + 1
                 _update_standards_trace(
                     standards_trace=standards_trace,
                     bundle=bundle,
@@ -411,6 +431,9 @@ def _evaluate_plan(
                     outcome="passed",
                 )
                 continue
+            coverage_summary["design_risk_findings"] = int(
+                coverage_summary.get("design_risk_findings", 0)
+            ) + 1
             _update_standards_trace(
                 standards_trace=standards_trace,
                 bundle=bundle,
@@ -442,6 +465,9 @@ def _evaluate_plan(
             }
             findings.append(finding)
             continue
+        coverage_summary["blocked_by_missing_inputs"] = int(
+            coverage_summary.get("blocked_by_missing_inputs", 0)
+        ) + 1
         _update_standards_trace(
             standards_trace=standards_trace,
             bundle=bundle,
@@ -499,6 +525,7 @@ def _evaluate_plan(
         "analysis_mode": analysis_mode,
         "finding_count": len(findings),
         "findings": findings,
+        "coverage_summary": _finalize_route_coverage_summary(coverage_summary),
         "standards_used_auto": standards,
         "standards_trace": standards_trace_payload,
         "report_skeleton": {
@@ -978,6 +1005,60 @@ def _evaluate_cnc_003(review_facts: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
+def _evaluate_cnc_004(review_facts: dict[str, Any]) -> dict[str, Any] | None:
+    if not _truthy(review_facts.get("hole_features")):
+        return None
+    flat_bottom_required = _bool_fact(
+        review_facts,
+        "cad.holes.blind_flat_bottom_functional_required",
+        "blind_hole_flat_bottom_required",
+        "blind_hole_flat_bottom_functional",
+        "hole_flat_bottom_functional",
+    )
+    if flat_bottom_required is None:
+        flat_bottom_required = False
+    return {
+        "violated": flat_bottom_required,
+        "evaluation": {
+            "operator": "==",
+            "fact_key": "blind_hole_flat_bottom_functional_required",
+            "actual": flat_bottom_required,
+            "threshold": False,
+            "rule_expression": "blind_hole_flat_bottom_functional_required == false",
+        },
+    }
+
+
+def _evaluate_cnc_020(review_facts: dict[str, Any]) -> dict[str, Any] | None:
+    if not _truthy(review_facts.get("wall_thickness_map")):
+        return None
+    min_wall_thickness = _numeric_fact(
+        review_facts,
+        "min_wall_thickness",
+        "min_wall_thickness_mm",
+    )
+    if min_wall_thickness is None:
+        return None
+    tight_tolerance_requested = _bool_fact(
+        review_facts,
+        "tight_tolerance_flag",
+        "tight_tolerance_on_thin_walls",
+        "cad.tolerances.tight_profile_on_thin_walls",
+    )
+    threshold = 1.2 if tight_tolerance_requested else 0.8
+    return {
+        "violated": min_wall_thickness < threshold,
+        "evaluation": {
+            "operator": ">=",
+            "fact_key": "min_wall_thickness_mm",
+            "actual": round(min_wall_thickness, 4),
+            "threshold": threshold,
+            "tight_tolerance_requested": bool(tight_tolerance_requested),
+            "rule_expression": "min_wall_thickness_mm >= threshold_mm",
+        },
+    }
+
+
 def _evaluate_cnc_006(review_facts: dict[str, Any]) -> dict[str, Any] | None:
     pocket_depth = _numeric_fact(
         review_facts,
@@ -1022,6 +1103,62 @@ def _evaluate_cnc_006(review_facts: dict[str, Any]) -> dict[str, Any] | None:
                 "max_depth_to_radius_ratio": ratio_threshold,
             },
             "rule_expression": "min_radius_mm >= 3.0 or (depth/radius) <= 6.0",
+        },
+    }
+
+
+def _evaluate_turn_001(review_facts: dict[str, Any]) -> dict[str, Any] | None:
+    if not _truthy(review_facts.get("wall_thickness_map")):
+        return None
+    min_wall_thickness = _numeric_fact(
+        review_facts,
+        "min_wall_thickness",
+        "min_wall_thickness_mm",
+    )
+    if min_wall_thickness is None:
+        return None
+    material_spec = _string_fact(review_facts.get("material_spec"))
+    wall_threshold, material_class = _wall_threshold_for_material(material_spec)
+    turning_threshold = max(0.8, wall_threshold + 0.2)
+    return {
+        "violated": min_wall_thickness < turning_threshold,
+        "evaluation": {
+            "operator": ">=",
+            "fact_key": "min_wall_thickness_mm",
+            "actual": round(min_wall_thickness, 4),
+            "threshold": round(turning_threshold, 4),
+            "material_class": material_class,
+            "rule_expression": "min_wall_thickness_mm >= turning_material_threshold_mm",
+        },
+    }
+
+
+def _evaluate_turn_004(review_facts: dict[str, Any]) -> dict[str, Any] | None:
+    if not _truthy(review_facts.get("hole_features")):
+        return None
+    hole_diameter = _numeric_fact(
+        review_facts,
+        "hole_diameter_mm",
+        "hole_diameter",
+        "min_hole_diameter_mm",
+    )
+    if hole_diameter is None or hole_diameter <= 0:
+        return None
+    radial_hole = _bool_fact(
+        review_facts,
+        "hole_orientation_radial",
+        "radial_hole",
+    )
+    threshold = 2.5 if radial_hole else 2.0
+    return {
+        "violated": hole_diameter < threshold,
+        "evaluation": {
+            "operator": ">=",
+            "fact_key": "hole_diameter_mm",
+            "actual": round(hole_diameter, 4),
+            "threshold": threshold,
+            "hole_orientation": "radial" if radial_hole else "axial_or_unknown",
+            "rule_expression": "hole_diameter_mm >= turning_min_hole_diameter_mm",
         },
     }
 
@@ -1295,6 +1432,29 @@ def _evaluate_pstd_012(review_facts: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
+def _evaluate_pstd_016(review_facts: dict[str, Any]) -> dict[str, Any] | None:
+    material_spec = _string_fact(review_facts.get("material_spec"))
+    if not material_spec:
+        return None
+    normalized = material_spec.lower()
+    stainless_tokens = ("stainless", "316l", "1.4404", "304", "1.4301")
+    stainless_detected = any(token in normalized for token in stainless_tokens)
+    en10088_3_present = "en 10088-3" in normalized or "en10088-3" in normalized
+    violated = stainless_detected and not en10088_3_present
+    return {
+        "violated": violated,
+        "evaluation": {
+            "operator": "contains_when_applicable",
+            "fact_key": "material_spec",
+            "actual": material_spec,
+            "stainless_detected": stainless_detected,
+            "threshold": "EN 10088-3 reference required for stainless specs",
+            "en10088_3_reference_detected": en10088_3_present,
+            "rule_expression": "if stainless material then material_spec contains 'EN 10088-3'",
+        },
+    }
+
+
 def _evaluate_pstd_019(review_facts: dict[str, Any]) -> dict[str, Any] | None:
     count = _numeric_fact(
         review_facts,
@@ -1320,21 +1480,26 @@ RULE_VIOLATION_EVALUATORS: dict[str, Any] = {
     "CNC-001": _evaluate_cnc_001,
     "CNC-002": _evaluate_cnc_002,
     "CNC-003": _evaluate_cnc_003,
+    "CNC-004": _evaluate_cnc_004,
     "CNC-005": _evaluate_cnc_005,
     "CNC-006": _evaluate_cnc_006,
     "CNC-010": _evaluate_cnc_010,
     "CNC-013": _evaluate_cnc_013,
+    "CNC-020": _evaluate_cnc_020,
     "CNC-024": _evaluate_cnc_024,
     "CNC-025": _evaluate_cnc_025,
     "FIX-003": _evaluate_fix_003,
     "FOOD-002": _evaluate_food_002,
     "FOOD-004": _evaluate_food_004,
     "SM-001": _evaluate_sm_001,
+    "TURN-001": _evaluate_turn_001,
+    "TURN-004": _evaluate_turn_004,
     "PSTD-001": _evaluate_pstd_001,
     "PSTD-004": _evaluate_pstd_004,
     "PSTD-008": _evaluate_pstd_008,
     "PSTD-009": _evaluate_pstd_009,
     "PSTD-012": _evaluate_pstd_012,
+    "PSTD-016": _evaluate_pstd_016,
     "PSTD-019": _evaluate_pstd_019,
 }
 
@@ -1542,6 +1707,45 @@ def _resolve_template_sections(
         enabled_sections.append(section_key)
 
     return {"enabled": enabled_sections, "suppressed": suppressed_sections}
+
+
+def _init_route_coverage_summary() -> dict[str, int]:
+    return {
+        "rules_considered": 0,
+        "checks_passed": 0,
+        "design_risk_findings": 0,
+        "blocked_by_missing_inputs": 0,
+        "checks_unresolved": 0,
+        "checks_no_evaluator": 0,
+        "checks_unsupported_inputs": 0,
+    }
+
+
+def _finalize_route_coverage_summary(summary: dict[str, int]) -> dict[str, Any]:
+    rules_considered = int(summary.get("rules_considered", 0))
+    checks_passed = int(summary.get("checks_passed", 0))
+    design_risk_findings = int(summary.get("design_risk_findings", 0))
+    blocked_by_missing_inputs = int(summary.get("blocked_by_missing_inputs", 0))
+    checks_unresolved = int(summary.get("checks_unresolved", 0))
+    checks_no_evaluator = int(summary.get("checks_no_evaluator", 0))
+    checks_unsupported_inputs = int(summary.get("checks_unsupported_inputs", 0))
+    checks_evaluated = checks_passed + design_risk_findings
+    evaluated_ratio = (
+        round(checks_evaluated / float(rules_considered), 4)
+        if rules_considered
+        else 0.0
+    )
+    return {
+        "rules_considered": rules_considered,
+        "checks_evaluated": checks_evaluated,
+        "checks_passed": checks_passed,
+        "design_risk_findings": design_risk_findings,
+        "blocked_by_missing_inputs": blocked_by_missing_inputs,
+        "checks_unresolved": checks_unresolved,
+        "checks_no_evaluator": checks_no_evaluator,
+        "checks_unsupported_inputs": checks_unsupported_inputs,
+        "evaluated_ratio": evaluated_ratio,
+    }
 
 
 def _index_by_id(items: list[Any], id_key: str) -> dict[str, dict[str, Any]]:

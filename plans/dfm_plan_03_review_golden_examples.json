@@ -145,31 +145,31 @@
           },
           {
             "ref_id": "REF-GPS-1",
-            "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
-            "url": "https://www.iso.org/standard/76602.html",
+            "title": "ISO 8015:2011 — Geometrical product specifications (GPS) — Fundamentals — Concepts, principles and rules",
+            "url": "https://www.iso.org/standard/55979.html",
             "type": "standard",
-            "notes": "Core GPS interpretation principles including independency."
+            "notes": "Defines fundamental GPS concepts/principles/rules used for creating and interpreting geometrical product specifications."
           },
           {
             "ref_id": "REF-GPS-2",
-            "title": "ISO 1101: Geometrical tolerancing",
-            "url": "https://www.iso.org/standard/79211.html",
+            "title": "ISO 1101:2017 — Geometrical product specifications (GPS) — Geometrical tolerancing — Tolerances of form, orientation, location and run-out",
+            "url": "https://www.iso.org/standard/66777.html",
             "type": "standard",
-            "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules."
+            "notes": "Defines the symbol language for geometrical tolerancing and the rules for interpreting those specifications."
           },
           {
             "ref_id": "REF-GPS-3",
-            "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
-            "url": "https://www.iso.org/standard/26209.html",
+            "title": "ISO 2768-1:1989 — General tolerances — Part 1: Tolerances for linear and angular dimensions without individual tolerance indications",
+            "url": "https://www.iso.org/standard/7748.html",
             "type": "standard",
-            "notes": "Default dimension tolerance classes when not individually specified."
+            "notes": "Specifies general tolerances for linear/angular dimensions without individual tolerances, in four tolerance classes, to simplify drawing indications."
           },
           {
             "ref_id": "REF-GPS-4",
-            "title": "ISO 2768-2: General geometrical tolerances",
-            "url": "https://www.iso.org/standard/26210.html",
+            "title": "ISO 2768-2:1989 — General tolerances — Part 2: Geometrical tolerances for features without individual tolerance indications (withdrawn)",
+            "url": "https://www.iso.org/standard/7749.html",
             "type": "standard",
-            "notes": "Default geometrical tolerances for unspecified features."
+            "notes": "ISO catalog indicates ISO 2768-2:1989 is withdrawn; ISO 22081:2021 is stated to cancel/replace it for general geometrical and size specifications."
           },
           {
             "ref_id": "REF-GPS-5",
@@ -180,10 +180,10 @@
           },
           {
             "ref_id": "REF-HYG-1",
-            "title": "EHEDG hygienic design guidance",
-            "url": "https://www.ehedg.org/guidelines",
+            "title": "EHEDG Guideline 8 (Doc 8) — Hygienic design principles (guidance)",
+            "url": "https://www.ehedg.org/guidelines-working-groups/guidelines/guidelines/detail/hygienic-design-principles",
             "type": "guide",
-            "notes": "Practical hygienic design heuristics for geometry and finish."
+            "notes": "EHEDG guidance outlining risk-based hygienic design considerations for entities intended for food manufacturing, emphasizing cleanability and contamination prevention."
           },
           {
             "ref_id": "REF-MDR-EU",
@@ -222,10 +222,10 @@
           },
           {
             "ref_id": "REF-THR-1",
-            "title": "ISO 965-1: Metric screw thread tolerances",
-            "url": "https://www.iso.org/standard/58999.html",
+            "title": "ISO 965-1:2013 — ISO general purpose metric screw threads — Tolerances — Part 1: Principles and basic data",
+            "url": "https://www.iso.org/standard/57721.html",
             "type": "standard",
-            "notes": "Tolerance positions and grades for metric threads."
+            "notes": "Provides principles and basic data for thread tolerancing in ISO metric screw thread system; ISO catalog shows a new revision is under publication intended to replace the 2013 edition."
           },
           {
             "ref_id": "REF-TOR-1",
@@ -322,10 +322,10 @@
           },
           {
             "ref_id": "REF-GPS-1",
-            "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
-            "url": "https://www.iso.org/standard/76602.html",
+            "title": "ISO 8015:2011 — Geometrical product specifications (GPS) — Fundamentals — Concepts, principles and rules",
+            "url": "https://www.iso.org/standard/55979.html",
             "type": "standard",
-            "notes": "Core GPS interpretation principles including independency.",
+            "notes": "Defines fundamental GPS concepts/principles/rules used for creating and interpreting geometrical product specifications.",
             "active_in_mode": true,
             "rules_considered": 6,
             "design_risk_findings": 0,
@@ -336,10 +336,10 @@
           },
           {
             "ref_id": "REF-GPS-2",
-            "title": "ISO 1101: Geometrical tolerancing",
-            "url": "https://www.iso.org/standard/79211.html",
+            "title": "ISO 1101:2017 — Geometrical product specifications (GPS) — Geometrical tolerancing — Tolerances of form, orientation, location and run-out",
+            "url": "https://www.iso.org/standard/66777.html",
             "type": "standard",
-            "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules.",
+            "notes": "Defines the symbol language for geometrical tolerancing and the rules for interpreting those specifications.",
             "active_in_mode": true,
             "rules_considered": 2,
             "design_risk_findings": 0,
@@ -350,10 +350,10 @@
           },
           {
             "ref_id": "REF-GPS-3",
-            "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
-            "url": "https://www.iso.org/standard/26209.html",
+            "title": "ISO 2768-1:1989 — General tolerances — Part 1: Tolerances for linear and angular dimensions without individual tolerance indications",
+            "url": "https://www.iso.org/standard/7748.html",
             "type": "standard",
-            "notes": "Default dimension tolerance classes when not individually specified.",
+            "notes": "Specifies general tolerances for linear/angular dimensions without individual tolerances, in four tolerance classes, to simplify drawing indications.",
             "active_in_mode": true,
             "rules_considered": 2,
             "design_risk_findings": 0,
@@ -364,10 +364,10 @@
           },
           {
             "ref_id": "REF-GPS-4",
-            "title": "ISO 2768-2: General geometrical tolerances",
-            "url": "https://www.iso.org/standard/26210.html",
+            "title": "ISO 2768-2:1989 — General tolerances — Part 2: Geometrical tolerances for features without individual tolerance indications (withdrawn)",
+            "url": "https://www.iso.org/standard/7749.html",
             "type": "standard",
-            "notes": "Default geometrical tolerances for unspecified features.",
+            "notes": "ISO catalog indicates ISO 2768-2:1989 is withdrawn; ISO 22081:2021 is stated to cancel/replace it for general geometrical and size specifications.",
             "active_in_mode": true,
             "rules_considered": 1,
             "design_risk_findings": 0,
@@ -392,10 +392,10 @@
           },
           {
             "ref_id": "REF-HYG-1",
-            "title": "EHEDG hygienic design guidance",
-            "url": "https://www.ehedg.org/guidelines",
+            "title": "EHEDG Guideline 8 (Doc 8) — Hygienic design principles (guidance)",
+            "url": "https://www.ehedg.org/guidelines-working-groups/guidelines/guidelines/detail/hygienic-design-principles",
             "type": "guide",
-            "notes": "Practical hygienic design heuristics for geometry and finish.",
+            "notes": "EHEDG guidance outlining risk-based hygienic design considerations for entities intended for food manufacturing, emphasizing cleanability and contamination prevention.",
             "active_in_mode": true,
             "rules_considered": 2,
             "design_risk_findings": 0,
@@ -476,10 +476,10 @@
           },
           {
             "ref_id": "REF-THR-1",
-            "title": "ISO 965-1: Metric screw thread tolerances",
-            "url": "https://www.iso.org/standard/58999.html",
+            "title": "ISO 965-1:2013 — ISO general purpose metric screw threads — Tolerances — Part 1: Principles and basic data",
+            "url": "https://www.iso.org/standard/57721.html",
             "type": "standard",
-            "notes": "Tolerance positions and grades for metric threads.",
+            "notes": "Provides principles and basic data for thread tolerancing in ISO metric screw thread system; ISO catalog shows a new revision is under publication intended to replace the 2013 edition.",
             "active_in_mode": true,
             "rules_considered": 2,
             "design_risk_findings": 0,
@@ -872,8 +872,8 @@
                 "pack_id": "A_DRAWING",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "\u201cDeburr/break edges\u201d requirement present if sharp edges unacceptable",
-                "description": "\u201cDeburr/break edges\u201d requirement present if sharp edges unacceptable",
+                "title": "“Deburr/break edges” requirement present if sharp edges unacceptable",
+                "description": "“Deburr/break edges” requirement present if sharp edges unacceptable",
                 "refs": [
                   "REF-GPS-1"
                 ],
@@ -898,8 +898,8 @@
                 "pack_id": "A_DRAWING",
                 "finding_type": "evidence_gap",
                 "severity": "critical",
-                "title": "Critical features have explicit tolerances (don\u2019t rely only on general tolerances)",
-                "description": "Critical features have explicit tolerances (don\u2019t rely only on general tolerances)",
+                "title": "Critical features have explicit tolerances (don’t rely only on general tolerances)",
+                "description": "Critical features have explicit tolerances (don’t rely only on general tolerances)",
                 "refs": [
                   "REF-GPS-3"
                 ],
@@ -950,8 +950,8 @@
                 "pack_id": "A_DRAWING",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Datum references exist on actual features (not \u201cfloating\u201d letters)",
-                "description": "Datum references exist on actual features (not \u201cfloating\u201d letters)",
+                "title": "Datum references exist on actual features (not “floating” letters)",
+                "description": "Datum references exist on actual features (not “floating” letters)",
                 "refs": [
                   "REF-GPS-2"
                 ],
@@ -1350,8 +1350,8 @@
                 "pack_id": "C_SHEET",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Min flange length \u2265 4\u00d7 thickness",
-                "description": "Min flange length \u2265 4\u00d7 thickness",
+                "title": "Min flange length ≥ 4× thickness",
+                "description": "Min flange length ≥ 4× thickness",
                 "refs": [
                   "REF-SM-1"
                 ],
@@ -1403,8 +1403,8 @@
                 "pack_id": "C_SHEET",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Hole/slot diameter \u2265 material thickness",
-                "description": "Hole/slot diameter \u2265 material thickness",
+                "title": "Hole/slot diameter ≥ material thickness",
+                "description": "Hole/slot diameter ≥ material thickness",
                 "refs": [
                   "REF-SM-1"
                 ],
@@ -1481,8 +1481,8 @@
                 "pack_id": "C_SHEET",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Tabs: width \u2265 2\u00d7t (or \u2265 3",
-                "description": "Tabs: width \u2265 2\u00d7t (or \u2265 3.2 mm) and length \u2264 5\u00d7 width",
+                "title": "Tabs: width ≥ 2×t (or ≥ 3",
+                "description": "Tabs: width ≥ 2×t (or ≥ 3.2 mm) and length ≤ 5× width",
                 "refs": [
                   "REF-SM-1"
                 ],
@@ -1507,8 +1507,8 @@
                 "pack_id": "C_SHEET",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Notches: width \u2265 t (or \u2265 1",
-                "description": "Notches: width \u2265 t (or \u2265 1.016 mm), length \u2264 5\u00d7 width",
+                "title": "Notches: width ≥ t (or ≥ 1",
+                "description": "Notches: width ≥ t (or ≥ 1.016 mm), length ≤ 5× width",
                 "refs": [
                   "REF-SM-1"
                 ],
@@ -1585,8 +1585,8 @@
                 "pack_id": "C_SHEET",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Bend angle tolerance expectation \u00b11\u00b0",
-                "description": "Bend angle tolerance expectation \u00b11\u00b0; flag if drawing demands tighter without process note",
+                "title": "Bend angle tolerance expectation ±1°",
+                "description": "Bend angle tolerance expectation ±1°; flag if drawing demands tighter without process note",
                 "refs": [
                   "REF-SM-1"
                 ],
@@ -1845,8 +1845,8 @@
                 "pack_id": "E_ASSEMBLY",
                 "finding_type": "evidence_gap",
                 "severity": "minor",
-                "title": "Reduce part count by combining parts where no \u201cminimum part criteria\u201d applies",
-                "description": "Reduce part count by combining parts where no \u201cminimum part criteria\u201d applies",
+                "title": "Reduce part count by combining parts where no “minimum part criteria” applies",
+                "description": "Reduce part count by combining parts where no “minimum part criteria” applies",
                 "refs": [
                   "REF-DFA-1"
                 ],
@@ -1975,8 +1975,8 @@
                 "pack_id": "E_ASSEMBLY",
                 "finding_type": "evidence_gap",
                 "severity": "minor",
-                "title": "Clear symmetry/asymmetry for orientation (avoid ambiguous \u201clooks same\u201d)",
-                "description": "Clear symmetry/asymmetry for orientation (avoid ambiguous \u201clooks same\u201d)",
+                "title": "Clear symmetry/asymmetry for orientation (avoid ambiguous “looks same”)",
+                "description": "Clear symmetry/asymmetry for orientation (avoid ambiguous “looks same”)",
                 "refs": [
                   "REF-DFA-1"
                 ],
@@ -2079,8 +2079,8 @@
                 "pack_id": "E_ASSEMBLY",
                 "finding_type": "evidence_gap",
                 "severity": "minor",
-                "title": "Clamp forces won\u2019t deform thin walls (flag clamp-sensitive areas)",
-                "description": "Clamp forces won\u2019t deform thin walls (flag clamp-sensitive areas)",
+                "title": "Clamp forces won’t deform thin walls (flag clamp-sensitive areas)",
+                "description": "Clamp forces won’t deform thin walls (flag clamp-sensitive areas)",
                 "refs": [
                   "REF-FIX-1"
                 ],
@@ -2261,8 +2261,8 @@
                 "pack_id": "F_OVERLAY",
                 "finding_type": "evidence_gap",
                 "severity": "critical",
-                "title": "Risk management process (ISO 14971): hazards \u2192 risk controls \u2192 residual risk monitoring",
-                "description": "Risk management process (ISO 14971): hazards \u2192 risk controls \u2192 residual risk monitoring",
+                "title": "Risk management process (ISO 14971): hazards → risk controls → residual risk monitoring",
+                "description": "Risk management process (ISO 14971): hazards → risk controls → residual risk monitoring",
                 "refs": [
                   "REF-MED-RISK"
                 ],
@@ -2338,6 +2338,17 @@
                 }
               }
             ],
+            "coverage_summary": {
+              "rules_considered": 65,
+              "checks_evaluated": 0,
+              "checks_passed": 0,
+              "design_risk_findings": 0,
+              "blocked_by_missing_inputs": 63,
+              "checks_unresolved": 2,
+              "checks_no_evaluator": 2,
+              "checks_unsupported_inputs": 0,
+              "evaluated_ratio": 0.0
+            },
             "standards_used_auto": [
               {
                 "ref_id": "REF-AUTO-QMS",
@@ -2376,31 +2387,31 @@
               },
               {
                 "ref_id": "REF-GPS-1",
-                "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
-                "url": "https://www.iso.org/standard/76602.html",
+                "title": "ISO 8015:2011 — Geometrical product specifications (GPS) — Fundamentals — Concepts, principles and rules",
+                "url": "https://www.iso.org/standard/55979.html",
                 "type": "standard",
-                "notes": "Core GPS interpretation principles including independency."
+                "notes": "Defines fundamental GPS concepts/principles/rules used for creating and interpreting geometrical product specifications."
               },
               {
                 "ref_id": "REF-GPS-2",
-                "title": "ISO 1101: Geometrical tolerancing",
-                "url": "https://www.iso.org/standard/79211.html",
+                "title": "ISO 1101:2017 — Geometrical product specifications (GPS) — Geometrical tolerancing — Tolerances of form, orientation, location and run-out",
+                "url": "https://www.iso.org/standard/66777.html",
                 "type": "standard",
-                "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules."
+                "notes": "Defines the symbol language for geometrical tolerancing and the rules for interpreting those specifications."
               },
               {
                 "ref_id": "REF-GPS-3",
-                "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
-                "url": "https://www.iso.org/standard/26209.html",
+                "title": "ISO 2768-1:1989 — General tolerances — Part 1: Tolerances for linear and angular dimensions without individual tolerance indications",
+                "url": "https://www.iso.org/standard/7748.html",
                 "type": "standard",
-                "notes": "Default dimension tolerance classes when not individually specified."
+                "notes": "Specifies general tolerances for linear/angular dimensions without individual tolerances, in four tolerance classes, to simplify drawing indications."
               },
               {
                 "ref_id": "REF-GPS-4",
-                "title": "ISO 2768-2: General geometrical tolerances",
-                "url": "https://www.iso.org/standard/26210.html",
+                "title": "ISO 2768-2:1989 — General tolerances — Part 2: Geometrical tolerances for features without individual tolerance indications (withdrawn)",
+                "url": "https://www.iso.org/standard/7749.html",
                 "type": "standard",
-                "notes": "Default geometrical tolerances for unspecified features."
+                "notes": "ISO catalog indicates ISO 2768-2:1989 is withdrawn; ISO 22081:2021 is stated to cancel/replace it for general geometrical and size specifications."
               },
               {
                 "ref_id": "REF-GPS-5",
@@ -2411,10 +2422,10 @@
               },
               {
                 "ref_id": "REF-HYG-1",
-                "title": "EHEDG hygienic design guidance",
-                "url": "https://www.ehedg.org/guidelines",
+                "title": "EHEDG Guideline 8 (Doc 8) — Hygienic design principles (guidance)",
+                "url": "https://www.ehedg.org/guidelines-working-groups/guidelines/guidelines/detail/hygienic-design-principles",
                 "type": "guide",
-                "notes": "Practical hygienic design heuristics for geometry and finish."
+                "notes": "EHEDG guidance outlining risk-based hygienic design considerations for entities intended for food manufacturing, emphasizing cleanability and contamination prevention."
               },
               {
                 "ref_id": "REF-MDR-EU",
@@ -2453,10 +2464,10 @@
               },
               {
                 "ref_id": "REF-THR-1",
-                "title": "ISO 965-1: Metric screw thread tolerances",
-                "url": "https://www.iso.org/standard/58999.html",
+                "title": "ISO 965-1:2013 — ISO general purpose metric screw threads — Tolerances — Part 1: Principles and basic data",
+                "url": "https://www.iso.org/standard/57721.html",
                 "type": "standard",
-                "notes": "Tolerance positions and grades for metric threads."
+                "notes": "Provides principles and basic data for thread tolerancing in ISO metric screw thread system; ISO catalog shows a new revision is under publication intended to replace the 2013 edition."
               },
               {
                 "ref_id": "REF-TOR-1",
@@ -2553,10 +2564,10 @@
               },
               {
                 "ref_id": "REF-GPS-1",
-                "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
-                "url": "https://www.iso.org/standard/76602.html",
+                "title": "ISO 8015:2011 — Geometrical product specifications (GPS) — Fundamentals — Concepts, principles and rules",
+                "url": "https://www.iso.org/standard/55979.html",
                 "type": "standard",
-                "notes": "Core GPS interpretation principles including independency.",
+                "notes": "Defines fundamental GPS concepts/principles/rules used for creating and interpreting geometrical product specifications.",
                 "active_in_mode": true,
                 "rules_considered": 6,
                 "design_risk_findings": 0,
@@ -2567,10 +2578,10 @@
               },
               {
                 "ref_id": "REF-GPS-2",
-                "title": "ISO 1101: Geometrical tolerancing",
-                "url": "https://www.iso.org/standard/79211.html",
+                "title": "ISO 1101:2017 — Geometrical product specifications (GPS) — Geometrical tolerancing — Tolerances of form, orientation, location and run-out",
+                "url": "https://www.iso.org/standard/66777.html",
                 "type": "standard",
-                "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules.",
+                "notes": "Defines the symbol language for geometrical tolerancing and the rules for interpreting those specifications.",
                 "active_in_mode": true,
                 "rules_considered": 2,
                 "design_risk_findings": 0,
@@ -2581,10 +2592,10 @@
               },
               {
                 "ref_id": "REF-GPS-3",
-                "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
-                "url": "https://www.iso.org/standard/26209.html",
+                "title": "ISO 2768-1:1989 — General tolerances — Part 1: Tolerances for linear and angular dimensions without individual tolerance indications",
+                "url": "https://www.iso.org/standard/7748.html",
                 "type": "standard",
-                "notes": "Default dimension tolerance classes when not individually specified.",
+                "notes": "Specifies general tolerances for linear/angular dimensions without individual tolerances, in four tolerance classes, to simplify drawing indications.",
                 "active_in_mode": true,
                 "rules_considered": 2,
                 "design_risk_findings": 0,
@@ -2595,10 +2606,10 @@
               },
               {
                 "ref_id": "REF-GPS-4",
-                "title": "ISO 2768-2: General geometrical tolerances",
-                "url": "https://www.iso.org/standard/26210.html",
+                "title": "ISO 2768-2:1989 — General tolerances — Part 2: Geometrical tolerances for features without individual tolerance indications (withdrawn)",
+                "url": "https://www.iso.org/standard/7749.html",
                 "type": "standard",
-                "notes": "Default geometrical tolerances for unspecified features.",
+                "notes": "ISO catalog indicates ISO 2768-2:1989 is withdrawn; ISO 22081:2021 is stated to cancel/replace it for general geometrical and size specifications.",
                 "active_in_mode": true,
                 "rules_considered": 1,
                 "design_risk_findings": 0,
@@ -2623,10 +2634,10 @@
               },
               {
                 "ref_id": "REF-HYG-1",
-                "title": "EHEDG hygienic design guidance",
-                "url": "https://www.ehedg.org/guidelines",
+                "title": "EHEDG Guideline 8 (Doc 8) — Hygienic design principles (guidance)",
+                "url": "https://www.ehedg.org/guidelines-working-groups/guidelines/guidelines/detail/hygienic-design-principles",
                 "type": "guide",
-                "notes": "Practical hygienic design heuristics for geometry and finish.",
+                "notes": "EHEDG guidance outlining risk-based hygienic design considerations for entities intended for food manufacturing, emphasizing cleanability and contamination prevention.",
                 "active_in_mode": true,
                 "rules_considered": 2,
                 "design_risk_findings": 0,
@@ -2707,10 +2718,10 @@
               },
               {
                 "ref_id": "REF-THR-1",
-                "title": "ISO 965-1: Metric screw thread tolerances",
-                "url": "https://www.iso.org/standard/58999.html",
+                "title": "ISO 965-1:2013 — ISO general purpose metric screw threads — Tolerances — Part 1: Principles and basic data",
+                "url": "https://www.iso.org/standard/57721.html",
                 "type": "standard",
-                "notes": "Tolerance positions and grades for metric threads.",
+                "notes": "Provides principles and basic data for thread tolerancing in ISO metric screw thread system; ISO catalog shows a new revision is under publication intended to replace the 2013 edition.",
                 "active_in_mode": true,
                 "rules_considered": 2,
                 "design_risk_findings": 0,
@@ -3062,31 +3073,31 @@
           },
           {
             "ref_id": "REF-GPS-1",
-            "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
-            "url": "https://www.iso.org/standard/76602.html",
+            "title": "ISO 8015:2011 — Geometrical product specifications (GPS) — Fundamentals — Concepts, principles and rules",
+            "url": "https://www.iso.org/standard/55979.html",
             "type": "standard",
-            "notes": "Core GPS interpretation principles including independency."
+            "notes": "Defines fundamental GPS concepts/principles/rules used for creating and interpreting geometrical product specifications."
           },
           {
             "ref_id": "REF-GPS-2",
-            "title": "ISO 1101: Geometrical tolerancing",
-            "url": "https://www.iso.org/standard/79211.html",
+            "title": "ISO 1101:2017 — Geometrical product specifications (GPS) — Geometrical tolerancing — Tolerances of form, orientation, location and run-out",
+            "url": "https://www.iso.org/standard/66777.html",
             "type": "standard",
-            "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules."
+            "notes": "Defines the symbol language for geometrical tolerancing and the rules for interpreting those specifications."
           },
           {
             "ref_id": "REF-GPS-3",
-            "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
-            "url": "https://www.iso.org/standard/26209.html",
+            "title": "ISO 2768-1:1989 — General tolerances — Part 1: Tolerances for linear and angular dimensions without individual tolerance indications",
+            "url": "https://www.iso.org/standard/7748.html",
             "type": "standard",
-            "notes": "Default dimension tolerance classes when not individually specified."
+            "notes": "Specifies general tolerances for linear/angular dimensions without individual tolerances, in four tolerance classes, to simplify drawing indications."
           },
           {
             "ref_id": "REF-GPS-4",
-            "title": "ISO 2768-2: General geometrical tolerances",
-            "url": "https://www.iso.org/standard/26210.html",
+            "title": "ISO 2768-2:1989 — General tolerances — Part 2: Geometrical tolerances for features without individual tolerance indications (withdrawn)",
+            "url": "https://www.iso.org/standard/7749.html",
             "type": "standard",
-            "notes": "Default geometrical tolerances for unspecified features."
+            "notes": "ISO catalog indicates ISO 2768-2:1989 is withdrawn; ISO 22081:2021 is stated to cancel/replace it for general geometrical and size specifications."
           },
           {
             "ref_id": "REF-GPS-5",
@@ -3097,10 +3108,10 @@
           },
           {
             "ref_id": "REF-HYG-1",
-            "title": "EHEDG hygienic design guidance",
-            "url": "https://www.ehedg.org/guidelines",
+            "title": "EHEDG Guideline 8 (Doc 8) — Hygienic design principles (guidance)",
+            "url": "https://www.ehedg.org/guidelines-working-groups/guidelines/guidelines/detail/hygienic-design-principles",
             "type": "guide",
-            "notes": "Practical hygienic design heuristics for geometry and finish."
+            "notes": "EHEDG guidance outlining risk-based hygienic design considerations for entities intended for food manufacturing, emphasizing cleanability and contamination prevention."
           },
           {
             "ref_id": "REF-MDR-EU",
@@ -3139,10 +3150,10 @@
           },
           {
             "ref_id": "REF-THR-1",
-            "title": "ISO 965-1: Metric screw thread tolerances",
-            "url": "https://www.iso.org/standard/58999.html",
+            "title": "ISO 965-1:2013 — ISO general purpose metric screw threads — Tolerances — Part 1: Principles and basic data",
+            "url": "https://www.iso.org/standard/57721.html",
             "type": "standard",
-            "notes": "Tolerance positions and grades for metric threads."
+            "notes": "Provides principles and basic data for thread tolerancing in ISO metric screw thread system; ISO catalog shows a new revision is under publication intended to replace the 2013 edition."
           },
           {
             "ref_id": "REF-TOR-1",
@@ -3295,10 +3306,10 @@
           },
           {
             "ref_id": "REF-GPS-1",
-            "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
-            "url": "https://www.iso.org/standard/76602.html",
+            "title": "ISO 8015:2011 — Geometrical product specifications (GPS) — Fundamentals — Concepts, principles and rules",
+            "url": "https://www.iso.org/standard/55979.html",
             "type": "standard",
-            "notes": "Core GPS interpretation principles including independency.",
+            "notes": "Defines fundamental GPS concepts/principles/rules used for creating and interpreting geometrical product specifications.",
             "active_in_mode": true,
             "rules_considered": 12,
             "design_risk_findings": 0,
@@ -3309,10 +3320,10 @@
           },
           {
             "ref_id": "REF-GPS-2",
-            "title": "ISO 1101: Geometrical tolerancing",
-            "url": "https://www.iso.org/standard/79211.html",
+            "title": "ISO 1101:2017 — Geometrical product specifications (GPS) — Geometrical tolerancing — Tolerances of form, orientation, location and run-out",
+            "url": "https://www.iso.org/standard/66777.html",
             "type": "standard",
-            "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules.",
+            "notes": "Defines the symbol language for geometrical tolerancing and the rules for interpreting those specifications.",
             "active_in_mode": true,
             "rules_considered": 5,
             "design_risk_findings": 0,
@@ -3323,10 +3334,10 @@
           },
           {
             "ref_id": "REF-GPS-3",
-            "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
-            "url": "https://www.iso.org/standard/26209.html",
+            "title": "ISO 2768-1:1989 — General tolerances — Part 1: Tolerances for linear and angular dimensions without individual tolerance indications",
+            "url": "https://www.iso.org/standard/7748.html",
             "type": "standard",
-            "notes": "Default dimension tolerance classes when not individually specified.",
+            "notes": "Specifies general tolerances for linear/angular dimensions without individual tolerances, in four tolerance classes, to simplify drawing indications.",
             "active_in_mode": true,
             "rules_considered": 4,
             "design_risk_findings": 0,
@@ -3337,10 +3348,10 @@
           },
           {
             "ref_id": "REF-GPS-4",
-            "title": "ISO 2768-2: General geometrical tolerances",
-            "url": "https://www.iso.org/standard/26210.html",
+            "title": "ISO 2768-2:1989 — General tolerances — Part 2: Geometrical tolerances for features without individual tolerance indications (withdrawn)",
+            "url": "https://www.iso.org/standard/7749.html",
             "type": "standard",
-            "notes": "Default geometrical tolerances for unspecified features.",
+            "notes": "ISO catalog indicates ISO 2768-2:1989 is withdrawn; ISO 22081:2021 is stated to cancel/replace it for general geometrical and size specifications.",
             "active_in_mode": true,
             "rules_considered": 2,
             "design_risk_findings": 0,
@@ -3365,10 +3376,10 @@
           },
           {
             "ref_id": "REF-HYG-1",
-            "title": "EHEDG hygienic design guidance",
-            "url": "https://www.ehedg.org/guidelines",
+            "title": "EHEDG Guideline 8 (Doc 8) — Hygienic design principles (guidance)",
+            "url": "https://www.ehedg.org/guidelines-working-groups/guidelines/guidelines/detail/hygienic-design-principles",
             "type": "guide",
-            "notes": "Practical hygienic design heuristics for geometry and finish.",
+            "notes": "EHEDG guidance outlining risk-based hygienic design considerations for entities intended for food manufacturing, emphasizing cleanability and contamination prevention.",
             "active_in_mode": true,
             "rules_considered": 4,
             "design_risk_findings": 0,
@@ -3449,10 +3460,10 @@
           },
           {
             "ref_id": "REF-THR-1",
-            "title": "ISO 965-1: Metric screw thread tolerances",
-            "url": "https://www.iso.org/standard/58999.html",
+            "title": "ISO 965-1:2013 — ISO general purpose metric screw threads — Tolerances — Part 1: Principles and basic data",
+            "url": "https://www.iso.org/standard/57721.html",
             "type": "standard",
-            "notes": "Tolerance positions and grades for metric threads.",
+            "notes": "Provides principles and basic data for thread tolerancing in ISO metric screw thread system; ISO catalog shows a new revision is under publication intended to replace the 2013 edition.",
             "active_in_mode": true,
             "rules_considered": 4,
             "design_risk_findings": 0,
@@ -3933,8 +3944,8 @@
                 "pack_id": "A_DRAWING",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "\u201cDeburr/break edges\u201d requirement present if sharp edges unacceptable",
-                "description": "\u201cDeburr/break edges\u201d requirement present if sharp edges unacceptable",
+                "title": "“Deburr/break edges” requirement present if sharp edges unacceptable",
+                "description": "“Deburr/break edges” requirement present if sharp edges unacceptable",
                 "refs": [
                   "REF-GPS-1"
                 ],
@@ -3959,8 +3970,8 @@
                 "pack_id": "A_DRAWING",
                 "finding_type": "evidence_gap",
                 "severity": "critical",
-                "title": "Critical features have explicit tolerances (don\u2019t rely only on general tolerances)",
-                "description": "Critical features have explicit tolerances (don\u2019t rely only on general tolerances)",
+                "title": "Critical features have explicit tolerances (don’t rely only on general tolerances)",
+                "description": "Critical features have explicit tolerances (don’t rely only on general tolerances)",
                 "refs": [
                   "REF-GPS-3"
                 ],
@@ -4011,8 +4022,8 @@
                 "pack_id": "A_DRAWING",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Datum references exist on actual features (not \u201cfloating\u201d letters)",
-                "description": "Datum references exist on actual features (not \u201cfloating\u201d letters)",
+                "title": "Datum references exist on actual features (not “floating” letters)",
+                "description": "Datum references exist on actual features (not “floating” letters)",
                 "refs": [
                   "REF-GPS-2"
                 ],
@@ -4411,8 +4422,8 @@
                 "pack_id": "B_CNC",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Min wall thickness check vs material class (thin walls \u2192 vibration/warp risk)",
-                "description": "Min wall thickness check vs material class (thin walls \u2192 vibration/warp risk)",
+                "title": "Min wall thickness check vs material class (thin walls → vibration/warp risk)",
+                "description": "Min wall thickness check vs material class (thin walls → vibration/warp risk)",
                 "refs": [
                   "REF-CNC-1",
                   "REF-CNC-2"
@@ -4440,8 +4451,8 @@
                 "pack_id": "B_CNC",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Deep holes: recommended depth ~4\u00d7D, hard max ~10\u00d7D (flag beyond)",
-                "description": "Deep holes: recommended depth ~4\u00d7D, hard max ~10\u00d7D (flag beyond)",
+                "title": "Deep holes: recommended depth ~4×D, hard max ~10×D (flag beyond)",
+                "description": "Deep holes: recommended depth ~4×D, hard max ~10×D (flag beyond)",
                 "refs": [
                   "REF-CNC-1"
                 ],
@@ -4467,8 +4478,8 @@
                 "pack_id": "B_CNC",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Prefer standard drill diameters (non-standard \u2192 milling/time)",
-                "description": "Prefer standard drill diameters (non-standard \u2192 milling/time)",
+                "title": "Prefer standard drill diameters (non-standard → milling/time)",
+                "description": "Prefer standard drill diameters (non-standard → milling/time)",
                 "refs": [
                   "REF-CNC-1"
                 ],
@@ -4520,8 +4531,8 @@
                 "pack_id": "B_CNC",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Pocket internal corners: small radius \u2192 small tool \u2192 depth limits/cost",
-                "description": "Pocket internal corners: small radius \u2192 small tool \u2192 depth limits/cost",
+                "title": "Pocket internal corners: small radius → small tool → depth limits/cost",
+                "description": "Pocket internal corners: small radius → small tool → depth limits/cost",
                 "refs": [
                   "REF-CNC-2"
                 ],
@@ -4574,8 +4585,8 @@
                 "pack_id": "B_CNC",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Avoid \u201craised islands/bosses\u201d if they require removing whole face volume (cost driver)",
-                "description": "Avoid \u201craised islands/bosses\u201d if they require removing whole face volume (cost driver)",
+                "title": "Avoid “raised islands/bosses” if they require removing whole face volume (cost driver)",
+                "description": "Avoid “raised islands/bosses” if they require removing whole face volume (cost driver)",
                 "refs": [
                   "REF-CNC-2"
                 ],
@@ -4679,8 +4690,8 @@
                 "pack_id": "B_CNC",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Tool access: internal corner smaller than tool radius \u2192 redesign (relief/teardrop)",
-                "description": "Tool access: internal corner smaller than tool radius \u2192 redesign (relief/teardrop)",
+                "title": "Tool access: internal corner smaller than tool radius → redesign (relief/teardrop)",
+                "description": "Tool access: internal corner smaller than tool radius → redesign (relief/teardrop)",
                 "refs": [
                   "REF-CNC-2"
                 ],
@@ -4786,8 +4797,8 @@
                 "pack_id": "B_CNC",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Tight tolerance on thin wall features \u2192 likely scrap risk",
-                "description": "Tight tolerance on thin wall features \u2192 likely scrap risk; suggest redesign or add stock",
+                "title": "Tight tolerance on thin wall features → likely scrap risk",
+                "description": "Tight tolerance on thin wall features → likely scrap risk; suggest redesign or add stock",
                 "refs": [
                   "REF-CNC-1"
                 ],
@@ -4812,8 +4823,8 @@
                 "pack_id": "B_CNC",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Tight positional tolerances without datum strategy \u2192 inspection/machining risk",
-                "description": "Tight positional tolerances without datum strategy \u2192 inspection/machining risk",
+                "title": "Tight positional tolerances without datum strategy → inspection/machining risk",
+                "description": "Tight positional tolerances without datum strategy → inspection/machining risk",
                 "refs": [
                   "REF-GPS-2"
                 ],
@@ -4838,8 +4849,8 @@
                 "pack_id": "B_CNC",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Surface finish Ra very low on large area \u2192 time/cost",
-                "description": "Surface finish Ra very low on large area \u2192 time/cost; suggest selective finishing",
+                "title": "Surface finish Ra very low on large area → time/cost",
+                "description": "Surface finish Ra very low on large area → time/cost; suggest selective finishing",
                 "refs": [
                   "REF-GPS-5",
                   "REF-CNC-2"
@@ -4865,8 +4876,8 @@
                 "pack_id": "B_CNC",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Threaded holes too close to edge \u2192 breakout risk",
-                "description": "Threaded holes too close to edge \u2192 breakout risk; suggest move/add boss",
+                "title": "Threaded holes too close to edge → breakout risk",
+                "description": "Threaded holes too close to edge → breakout risk; suggest move/add boss",
                 "refs": [
                   "REF-CNC-1"
                 ],
@@ -4891,8 +4902,8 @@
                 "pack_id": "B_CNC",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Deep pocket with small corner radius \u2192 cost driver",
-                "description": "Deep pocket with small corner radius \u2192 cost driver; suggest larger radius or split part",
+                "title": "Deep pocket with small corner radius → cost driver",
+                "description": "Deep pocket with small corner radius → cost driver; suggest larger radius or split part",
                 "refs": [
                   "REF-CNC-2",
                   "REF-CNC-3"
@@ -5025,8 +5036,8 @@
                 "pack_id": "B_CNC",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Min hole sizes for turning (axial/radial) \u2014 flag below",
-                "description": "Min hole sizes for turning (axial/radial) \u2014 flag below",
+                "title": "Min hole sizes for turning (axial/radial) — flag below",
+                "description": "Min hole sizes for turning (axial/radial) — flag below",
                 "refs": [
                   "REF-CNC-4"
                 ],
@@ -5053,7 +5064,7 @@
                 "finding_type": "evidence_gap",
                 "severity": "major",
                 "title": "Long slender turned sections: flag chatter risk",
-                "description": "Long slender turned sections: flag chatter risk; recommend support/geometry change.   GD&T \u2194 machining feasibility bridge",
+                "description": "Long slender turned sections: flag chatter risk; recommend support/geometry change.   GD&T ↔ machining feasibility bridge",
                 "refs": [
                   "REF-CNC-4"
                 ],
@@ -5078,8 +5089,8 @@
                 "pack_id": "E_ASSEMBLY",
                 "finding_type": "evidence_gap",
                 "severity": "minor",
-                "title": "Reduce part count by combining parts where no \u201cminimum part criteria\u201d applies",
-                "description": "Reduce part count by combining parts where no \u201cminimum part criteria\u201d applies",
+                "title": "Reduce part count by combining parts where no “minimum part criteria” applies",
+                "description": "Reduce part count by combining parts where no “minimum part criteria” applies",
                 "refs": [
                   "REF-DFA-1"
                 ],
@@ -5208,8 +5219,8 @@
                 "pack_id": "E_ASSEMBLY",
                 "finding_type": "evidence_gap",
                 "severity": "minor",
-                "title": "Clear symmetry/asymmetry for orientation (avoid ambiguous \u201clooks same\u201d)",
-                "description": "Clear symmetry/asymmetry for orientation (avoid ambiguous \u201clooks same\u201d)",
+                "title": "Clear symmetry/asymmetry for orientation (avoid ambiguous “looks same”)",
+                "description": "Clear symmetry/asymmetry for orientation (avoid ambiguous “looks same”)",
                 "refs": [
                   "REF-DFA-1"
                 ],
@@ -5312,8 +5323,8 @@
                 "pack_id": "E_ASSEMBLY",
                 "finding_type": "evidence_gap",
                 "severity": "minor",
-                "title": "Clamp forces won\u2019t deform thin walls (flag clamp-sensitive areas)",
-                "description": "Clamp forces won\u2019t deform thin walls (flag clamp-sensitive areas)",
+                "title": "Clamp forces won’t deform thin walls (flag clamp-sensitive areas)",
+                "description": "Clamp forces won’t deform thin walls (flag clamp-sensitive areas)",
                 "refs": [
                   "REF-FIX-1"
                 ],
@@ -5494,8 +5505,8 @@
                 "pack_id": "F_OVERLAY",
                 "finding_type": "evidence_gap",
                 "severity": "critical",
-                "title": "Risk management process (ISO 14971): hazards \u2192 risk controls \u2192 residual risk monitoring",
-                "description": "Risk management process (ISO 14971): hazards \u2192 risk controls \u2192 residual risk monitoring",
+                "title": "Risk management process (ISO 14971): hazards → risk controls → residual risk monitoring",
+                "description": "Risk management process (ISO 14971): hazards → risk controls → residual risk monitoring",
                 "refs": [
                   "REF-MED-RISK"
                 ],
@@ -5571,6 +5582,17 @@
                 }
               }
             ],
+            "coverage_summary": {
+              "rules_considered": 70,
+              "checks_evaluated": 0,
+              "checks_passed": 0,
+              "design_risk_findings": 0,
+              "blocked_by_missing_inputs": 69,
+              "checks_unresolved": 1,
+              "checks_no_evaluator": 1,
+              "checks_unsupported_inputs": 0,
+              "evaluated_ratio": 0.0
+            },
             "standards_used_auto": [
               {
                 "ref_id": "REF-AUTO-QMS",
@@ -5637,31 +5659,31 @@
               },
               {
                 "ref_id": "REF-GPS-1",
-                "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
-                "url": "https://www.iso.org/standard/76602.html",
+                "title": "ISO 8015:2011 — Geometrical product specifications (GPS) — Fundamentals — Concepts, principles and rules",
+                "url": "https://www.iso.org/standard/55979.html",
                 "type": "standard",
-                "notes": "Core GPS interpretation principles including independency."
+                "notes": "Defines fundamental GPS concepts/principles/rules used for creating and interpreting geometrical product specifications."
               },
               {
                 "ref_id": "REF-GPS-2",
-                "title": "ISO 1101: Geometrical tolerancing",
-                "url": "https://www.iso.org/standard/79211.html",
+                "title": "ISO 1101:2017 — Geometrical product specifications (GPS) — Geometrical tolerancing — Tolerances of form, orientation, location and run-out",
+                "url": "https://www.iso.org/standard/66777.html",
                 "type": "standard",
-                "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules."
+                "notes": "Defines the symbol language for geometrical tolerancing and the rules for interpreting those specifications."
               },
               {
                 "ref_id": "REF-GPS-3",
-                "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
-                "url": "https://www.iso.org/standard/26209.html",
+                "title": "ISO 2768-1:1989 — General tolerances — Part 1: Tolerances for linear and angular dimensions without individual tolerance indications",
+                "url": "https://www.iso.org/standard/7748.html",
                 "type": "standard",
-                "notes": "Default dimension tolerance classes when not individually specified."
+                "notes": "Specifies general tolerances for linear/angular dimensions without individual tolerances, in four tolerance classes, to simplify drawing indications."
               },
               {
                 "ref_id": "REF-GPS-4",
-                "title": "ISO 2768-2: General geometrical tolerances",
-                "url": "https://www.iso.org/standard/26210.html",
+                "title": "ISO 2768-2:1989 — General tolerances — Part 2: Geometrical tolerances for features without individual tolerance indications (withdrawn)",
+                "url": "https://www.iso.org/standard/7749.html",
                 "type": "standard",
-                "notes": "Default geometrical tolerances for unspecified features."
+                "notes": "ISO catalog indicates ISO 2768-2:1989 is withdrawn; ISO 22081:2021 is stated to cancel/replace it for general geometrical and size specifications."
               },
               {
                 "ref_id": "REF-GPS-5",
@@ -5672,10 +5694,10 @@
               },
               {
                 "ref_id": "REF-HYG-1",
-                "title": "EHEDG hygienic design guidance",
-                "url": "https://www.ehedg.org/guidelines",
+                "title": "EHEDG Guideline 8 (Doc 8) — Hygienic design principles (guidance)",
+                "url": "https://www.ehedg.org/guidelines-working-groups/guidelines/guidelines/detail/hygienic-design-principles",
                 "type": "guide",
-                "notes": "Practical hygienic design heuristics for geometry and finish."
+                "notes": "EHEDG guidance outlining risk-based hygienic design considerations for entities intended for food manufacturing, emphasizing cleanability and contamination prevention."
               },
               {
                 "ref_id": "REF-MDR-EU",
@@ -5707,10 +5729,10 @@
               },
               {
                 "ref_id": "REF-THR-1",
-                "title": "ISO 965-1: Metric screw thread tolerances",
-                "url": "https://www.iso.org/standard/58999.html",
+                "title": "ISO 965-1:2013 — ISO general purpose metric screw threads — Tolerances — Part 1: Principles and basic data",
+                "url": "https://www.iso.org/standard/57721.html",
                 "type": "standard",
-                "notes": "Tolerance positions and grades for metric threads."
+                "notes": "Provides principles and basic data for thread tolerancing in ISO metric screw thread system; ISO catalog shows a new revision is under publication intended to replace the 2013 edition."
               },
               {
                 "ref_id": "REF-TOR-1",
@@ -5863,10 +5885,10 @@
               },
               {
                 "ref_id": "REF-GPS-1",
-                "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
-                "url": "https://www.iso.org/standard/76602.html",
+                "title": "ISO 8015:2011 — Geometrical product specifications (GPS) — Fundamentals — Concepts, principles and rules",
+                "url": "https://www.iso.org/standard/55979.html",
                 "type": "standard",
-                "notes": "Core GPS interpretation principles including independency.",
+                "notes": "Defines fundamental GPS concepts/principles/rules used for creating and interpreting geometrical product specifications.",
                 "active_in_mode": true,
                 "rules_considered": 6,
                 "design_risk_findings": 0,
@@ -5877,10 +5899,10 @@
               },
               {
                 "ref_id": "REF-GPS-2",
-                "title": "ISO 1101: Geometrical tolerancing",
-                "url": "https://www.iso.org/standard/79211.html",
+                "title": "ISO 1101:2017 — Geometrical product specifications (GPS) — Geometrical tolerancing — Tolerances of form, orientation, location and run-out",
+                "url": "https://www.iso.org/standard/66777.html",
                 "type": "standard",
-                "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules.",
+                "notes": "Defines the symbol language for geometrical tolerancing and the rules for interpreting those specifications.",
                 "active_in_mode": true,
                 "rules_considered": 3,
                 "design_risk_findings": 0,
@@ -5891,10 +5913,10 @@
               },
               {
                 "ref_id": "REF-GPS-3",
-                "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
-                "url": "https://www.iso.org/standard/26209.html",
+                "title": "ISO 2768-1:1989 — General tolerances — Part 1: Tolerances for linear and angular dimensions without individual tolerance indications",
+                "url": "https://www.iso.org/standard/7748.html",
                 "type": "standard",
-                "notes": "Default dimension tolerance classes when not individually specified.",
+                "notes": "Specifies general tolerances for linear/angular dimensions without individual tolerances, in four tolerance classes, to simplify drawing indications.",
                 "active_in_mode": true,
                 "rules_considered": 2,
                 "design_risk_findings": 0,
@@ -5905,10 +5927,10 @@
               },
               {
                 "ref_id": "REF-GPS-4",
-                "title": "ISO 2768-2: General geometrical tolerances",
-                "url": "https://www.iso.org/standard/26210.html",
+                "title": "ISO 2768-2:1989 — General tolerances — Part 2: Geometrical tolerances for features without individual tolerance indications (withdrawn)",
+                "url": "https://www.iso.org/standard/7749.html",
                 "type": "standard",
-                "notes": "Default geometrical tolerances for unspecified features.",
+                "notes": "ISO catalog indicates ISO 2768-2:1989 is withdrawn; ISO 22081:2021 is stated to cancel/replace it for general geometrical and size specifications.",
                 "active_in_mode": true,
                 "rules_considered": 1,
                 "design_risk_findings": 0,
@@ -5933,10 +5955,10 @@
               },
               {
                 "ref_id": "REF-HYG-1",
-                "title": "EHEDG hygienic design guidance",
-                "url": "https://www.ehedg.org/guidelines",
+                "title": "EHEDG Guideline 8 (Doc 8) — Hygienic design principles (guidance)",
+                "url": "https://www.ehedg.org/guidelines-working-groups/guidelines/guidelines/detail/hygienic-design-principles",
                 "type": "guide",
-                "notes": "Practical hygienic design heuristics for geometry and finish.",
+                "notes": "EHEDG guidance outlining risk-based hygienic design considerations for entities intended for food manufacturing, emphasizing cleanability and contamination prevention.",
                 "active_in_mode": true,
                 "rules_considered": 2,
                 "design_risk_findings": 0,
@@ -6003,10 +6025,10 @@
               },
               {
                 "ref_id": "REF-THR-1",
-                "title": "ISO 965-1: Metric screw thread tolerances",
-                "url": "https://www.iso.org/standard/58999.html",
+                "title": "ISO 965-1:2013 — ISO general purpose metric screw threads — Tolerances — Part 1: Principles and basic data",
+                "url": "https://www.iso.org/standard/57721.html",
                 "type": "standard",
-                "notes": "Tolerance positions and grades for metric threads.",
+                "notes": "Provides principles and basic data for thread tolerancing in ISO metric screw thread system; ISO catalog shows a new revision is under publication intended to replace the 2013 edition.",
                 "active_in_mode": true,
                 "rules_considered": 2,
                 "design_risk_findings": 0,
@@ -6425,8 +6447,8 @@
                 "pack_id": "A_DRAWING",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "\u201cDeburr/break edges\u201d requirement present if sharp edges unacceptable",
-                "description": "\u201cDeburr/break edges\u201d requirement present if sharp edges unacceptable",
+                "title": "“Deburr/break edges” requirement present if sharp edges unacceptable",
+                "description": "“Deburr/break edges” requirement present if sharp edges unacceptable",
                 "refs": [
                   "REF-GPS-1"
                 ],
@@ -6451,8 +6473,8 @@
                 "pack_id": "A_DRAWING",
                 "finding_type": "evidence_gap",
                 "severity": "critical",
-                "title": "Critical features have explicit tolerances (don\u2019t rely only on general tolerances)",
-                "description": "Critical features have explicit tolerances (don\u2019t rely only on general tolerances)",
+                "title": "Critical features have explicit tolerances (don’t rely only on general tolerances)",
+                "description": "Critical features have explicit tolerances (don’t rely only on general tolerances)",
                 "refs": [
                   "REF-GPS-3"
                 ],
@@ -6503,8 +6525,8 @@
                 "pack_id": "A_DRAWING",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Datum references exist on actual features (not \u201cfloating\u201d letters)",
-                "description": "Datum references exist on actual features (not \u201cfloating\u201d letters)",
+                "title": "Datum references exist on actual features (not “floating” letters)",
+                "description": "Datum references exist on actual features (not “floating” letters)",
                 "refs": [
                   "REF-GPS-2"
                 ],
@@ -6903,8 +6925,8 @@
                 "pack_id": "C_SHEET",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Min flange length \u2265 4\u00d7 thickness",
-                "description": "Min flange length \u2265 4\u00d7 thickness",
+                "title": "Min flange length ≥ 4× thickness",
+                "description": "Min flange length ≥ 4× thickness",
                 "refs": [
                   "REF-SM-1"
                 ],
@@ -6956,8 +6978,8 @@
                 "pack_id": "C_SHEET",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Hole/slot diameter \u2265 material thickness",
-                "description": "Hole/slot diameter \u2265 material thickness",
+                "title": "Hole/slot diameter ≥ material thickness",
+                "description": "Hole/slot diameter ≥ material thickness",
                 "refs": [
                   "REF-SM-1"
                 ],
@@ -7034,8 +7056,8 @@
                 "pack_id": "C_SHEET",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Tabs: width \u2265 2\u00d7t (or \u2265 3",
-                "description": "Tabs: width \u2265 2\u00d7t (or \u2265 3.2 mm) and length \u2264 5\u00d7 width",
+                "title": "Tabs: width ≥ 2×t (or ≥ 3",
+                "description": "Tabs: width ≥ 2×t (or ≥ 3.2 mm) and length ≤ 5× width",
                 "refs": [
                   "REF-SM-1"
                 ],
@@ -7060,8 +7082,8 @@
                 "pack_id": "C_SHEET",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Notches: width \u2265 t (or \u2265 1",
-                "description": "Notches: width \u2265 t (or \u2265 1.016 mm), length \u2264 5\u00d7 width",
+                "title": "Notches: width ≥ t (or ≥ 1",
+                "description": "Notches: width ≥ t (or ≥ 1.016 mm), length ≤ 5× width",
                 "refs": [
                   "REF-SM-1"
                 ],
@@ -7138,8 +7160,8 @@
                 "pack_id": "C_SHEET",
                 "finding_type": "evidence_gap",
                 "severity": "major",
-                "title": "Bend angle tolerance expectation \u00b11\u00b0",
-                "description": "Bend angle tolerance expectation \u00b11\u00b0; flag if drawing demands tighter without process note",
+                "title": "Bend angle tolerance expectation ±1°",
+                "description": "Bend angle tolerance expectation ±1°; flag if drawing demands tighter without process note",
                 "refs": [
                   "REF-SM-1"
                 ],
@@ -7398,8 +7420,8 @@
                 "pack_id": "E_ASSEMBLY",
                 "finding_type": "evidence_gap",
                 "severity": "minor",
-                "title": "Reduce part count by combining parts where no \u201cminimum part criteria\u201d applies",
-                "description": "Reduce part count by combining parts where no \u201cminimum part criteria\u201d applies",
+                "title": "Reduce part count by combining parts where no “minimum part criteria” applies",
+                "description": "Reduce part count by combining parts where no “minimum part criteria” applies",
                 "refs": [
                   "REF-DFA-1"
                 ],
@@ -7528,8 +7550,8 @@
                 "pack_id": "E_ASSEMBLY",
                 "finding_type": "evidence_gap",
                 "severity": "minor",
-                "title": "Clear symmetry/asymmetry for orientation (avoid ambiguous \u201clooks same\u201d)",
-                "description": "Clear symmetry/asymmetry for orientation (avoid ambiguous \u201clooks same\u201d)",
+                "title": "Clear symmetry/asymmetry for orientation (avoid ambiguous “looks same”)",
+                "description": "Clear symmetry/asymmetry for orientation (avoid ambiguous “looks same”)",
                 "refs": [
                   "REF-DFA-1"
                 ],
@@ -7632,8 +7654,8 @@
                 "pack_id": "E_ASSEMBLY",
                 "finding_type": "evidence_gap",
                 "severity": "minor",
-                "title": "Clamp forces won\u2019t deform thin walls (flag clamp-sensitive areas)",
-                "description": "Clamp forces won\u2019t deform thin walls (flag clamp-sensitive areas)",
+                "title": "Clamp forces won’t deform thin walls (flag clamp-sensitive areas)",
+                "description": "Clamp forces won’t deform thin walls (flag clamp-sensitive areas)",
                 "refs": [
                   "REF-FIX-1"
                 ],
@@ -7814,8 +7836,8 @@
                 "pack_id": "F_OVERLAY",
                 "finding_type": "evidence_gap",
                 "severity": "critical",
-                "title": "Risk management process (ISO 14971): hazards \u2192 risk controls \u2192 residual risk monitoring",
-                "description": "Risk management process (ISO 14971): hazards \u2192 risk controls \u2192 residual risk monitoring",
+                "title": "Risk management process (ISO 14971): hazards → risk controls → residual risk monitoring",
+                "description": "Risk management process (ISO 14971): hazards → risk controls → residual risk monitoring",
                 "refs": [
                   "REF-MED-RISK"
                 ],
@@ -7891,6 +7913,17 @@
                 }
               }
             ],
+            "coverage_summary": {
+              "rules_considered": 65,
+              "checks_evaluated": 0,
+              "checks_passed": 0,
+              "design_risk_findings": 0,
+              "blocked_by_missing_inputs": 63,
+              "checks_unresolved": 2,
+              "checks_no_evaluator": 2,
+              "checks_unsupported_inputs": 0,
+              "evaluated_ratio": 0.0
+            },
             "standards_used_auto": [
               {
                 "ref_id": "REF-AUTO-QMS",
@@ -7929,31 +7962,31 @@
               },
               {
                 "ref_id": "REF-GPS-1",
-                "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
-                "url": "https://www.iso.org/standard/76602.html",
+                "title": "ISO 8015:2011 — Geometrical product specifications (GPS) — Fundamentals — Concepts, principles and rules",
+                "url": "https://www.iso.org/standard/55979.html",
                 "type": "standard",
-                "notes": "Core GPS interpretation principles including independency."
+                "notes": "Defines fundamental GPS concepts/principles/rules used for creating and interpreting geometrical product specifications."
               },
               {
                 "ref_id": "REF-GPS-2",
-                "title": "ISO 1101: Geometrical tolerancing",
-                "url": "https://www.iso.org/standard/79211.html",
+                "title": "ISO 1101:2017 — Geometrical product specifications (GPS) — Geometrical tolerancing — Tolerances of form, orientation, location and run-out",
+                "url": "https://www.iso.org/standard/66777.html",
                 "type": "standard",
-                "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules."
+                "notes": "Defines the symbol language for geometrical tolerancing and the rules for interpreting those specifications."
               },
               {
                 "ref_id": "REF-GPS-3",
-                "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
-                "url": "https://www.iso.org/standard/26209.html",
+                "title": "ISO 2768-1:1989 — General tolerances — Part 1: Tolerances for linear and angular dimensions without individual tolerance indications",
+                "url": "https://www.iso.org/standard/7748.html",
                 "type": "standard",
-                "notes": "Default dimension tolerance classes when not individually specified."
+                "notes": "Specifies general tolerances for linear/angular dimensions without individual tolerances, in four tolerance classes, to simplify drawing indications."
               },
               {
                 "ref_id": "REF-GPS-4",
-                "title": "ISO 2768-2: General geometrical tolerances",
-                "url": "https://www.iso.org/standard/26210.html",
+                "title": "ISO 2768-2:1989 — General tolerances — Part 2: Geometrical tolerances for features without individual tolerance indications (withdrawn)",
+                "url": "https://www.iso.org/standard/7749.html",
                 "type": "standard",
-                "notes": "Default geometrical tolerances for unspecified features."
+                "notes": "ISO catalog indicates ISO 2768-2:1989 is withdrawn; ISO 22081:2021 is stated to cancel/replace it for general geometrical and size specifications."
               },
               {
                 "ref_id": "REF-GPS-5",
@@ -7964,10 +7997,10 @@
               },
               {
                 "ref_id": "REF-HYG-1",
-                "title": "EHEDG hygienic design guidance",
-                "url": "https://www.ehedg.org/guidelines",
+                "title": "EHEDG Guideline 8 (Doc 8) — Hygienic design principles (guidance)",
+                "url": "https://www.ehedg.org/guidelines-working-groups/guidelines/guidelines/detail/hygienic-design-principles",
                 "type": "guide",
-                "notes": "Practical hygienic design heuristics for geometry and finish."
+                "notes": "EHEDG guidance outlining risk-based hygienic design considerations for entities intended for food manufacturing, emphasizing cleanability and contamination prevention."
               },
               {
                 "ref_id": "REF-MDR-EU",
@@ -8006,10 +8039,10 @@
               },
               {
                 "ref_id": "REF-THR-1",
-                "title": "ISO 965-1: Metric screw thread tolerances",
-                "url": "https://www.iso.org/standard/58999.html",
+                "title": "ISO 965-1:2013 — ISO general purpose metric screw threads — Tolerances — Part 1: Principles and basic data",
+                "url": "https://www.iso.org/standard/57721.html",
                 "type": "standard",
-                "notes": "Tolerance positions and grades for metric threads."
+                "notes": "Provides principles and basic data for thread tolerancing in ISO metric screw thread system; ISO catalog shows a new revision is under publication intended to replace the 2013 edition."
               },
               {
                 "ref_id": "REF-TOR-1",
@@ -8106,10 +8139,10 @@
               },
               {
                 "ref_id": "REF-GPS-1",
-                "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
-                "url": "https://www.iso.org/standard/76602.html",
+                "title": "ISO 8015:2011 — Geometrical product specifications (GPS) — Fundamentals — Concepts, principles and rules",
+                "url": "https://www.iso.org/standard/55979.html",
                 "type": "standard",
-                "notes": "Core GPS interpretation principles including independency.",
+                "notes": "Defines fundamental GPS concepts/principles/rules used for creating and interpreting geometrical product specifications.",
                 "active_in_mode": true,
                 "rules_considered": 6,
                 "design_risk_findings": 0,
@@ -8120,10 +8153,10 @@
               },
               {
                 "ref_id": "REF-GPS-2",
-                "title": "ISO 1101: Geometrical tolerancing",
-                "url": "https://www.iso.org/standard/79211.html",
+                "title": "ISO 1101:2017 — Geometrical product specifications (GPS) — Geometrical tolerancing — Tolerances of form, orientation, location and run-out",
+                "url": "https://www.iso.org/standard/66777.html",
                 "type": "standard",
-                "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules.",
+                "notes": "Defines the symbol language for geometrical tolerancing and the rules for interpreting those specifications.",
                 "active_in_mode": true,
                 "rules_considered": 2,
                 "design_risk_findings": 0,
@@ -8134,10 +8167,10 @@
               },
               {
                 "ref_id": "REF-GPS-3",
-                "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
-                "url": "https://www.iso.org/standard/26209.html",
+                "title": "ISO 2768-1:1989 — General tolerances — Part 1: Tolerances for linear and angular dimensions without individual tolerance indications",
+                "url": "https://www.iso.org/standard/7748.html",
                 "type": "standard",
-                "notes": "Default dimension tolerance classes when not individually specified.",
+                "notes": "Specifies general tolerances for linear/angular dimensions without individual tolerances, in four tolerance classes, to simplify drawing indications.",
                 "active_in_mode": true,
                 "rules_considered": 2,
                 "design_risk_findings": 0,
@@ -8148,10 +8181,10 @@
               },
               {
                 "ref_id": "REF-GPS-4",
-                "title": "ISO 2768-2: General geometrical tolerances",
-                "url": "https://www.iso.org/standard/26210.html",
+                "title": "ISO 2768-2:1989 — General tolerances — Part 2: Geometrical tolerances for features without individual tolerance indications (withdrawn)",
+                "url": "https://www.iso.org/standard/7749.html",
                 "type": "standard",
-                "notes": "Default geometrical tolerances for unspecified features.",
+                "notes": "ISO catalog indicates ISO 2768-2:1989 is withdrawn; ISO 22081:2021 is stated to cancel/replace it for general geometrical and size specifications.",
                 "active_in_mode": true,
                 "rules_considered": 1,
                 "design_risk_findings": 0,
@@ -8176,10 +8209,10 @@
               },
               {
                 "ref_id": "REF-HYG-1",
-                "title": "EHEDG hygienic design guidance",
-                "url": "https://www.ehedg.org/guidelines",
+                "title": "EHEDG Guideline 8 (Doc 8) — Hygienic design principles (guidance)",
+                "url": "https://www.ehedg.org/guidelines-working-groups/guidelines/guidelines/detail/hygienic-design-principles",
                 "type": "guide",
-                "notes": "Practical hygienic design heuristics for geometry and finish.",
+                "notes": "EHEDG guidance outlining risk-based hygienic design considerations for entities intended for food manufacturing, emphasizing cleanability and contamination prevention.",
                 "active_in_mode": true,
                 "rules_considered": 2,
                 "design_risk_findings": 0,
@@ -8260,10 +8293,10 @@
               },
               {
                 "ref_id": "REF-THR-1",
-                "title": "ISO 965-1: Metric screw thread tolerances",
-                "url": "https://www.iso.org/standard/58999.html",
+                "title": "ISO 965-1:2013 — ISO general purpose metric screw threads — Tolerances — Part 1: Principles and basic data",
+                "url": "https://www.iso.org/standard/57721.html",
                 "type": "standard",
-                "notes": "Tolerance positions and grades for metric threads.",
+                "notes": "Provides principles and basic data for thread tolerancing in ISO metric screw thread system; ISO catalog shows a new revision is under publication intended to replace the 2013 edition.",
                 "active_in_mode": true,
                 "rules_considered": 2,
                 "design_risk_findings": 0,
@@ -8585,10 +8618,10 @@
           },
           {
             "ref_id": "REF-GPS-1",
-            "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
-            "url": "https://www.iso.org/standard/76602.html",
+            "title": "ISO 8015:2011 — Geometrical product specifications (GPS) — Fundamentals — Concepts, principles and rules",
+            "url": "https://www.iso.org/standard/55979.html",
             "type": "standard",
-            "notes": "Core GPS interpretation principles including independency.",
+            "notes": "Defines fundamental GPS concepts/principles/rules used for creating and interpreting geometrical product specifications.",
             "active_in_mode": true,
             "rules_considered": 6,
             "design_risk_findings": 0,
@@ -8599,10 +8632,10 @@
           },
           {
             "ref_id": "REF-GPS-2",
-            "title": "ISO 1101: Geometrical tolerancing",
-            "url": "https://www.iso.org/standard/79211.html",
+            "title": "ISO 1101:2017 — Geometrical product specifications (GPS) — Geometrical tolerancing — Tolerances of form, orientation, location and run-out",
+            "url": "https://www.iso.org/standard/66777.html",
             "type": "standard",
-            "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules.",
+            "notes": "Defines the symbol language for geometrical tolerancing and the rules for interpreting those specifications.",
             "active_in_mode": true,
             "rules_considered": 2,
             "design_risk_findings": 0,
@@ -8613,10 +8646,10 @@
           },
           {
             "ref_id": "REF-GPS-3",
-            "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
-            "url": "https://www.iso.org/standard/26209.html",
+            "title": "ISO 2768-1:1989 — General tolerances — Part 1: Tolerances for linear and angular dimensions without individual tolerance indications",
+            "url": "https://www.iso.org/standard/7748.html",
             "type": "standard",
-            "notes": "Default dimension tolerance classes when not individually specified.",
+            "notes": "Specifies general tolerances for linear/angular dimensions without individual tolerances, in four tolerance classes, to simplify drawing indications.",
             "active_in_mode": true,
             "rules_considered": 2,
             "design_risk_findings": 0,
@@ -8627,10 +8660,10 @@
           },
           {
             "ref_id": "REF-GPS-4",
-            "title": "ISO 2768-2: General geometrical tolerances",
-            "url": "https://www.iso.org/standard/26210.html",
+            "title": "ISO 2768-2:1989 — General tolerances — Part 2: Geometrical tolerances for features without individual tolerance indications (withdrawn)",
+            "url": "https://www.iso.org/standard/7749.html",
             "type": "standard",
-            "notes": "Default geometrical tolerances for unspecified features.",
+            "notes": "ISO catalog indicates ISO 2768-2:1989 is withdrawn; ISO 22081:2021 is stated to cancel/replace it for general geometrical and size specifications.",
             "active_in_mode": true,
             "rules_considered": 1,
             "design_risk_findings": 0,
@@ -8655,10 +8688,10 @@
           },
           {
             "ref_id": "REF-HYG-1",
-            "title": "EHEDG hygienic design guidance",
-            "url": "https://www.ehedg.org/guidelines",
+            "title": "EHEDG Guideline 8 (Doc 8) — Hygienic design principles (guidance)",
+            "url": "https://www.ehedg.org/guidelines-working-groups/guidelines/guidelines/detail/hygienic-design-principles",
             "type": "guide",
-            "notes": "Practical hygienic design heuristics for geometry and finish.",
+            "notes": "EHEDG guidance outlining risk-based hygienic design considerations for entities intended for food manufacturing, emphasizing cleanability and contamination prevention.",
             "active_in_mode": true,
             "rules_considered": 1,
             "design_risk_findings": 0,
@@ -8697,10 +8730,10 @@
           },
           {
             "ref_id": "REF-THR-1",
-            "title": "ISO 965-1: Metric screw thread tolerances",
-            "url": "https://www.iso.org/standard/58999.html",
+            "title": "ISO 965-1:2013 — ISO general purpose metric screw threads — Tolerances — Part 1: Principles and basic data",
+            "url": "https://www.iso.org/standard/57721.html",
             "type": "standard",
-            "notes": "Tolerance positions and grades for metric threads.",
+            "notes": "Provides principles and basic data for thread tolerancing in ISO metric screw thread system; ISO catalog shows a new revision is under publication intended to replace the 2013 edition.",
             "active_in_mode": true,
             "rules_considered": 2,
             "design_risk_findings": 0,
@@ -8896,6 +8929,17 @@
             "analysis_mode": "full",
             "finding_count": 0,
             "findings": [],
+            "coverage_summary": {
+              "rules_considered": 25,
+              "checks_evaluated": 0,
+              "checks_passed": 0,
+              "design_risk_findings": 0,
+              "blocked_by_missing_inputs": 0,
+              "checks_unresolved": 25,
+              "checks_no_evaluator": 25,
+              "checks_unsupported_inputs": 0,
+              "evaluated_ratio": 0.0
+            },
             "standards_used_auto": [],
             "standards_trace": [
               {
@@ -8956,10 +9000,10 @@
               },
               {
                 "ref_id": "REF-GPS-1",
-                "title": "ISO 8015: Geometrical product specifications (GPS) - Fundamentals",
-                "url": "https://www.iso.org/standard/76602.html",
+                "title": "ISO 8015:2011 — Geometrical product specifications (GPS) — Fundamentals — Concepts, principles and rules",
+                "url": "https://www.iso.org/standard/55979.html",
                 "type": "standard",
-                "notes": "Core GPS interpretation principles including independency.",
+                "notes": "Defines fundamental GPS concepts/principles/rules used for creating and interpreting geometrical product specifications.",
                 "active_in_mode": true,
                 "rules_considered": 6,
                 "design_risk_findings": 0,
@@ -8970,10 +9014,10 @@
               },
               {
                 "ref_id": "REF-GPS-2",
-                "title": "ISO 1101: Geometrical tolerancing",
-                "url": "https://www.iso.org/standard/79211.html",
+                "title": "ISO 1101:2017 — Geometrical product specifications (GPS) — Geometrical tolerancing — Tolerances of form, orientation, location and run-out",
+                "url": "https://www.iso.org/standard/66777.html",
                 "type": "standard",
-                "notes": "Defines GD&T symbols, datum relations, and tolerance-zone rules.",
+                "notes": "Defines the symbol language for geometrical tolerancing and the rules for interpreting those specifications.",
                 "active_in_mode": true,
                 "rules_considered": 2,
                 "design_risk_findings": 0,
@@ -8984,10 +9028,10 @@
               },
               {
                 "ref_id": "REF-GPS-3",
-                "title": "ISO 2768-1: General tolerances for linear/angular dimensions",
-                "url": "https://www.iso.org/standard/26209.html",
+                "title": "ISO 2768-1:1989 — General tolerances — Part 1: Tolerances for linear and angular dimensions without individual tolerance indications",
+                "url": "https://www.iso.org/standard/7748.html",
                 "type": "standard",
-                "notes": "Default dimension tolerance classes when not individually specified.",
+                "notes": "Specifies general tolerances for linear/angular dimensions without individual tolerances, in four tolerance classes, to simplify drawing indications.",
                 "active_in_mode": true,
                 "rules_considered": 2,
                 "design_risk_findings": 0,
@@ -8998,10 +9042,10 @@
               },
               {
                 "ref_id": "REF-GPS-4",
-                "title": "ISO 2768-2: General geometrical tolerances",
-                "url": "https://www.iso.org/standard/26210.html",
+                "title": "ISO 2768-2:1989 — General tolerances — Part 2: Geometrical tolerances for features without individual tolerance indications (withdrawn)",
+                "url": "https://www.iso.org/standard/7749.html",
                 "type": "standard",
-                "notes": "Default geometrical tolerances for unspecified features.",
+                "notes": "ISO catalog indicates ISO 2768-2:1989 is withdrawn; ISO 22081:2021 is stated to cancel/replace it for general geometrical and size specifications.",
                 "active_in_mode": true,
                 "rules_considered": 1,
                 "design_risk_findings": 0,
@@ -9026,10 +9070,10 @@
               },
               {
                 "ref_id": "REF-HYG-1",
-                "title": "EHEDG hygienic design guidance",
-                "url": "https://www.ehedg.org/guidelines",
+                "title": "EHEDG Guideline 8 (Doc 8) — Hygienic design principles (guidance)",
+                "url": "https://www.ehedg.org/guidelines-working-groups/guidelines/guidelines/detail/hygienic-design-principles",
                 "type": "guide",
-                "notes": "Practical hygienic design heuristics for geometry and finish.",
+                "notes": "EHEDG guidance outlining risk-based hygienic design considerations for entities intended for food manufacturing, emphasizing cleanability and contamination prevention.",
                 "active_in_mode": true,
                 "rules_considered": 1,
                 "design_risk_findings": 0,
@@ -9068,10 +9112,10 @@
               },
               {
                 "ref_id": "REF-THR-1",
-                "title": "ISO 965-1: Metric screw thread tolerances",
-                "url": "https://www.iso.org/standard/58999.html",
+                "title": "ISO 965-1:2013 — ISO general purpose metric screw threads — Tolerances — Part 1: Principles and basic data",
+                "url": "https://www.iso.org/standard/57721.html",
                 "type": "standard",
-                "notes": "Tolerance positions and grades for metric threads.",
+                "notes": "Provides principles and basic data for thread tolerancing in ISO metric screw thread system; ISO catalog shows a new revision is under publication intended to replace the 2013 edition.",
                 "active_in_mode": true,
                 "rules_considered": 2,
                 "design_risk_findings": 0,
