@@ -142,6 +142,7 @@ type DfmReviewFinding = {
   severity: string;
   title?: string;
   refs: string[];
+  standard_clause?: string;
   recommended_action?: string;
   expected_impact?: DfmFindingExpectedImpact;
 };
@@ -700,19 +701,51 @@ const DfmReviewSidebar = ({
     return null;
   };
 
-  const renderFindingItem = (route: DfmReviewRoute, finding: DfmReviewFinding) => (
-    <li key={`${route.plan_id}-${finding.rule_id}-${finding.pack_id}-${finding.finding_type ?? "unknown"}`}>
-      <strong>{finding.rule_id}</strong> [{finding.severity}] {finding.title ?? "Untitled rule"}
-      {finding.refs.length ? <span> refs: {finding.refs.join(", ")}</span> : null}
-      {finding.recommended_action ? <div className="dfm-sidebar__finding-action">{finding.recommended_action}</div> : null}
-      {finding.expected_impact ? (
-        <div className="dfm-sidebar__finding-impact">
-          Impact: risk {finding.expected_impact.risk_reduction ?? "-"}, cost {finding.expected_impact.cost_impact ?? "-"},
-          lead-time {finding.expected_impact.lead_time_impact ?? "-"}.
-        </div>
-      ) : null}
-    </li>
-  );
+  const renderFindingItem = (route: DfmReviewRoute, finding: DfmReviewFinding) => {
+    const standardsByRefId = new Map<string, DfmStandardRef>();
+    route.standards_used_auto.forEach((standard) => {
+      standardsByRefId.set(standard.ref_id, standard);
+    });
+    reviewV2Result?.standards_used_auto_union.forEach((standard) => {
+      if (!standardsByRefId.has(standard.ref_id)) {
+        standardsByRefId.set(standard.ref_id, standard);
+      }
+    });
+    return (
+      <li key={`${route.plan_id}-${finding.rule_id}-${finding.pack_id}-${finding.finding_type ?? "unknown"}`}>
+        <strong>{finding.rule_id}</strong> [{finding.severity}] {finding.title ?? "Untitled rule"}
+        {finding.refs.length ? (
+          <div className="dfm-sidebar__finding-standards">
+            Standards:{" "}
+            {finding.refs.map((refId, index) => {
+              const standard = standardsByRefId.get(refId);
+              const label = standard?.title ? `${standard.title} (${refId})` : refId;
+              return (
+                <span key={`${finding.rule_id}-${refId}`}>
+                  {index > 0 ? "; " : ""}
+                  {standard?.url ? (
+                    <a href={standard.url} target="_blank" rel="noreferrer">
+                      {label}
+                    </a>
+                  ) : (
+                    label
+                  )}
+                </span>
+              );
+            })}
+          </div>
+        ) : null}
+        {finding.standard_clause ? <div className="dfm-sidebar__finding-clause">Clause: {finding.standard_clause}</div> : null}
+        {finding.recommended_action ? <div className="dfm-sidebar__finding-action">{finding.recommended_action}</div> : null}
+        {finding.expected_impact ? (
+          <div className="dfm-sidebar__finding-impact">
+            Impact: risk {finding.expected_impact.risk_reduction ?? "-"}, cost {finding.expected_impact.cost_impact ?? "-"},
+            lead-time {finding.expected_impact.lead_time_impact ?? "-"}.
+          </div>
+        ) : null}
+      </li>
+    );
+  };
 
   return (
     <aside className={`sidebar-panel sidebar-panel--right ${open ? "sidebar-panel--open" : ""}`}>

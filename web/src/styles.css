@@ -816,6 +816,29 @@ h4 {
   line-height: 1.35;
 }
 
+.dfm-sidebar__finding-standards {
+  margin-top: 4px;
+  color: var(--text-2);
+  font-size: 0.73rem;
+  line-height: 1.35;
+}
+
+.dfm-sidebar__finding-standards a {
+  color: #214f95;
+  text-decoration: none;
+}
+
+.dfm-sidebar__finding-standards a:hover {
+  text-decoration: underline;
+}
+
+.dfm-sidebar__finding-clause {
+  margin-top: 2px;
+  color: var(--text-2);
+  font-size: 0.72rem;
+  line-height: 1.3;
+}
+
 .dfm-sidebar__finding-impact {
   margin-top: 2px;
   color: #5a4b21;
