@@ -27,3 +27,36 @@ Each line below is generated from git commits and includes date + summary.
 
 - 2026-02-24 | `1ec5bca` | Show standard provenance directly in DFM findings
   <!-- commit:1ec5bca3cdffdad2a10043fb3be1a1e0e336ca4b -->
+
+- 2026-02-24 | `76be234` | feat(dfm): integrate pilot standards pipeline and fusion review scaffolding
+  <!-- commit:76be234fafd0eb085c83e552b9570aded44aed44 -->
+
+- 2026-02-24 | `a8963ed` | refactor(dfm-ui): simplify primary controls and move overrides to advanced
+  <!-- commit:a8963edc55b8c717794a5c0a17961d2e4a07ff44 -->
+
+- 2026-02-24 | `22d5c32` | feat(dfm): add all-standards overlays and flatten standards profile selection
+  <!-- commit:22d5c32d68400e1b42ca62dfa1dd4c00aa54efc9 -->
+
+- 2026-02-24 | `57d1938` | refactor(dfm-ui): expose single all-standards option in standards profile
+  <!-- commit:57d1938d019a380becbd2f9e4d8487caafeb1c33 -->
+
+- 2026-02-24 | `4871818` | refactor(dfm-ui): move result filters to analysis controls and keep output collapsible
+  <!-- commit:48718188e30e5afebdfb3568fb46eec5b2d2ba1e -->
+
+- 2026-02-24 | `4b2a92e` | refactor(dfm-ui): remove findings focus filter from analysis controls
+  <!-- commit:4b2a92e565b972f9c3a2bde40626eba3325a7581 -->
+
+- 2026-02-24 | `3e7b63a` | refine dfm sidebar layout and compact analysis info
+  <!-- commit:3e7b63a22fb38d420734b97c3533f74b41d46ddb -->
+
+- 2026-02-24 | `98722a8` | Use Aptos fonts for body and headings
+  <!-- commit:98722a876bcd7d8273591b124d1092595378e343 -->
+
+- 2026-02-24 | `fd9069c` | Phase1+2: golden rebaseline workflow, CI gate, evaluator expansion, coverage summary
+  <!-- commit:fd9069ca523b3e3fc648b3d2ccc85091da183c58 -->
+
+- 2026-02-24 | `8962e4b` | Add Phase 5 analysis-run traceability and model-area finding focus for Vision/Fusion
+  <!-- commit:8962e4bc8ebef3578c486b4286bf529e5c448ce7 -->
+
+- 2026-02-24 | `8962e4b` | feat(fusion): add analysis run manifest and model focus overlays
+  <!-- commit:8962e4bc8ebef3578c486b4286bf529e5c448ce7 -->
