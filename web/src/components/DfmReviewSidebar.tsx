@@ -264,9 +264,9 @@ const DEFAULT_FLOW_ORDER = [
 ];
 
 type ProcessOverrideMode = "profile" | "auto" | "force";
-type OverlayOverrideMode = "profile" | "pilot" | "force";
 type AnalysisModeRuntime = "geometry_dfm" | "drawing_spec" | "full";
-type AnalysisMode = AnalysisModeRuntime | "pilot_strict";
+type AnalysisMode = AnalysisModeRuntime;
+type StandardsProfileSelection = "profile_auto" | "none" | "pilot" | `overlay:${string}`;
 const PILOT_OVERLAY_ID = "pilot_prototype";
 const PILOT_STRICT_ESSENTIAL_RULE_IDS = new Set<string>([
   "CNC-005",
@@ -303,8 +303,8 @@ const DfmReviewSidebar = ({
   const [analysisMode, setAnalysisMode] = useState<AnalysisMode>("geometry_dfm");
   const [processOverrideMode, setProcessOverrideMode] = useState<ProcessOverrideMode>("auto");
   const [forcedProcessId, setForcedProcessId] = useState("");
-  const [overlayOverrideMode, setOverlayOverrideMode] = useState<OverlayOverrideMode>("pilot");
-  const [forcedOverlayId, setForcedOverlayId] = useState("");
+  const [standardsProfileSelection, setStandardsProfileSelection] =
+    useState<StandardsProfileSelection>("profile_auto");
   const [selectedRoleId, setSelectedRoleId] = useState("");
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [modelTemplates, setModelTemplates] = useState<DfmModelTemplate[]>([]);
@@ -312,6 +312,7 @@ const DfmReviewSidebar = ({
   const [selectedAdvancedModel, setSelectedAdvancedModel] = useState("");
   const [runBothIfMismatch, setRunBothIfMismatch] = useState(true);
   const [showEvidenceGaps, setShowEvidenceGaps] = useState(false);
+  const [pilotStrictFilter, setPilotStrictFilter] = useState(false);
   const [reviewV2Result, setReviewV2Result] = useState<DfmReviewV2Response | null>(null);
 
   const panelBindings = useMemo(() => {
@@ -377,6 +378,11 @@ const DfmReviewSidebar = ({
     return dfmConfig?.overlays.find((overlay) => overlay.overlay_id === PILOT_OVERLAY_ID) ?? null;
   }, [dfmConfig]);
 
+  const standardsOverlayOptions = useMemo(() => {
+    if (!dfmConfig?.overlays?.length) return [];
+    return dfmConfig.overlays.filter((overlay) => overlay.overlay_id !== PILOT_OVERLAY_ID);
+  }, [dfmConfig]);
+
   const mismatchBanner = useMemo(() => {
     if (!reviewV2Result?.mismatch?.has_mismatch) return null;
     if (reviewV2Result.mismatch.banner) return reviewV2Result.mismatch.banner;
@@ -389,6 +395,7 @@ const DfmReviewSidebar = ({
   useEffect(() => {
     setError(null);
     setReviewV2Result(null);
+    setPilotStrictFilter(false);
   }, [modelId, selectedComponent?.nodeName]);
 
   useEffect(() => {
@@ -465,9 +472,7 @@ const DfmReviewSidebar = ({
     setSelectedTemplateId((current) => current || templateFallback);
 
     const firstProcess = dfmConfig.processes[0]?.process_id ?? "";
-    const firstOverlay = dfmConfig.overlays[0]?.overlay_id ?? "";
     setForcedProcessId((current) => current || firstProcess);
-    setForcedOverlayId((current) => current || firstOverlay);
 
     const runBothDefault = controlsById.get("run_both_if_mismatch")?.default;
     if (typeof runBothDefault === "boolean") {
@@ -523,19 +528,21 @@ const DfmReviewSidebar = ({
       if (selectedAdvancedModel) {
         contextPayload.advanced_llm_model = selectedAdvancedModel;
       }
-      const effectiveOverlayMode: OverlayOverrideMode =
-        overlayOverrideMode === "pilot" && !pilotOverlay ? "profile" : overlayOverrideMode;
-      const selectedOverlayId =
-        effectiveOverlayMode === "force"
-          ? forcedOverlayId || null
-          : effectiveOverlayMode === "pilot"
-          ? pilotOverlay?.overlay_id ?? null
-          : null;
-      const overlaySelectionMode = effectiveOverlayMode === "profile" ? "profile" : "override";
+      let selectedOverlayId: string | null = null;
+      let overlaySelectionMode: "none" | "profile" | "override" = "profile";
+      if (standardsProfileSelection === "none") {
+        overlaySelectionMode = "none";
+      } else if (standardsProfileSelection === "pilot") {
+        overlaySelectionMode = "override";
+        selectedOverlayId = pilotOverlay?.overlay_id ?? null;
+      } else if (standardsProfileSelection.startsWith("overlay:")) {
+        overlaySelectionMode = "override";
+        selectedOverlayId = standardsProfileSelection.slice("overlay:".length) || null;
+      }
 
       const planningInputs = {
         extracted_part_facts: {},
-        analysis_mode: (analysisMode === "pilot_strict" ? "geometry_dfm" : analysisMode) as AnalysisModeRuntime,
+        analysis_mode: analysisMode as AnalysisModeRuntime,
         selected_process_override: processOverrideMode === "force" ? forcedProcessId || null : null,
         selected_overlay: selectedOverlayId,
         process_selection_mode: processOverrideMode === "force" ? "override" : processOverrideMode,
@@ -603,17 +610,14 @@ const DfmReviewSidebar = ({
     if (controlId === "analysis_mode") {
       return (
         <label key={controlId} className="dfm-sidebar__field dfm-sidebar__flow-step">
-          <span>Analysis mode</span>
+          <span>Input scope</span>
           <select value={analysisMode} onChange={(event) => setAnalysisMode(event.target.value as AnalysisMode)}>
             <option value="geometry_dfm">Geometry DFM (STEP-only)</option>
-            <option value="pilot_strict">Pilot strict (PSTD + essential geometry)</option>
             <option value="drawing_spec">Drawing/spec completeness</option>
             <option value="full">Full</option>
           </select>
           <p className="dfm-sidebar__meta">
-            {analysisMode === "pilot_strict"
-              ? "Pilot demo mode. Prioritizes PSTD-* and essential geometry safety findings."
-              : analysisMode === "geometry_dfm"
+            {analysisMode === "geometry_dfm"
               ? "Designer-first mode. Excludes drawing-only checks."
               : analysisMode === "drawing_spec"
               ? "Documentation-focused mode. Highlights drawing/spec gaps."
@@ -627,29 +631,30 @@ const DfmReviewSidebar = ({
       return (
         <label key={controlId} className="dfm-sidebar__field dfm-sidebar__flow-step">
           <span>Standards profile (optional)</span>
-          <select value={overlayOverrideMode} onChange={(event) => setOverlayOverrideMode(event.target.value as OverlayOverrideMode)}>
+          <select
+            value={standardsProfileSelection}
+            onChange={(event) => setStandardsProfileSelection(event.target.value as StandardsProfileSelection)}
+          >
+            <option value="profile_auto">Auto from profile</option>
+            <option value="none">None (no overlay)</option>
             <option value="pilot" disabled={!pilotOverlay}>
-              Pilots (all pilot standards) {pilotOverlay ? "" : "(not available)"}
+              Pilots {pilotOverlay ? "" : "(not available)"}
             </option>
-            <option value="profile">Use profile industry mapping</option>
-            <option value="force">Custom standards profile (advanced)</option>
+            {standardsOverlayOptions.map((overlay) => (
+              <option key={overlay.overlay_id} value={`overlay:${overlay.overlay_id}`}>
+                {overlay.label}
+              </option>
+            ))}
           </select>
-          {overlayOverrideMode === "force" ? (
-            <select value={forcedOverlayId} onChange={(event) => setForcedOverlayId(event.target.value)}>
-              <option value="">None</option>
-              {dfmConfig.overlays.map((overlay) => (
-                <option key={overlay.overlay_id} value={overlay.overlay_id}>
-                  {overlay.label}
-                </option>
-              ))}
-            </select>
-          ) : overlayOverrideMode === "pilot" ? (
-            <p className="dfm-sidebar__meta">
-              Pilots: {pilotOverlay?.label ?? "Overlay not available in bundle"}
-            </p>
-          ) : (
-            <p className="dfm-sidebar__meta">Profile industry: {selectedProfile?.industry || "-"}</p>
-          )}
+          <p className="dfm-sidebar__meta">
+            {standardsProfileSelection === "profile_auto"
+              ? `Profile industry mapping: ${selectedProfile?.industry || "-"}`
+              : standardsProfileSelection === "none"
+              ? "No overlay selected."
+              : standardsProfileSelection === "pilot"
+              ? `Pilots: ${pilotOverlay?.label ?? "Overlay not available in bundle"}`
+              : `Custom overlay: ${overlayLabelById(dfmConfig?.overlays ?? [], standardsProfileSelection.slice("overlay:".length) || null)}`}
+          </p>
         </label>
       );
     }
@@ -841,7 +846,7 @@ const DfmReviewSidebar = ({
         <div className="dfm-sidebar__flow">
           <h3>Analysis controls</h3>
           <p className="dfm-sidebar__hint">
-            Simplified mode: choose analysis mode and standards profile. Process override and mismatch settings are in
+            Simplified mode: choose input scope and standards profile. Process override and mismatch settings are in
             Advanced controls.
           </p>
           <div className="dfm-sidebar__flow-controls">
@@ -860,11 +865,9 @@ const DfmReviewSidebar = ({
         <div className="dfm-sidebar__plan-summary">
           <h3>Effective analysis context</h3>
           <p className="dfm-sidebar__meta">
-            Analysis mode:{" "}
+            Input scope:{" "}
             {reviewV2Result?.effective_context?.analysis_mode
-              ? analysisMode === "pilot_strict"
-                ? "pilot_strict (runtime geometry_dfm)"
-                : reviewV2Result.effective_context.analysis_mode.selected_mode
+              ? reviewV2Result.effective_context.analysis_mode.selected_mode
               : analysisMode}{" "}
             (source: {reviewV2Result?.effective_context?.analysis_mode?.source ?? "ui_selection"})
           </p>
@@ -886,17 +889,22 @@ const DfmReviewSidebar = ({
           )}
           {reviewV2Result?.effective_context?.overlay ? (
             <p className="dfm-sidebar__meta">
-              Rule overlay: {reviewV2Result.effective_context.overlay.effective_overlay_label || "None"} (source:{" "}
+              Rule set: {reviewV2Result.effective_context.overlay.effective_overlay_label || "None"} (source:{" "}
               {reviewV2Result.effective_context.overlay.source})
             </p>
           ) : (
             <p className="dfm-sidebar__meta">
-              Rule overlay:{" "}
-              {overlayOverrideMode === "force"
-                ? overlayLabelById(dfmConfig?.overlays ?? [], forcedOverlayId || null)
-                : overlayOverrideMode === "pilot"
+              Rule set:{" "}
+              {standardsProfileSelection === "profile_auto"
+                ? "Profile mapping"
+                : standardsProfileSelection === "none"
+                ? "None"
+                : standardsProfileSelection === "pilot"
                 ? overlayLabelById(dfmConfig?.overlays ?? [], pilotOverlay?.overlay_id ?? null)
-                : "Profile mapping"}{" "}
+                : overlayLabelById(
+                    dfmConfig?.overlays ?? [],
+                    standardsProfileSelection.slice("overlay:".length) || null
+                  )}{" "}
               (source: pending backend resolution)
             </p>
           )}
@@ -1026,15 +1034,22 @@ const DfmReviewSidebar = ({
                   <span>{showEvidenceGaps ? "Visible" : "Hidden by default"}</span>
                 </div>
               </label>
-              {analysisMode === "pilot_strict" ? (
-                <p className="dfm-sidebar__meta">
-                  Pilot strict filter active: showing `PSTD-*` plus essential geometry safety rules.
-                </p>
-              ) : null}
+              <label className="dfm-sidebar__field dfm-sidebar__toggle">
+                <span>Pilot strict filter (PSTD + essential geometry)</span>
+                <div className="dfm-sidebar__toggle-row">
+                  <input
+                    type="checkbox"
+                    checked={pilotStrictFilter}
+                    onChange={(event) => setPilotStrictFilter(event.target.checked)}
+                  />
+                  <span>{pilotStrictFilter ? "Enabled" : "Disabled"}</span>
+                </div>
+              </label>
+              <p className="dfm-sidebar__hint">Display filter only; analysis run unchanged.</p>
               {reviewV2Result.routes.map((route) => {
                 const allDesignRiskFindings = route.findings.filter((finding) => finding.finding_type === "rule_violation");
                 const designRiskFindings =
-                  analysisMode === "pilot_strict"
+                  pilotStrictFilter
                     ? allDesignRiskFindings.filter(
                         (finding) =>
                           finding.rule_id.startsWith("PSTD-") ||

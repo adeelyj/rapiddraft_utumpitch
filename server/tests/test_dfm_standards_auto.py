@@ -206,3 +206,92 @@ def test_pilot_overlay_standards_trace_includes_all_overlay_refs():
         if isinstance(entry, dict) and isinstance(entry.get("ref_id"), str)
     }
     assert expected_refs.issubset(traced_refs)
+
+
+def test_all_standards_non_pilot_trace_includes_non_pilot_refs():
+    bundle = _bundle()
+    overlay = next(
+        item
+        for item in bundle.overlays.get("overlays", [])
+        if item.get("overlay_id") == "all_standards_non_pilot"
+    )
+    expected_refs = {
+        ref_id
+        for ref_id in overlay.get("adds_refs", [])
+        if isinstance(ref_id, str) and ref_id
+    }
+
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="model-all-standards-non-pilot",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Part 1",
+            "profile": {},
+        },
+        execution_plans=[
+            {
+                "plan_id": "plan_1",
+                "route_source": "selected",
+                "process_id": "cnc_milling",
+                "pack_ids": ["A_DRAWING", "F_OVERLAY"],
+                "overlay_id": "all_standards_non_pilot",
+                "role_id": "general_dfm",
+                "template_id": "executive_1page",
+            }
+        ],
+        context_payload={},
+    )
+
+    traced_refs = {
+        entry["ref_id"]
+        for entry in response.get("standards_trace_union", [])
+        if isinstance(entry, dict) and isinstance(entry.get("ref_id"), str)
+    }
+    assert expected_refs.issubset(traced_refs)
+    assert "REF-ROBOT-9409-1" not in traced_refs
+
+
+def test_all_standards_with_pilot_trace_includes_pilot_and_non_pilot_refs():
+    bundle = _bundle()
+    overlay = next(
+        item
+        for item in bundle.overlays.get("overlays", [])
+        if item.get("overlay_id") == "all_standards_with_pilot"
+    )
+    expected_refs = {
+        ref_id
+        for ref_id in overlay.get("adds_refs", [])
+        if isinstance(ref_id, str) and ref_id
+    }
+
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="model-all-standards-with-pilot",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Part 1",
+            "profile": {},
+        },
+        execution_plans=[
+            {
+                "plan_id": "plan_1",
+                "route_source": "selected",
+                "process_id": "cnc_milling",
+                "pack_ids": ["A_DRAWING", "F_OVERLAY"],
+                "overlay_id": "all_standards_with_pilot",
+                "role_id": "general_dfm",
+                "template_id": "executive_1page",
+            }
+        ],
+        context_payload={},
+    )
+
+    traced_refs = {
+        entry["ref_id"]
+        for entry in response.get("standards_trace_union", [])
+        if isinstance(entry, dict) and isinstance(entry.get("ref_id"), str)
+    }
+    assert expected_refs.issubset(traced_refs)
+    assert "REF-ROBOT-9409-1" in traced_refs
+    assert "REF-MED-QMS" in traced_refs

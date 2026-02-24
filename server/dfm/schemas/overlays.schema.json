@@ -33,6 +33,8 @@
               "medical",
               "automotive",
               "lab",
+              "all_standards_non_pilot",
+              "all_standards_with_pilot",
               "pilot_prototype"
             ]
           },

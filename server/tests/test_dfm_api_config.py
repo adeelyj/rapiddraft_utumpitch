@@ -36,6 +36,8 @@ def test_dfm_config_contract_from_bundle():
     overlay_ids = {item["overlay_id"] for item in payload["overlays"]}
     assert "medical" in overlay_ids
     assert "automotive" in overlay_ids
+    assert "all_standards_non_pilot" in overlay_ids
+    assert "all_standards_with_pilot" in overlay_ids
 
 
 def test_dfm_config_has_expected_ui_flow_order():
