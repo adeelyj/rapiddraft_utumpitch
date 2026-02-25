@@ -14,7 +14,10 @@ import ReportTemplateBuilderSidebar from "./components/ReportTemplateBuilderSide
 import CncAnalysisSidebar from "./components/CncAnalysisSidebar";
 import VisionAnalysisSidebar from "./components/VisionAnalysisSidebar";
 import FusionAnalysisSidebar from "./components/FusionAnalysisSidebar";
+import DraftLintSidebar from "./components/DraftLintSidebar";
+import DraftLintWorkspace from "./components/DraftLintWorkspace";
 import type { AnalysisFocusPayload } from "./types/analysis";
+import type { DraftLintReportResponse } from "./types/draftlint";
 import type {
   ChecklistTemplate,
   DesignReviewSession,
@@ -278,12 +281,17 @@ const App = () => {
   const [leftOpen, setLeftOpen] = useState(false);
   const [leftTab, setLeftTab] = useState<"views" | "reviews" | "com" | "dfm" | "km" | "req">("reviews");
   const [rightOpen, setRightOpen] = useState(false);
-  const [rightTab, setRightTab] = useState<"dfm" | "rep" | "cnc" | "vision" | "fusion" | null>(null);
+  const [rightTab, setRightTab] = useState<"dfm" | "rep" | "cnc" | "vision" | "fusion" | "draftlint" | null>(null);
   const [pinMode, setPinMode] = useState<"none" | "comment" | "review">("none");
   const [visionViewCatalog, setVisionViewCatalog] = useState<VisionSelectableView[]>([]);
   const [visionViewSelection, setVisionViewSelection] = useState<Record<string, boolean>>({});
   const [visionPastedScreenshots, setVisionPastedScreenshots] = useState<VisionPastedScreenshotSlot[]>([]);
   const [analysisFocus, setAnalysisFocus] = useState<AnalysisFocusPayload | null>(null);
+  const [draftLintReport, setDraftLintReport] = useState<DraftLintReportResponse | null>(null);
+  const [draftLintSelectedIssueId, setDraftLintSelectedIssueId] = useState<string | null>(null);
+  const [draftLintSourcePreviewUrl, setDraftLintSourcePreviewUrl] = useState<string | null>(null);
+  const [draftLintSourceMimeType, setDraftLintSourceMimeType] = useState<string | null>(null);
+  const [draftLintSourceName, setDraftLintSourceName] = useState<string | null>(null);
   const restoredWorkspaceRef = useRef(false);
 
   const buildWorkspaceSnapshot = (): WorkspaceSessionSnapshot | null => {
@@ -604,6 +612,14 @@ const App = () => {
       }));
     return [...selectedViews, ...selectedScreenshots];
   }, [visionPastedScreenshots, visionViewCatalog, visionViewSelection]);
+
+  const draftLintAnnotatedImageUrl = useMemo(() => {
+    const artifactUrl = draftLintReport?.artifacts?.annotated_png_url;
+    if (!artifactUrl) return null;
+    return artifactUrl.startsWith("http") ? artifactUrl : `${apiBase}${artifactUrl}`;
+  }, [apiBase, draftLintReport?.artifacts?.annotated_png_url]);
+
+  const isDraftLintMode = rightOpen && rightTab === "draftlint";
 
   const isSelectedProfileComplete = Boolean(
     selectedComponentProfile?.material && selectedComponentProfile?.manufacturingProcess && selectedComponentProfile?.industry
@@ -1388,7 +1404,7 @@ const App = () => {
     setLeftTab(tab);
   };
 
-  const handleRightRailToggle = (tab: "dfm" | "rep" | "cnc" | "vision" | "fusion") => {
+  const handleRightRailToggle = (tab: "dfm" | "rep" | "cnc" | "vision" | "fusion" | "draftlint") => {
     if (rightOpen && rightTab === tab) {
       setRightOpen(false);
       setRightTab(null);
@@ -1489,6 +1505,30 @@ const App = () => {
       setSelectedComponentNodeName(payload.component_node_name);
     }
     setFitTrigger((prev) => prev + 1);
+  };
+
+  const handleDraftLintSourceChange = (payload: {
+    sourceUrl: string | null;
+    sourceMimeType: string | null;
+    sourceName: string | null;
+  }) => {
+    setDraftLintSourcePreviewUrl(payload.sourceUrl);
+    setDraftLintSourceMimeType(payload.sourceMimeType);
+    setDraftLintSourceName(payload.sourceName);
+  };
+
+  const handleDraftLintReportChange = (nextReport: DraftLintReportResponse | null) => {
+    setDraftLintReport(nextReport);
+    if (!nextReport) {
+      setDraftLintSelectedIssueId(null);
+      return;
+    }
+    setDraftLintSelectedIssueId((current) => {
+      if (current && nextReport.issues.some((issue) => issue.issue_id === current)) {
+        return current;
+      }
+      return nextReport.issues[0]?.issue_id ?? null;
+    });
   };
 
   const handleChangeComponentProfile = async (field: keyof ComponentProfile, value: string) => {
@@ -1936,7 +1976,17 @@ const App = () => {
           )}
         </aside>
         <div className="workspace__main">
-          {isDrawingOpen ? (
+          {isDraftLintMode ? (
+            <DraftLintWorkspace
+              sourcePreviewUrl={draftLintSourcePreviewUrl}
+              sourceMimeType={draftLintSourceMimeType}
+              sourceName={draftLintSourceName}
+              report={draftLintReport}
+              selectedIssueId={draftLintSelectedIssueId}
+              onSelectIssue={setDraftLintSelectedIssueId}
+              fallbackAnnotatedImageUrl={draftLintAnnotatedImageUrl}
+            />
+          ) : isDrawingOpen ? (
             <DrawingPage
               zones={drawingZones}
               onBack={() => setIsDrawingOpen(false)}
@@ -2016,8 +2066,8 @@ const App = () => {
                   </button>
                 </div>
               )}
-          </div>
-        )}
+            </div>
+          )}
         </div>
         <aside className="sidebar-rail sidebar-rail--right">
           <button
@@ -2026,6 +2076,13 @@ const App = () => {
           >
             <span className="sidebar-rail__icon">V</span>
             <span className="sidebar-rail__label">Vision</span>
+          </button>
+          <button
+            className={`sidebar-rail__button ${rightOpen && rightTab === "draftlint" ? "sidebar-rail__button--active" : ""}`}
+            onClick={() => handleRightRailToggle("draftlint")}
+          >
+            <span className="sidebar-rail__icon">L</span>
+            <span className="sidebar-rail__label">DraftLint</span>
           </button>
           <button
             className={`sidebar-rail__button ${rightOpen && rightTab === "cnc" ? "sidebar-rail__button--active" : ""}`}
@@ -2097,6 +2154,19 @@ const App = () => {
               : null
           }
           onFocusInModel={handleFocusInModel}
+          onClose={() => {
+            setRightOpen(false);
+            setRightTab(null);
+          }}
+        />
+        <DraftLintSidebar
+          open={rightOpen && rightTab === "draftlint"}
+          apiBase={apiBase}
+          report={draftLintReport}
+          selectedIssueId={draftLintSelectedIssueId}
+          onSelectIssue={setDraftLintSelectedIssueId}
+          onReportChange={handleDraftLintReportChange}
+          onSourceChange={handleDraftLintSourceChange}
           onClose={() => {
             setRightOpen(false);
             setRightTab(null);

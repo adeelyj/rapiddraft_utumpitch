@@ -7,7 +7,7 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -17,6 +17,12 @@ from .analysis_runs import AnalysisRunNotFoundError, AnalysisRunStore, AnalysisR
 from .cad_service import CADProcessingError, CADService
 from .cad_service_occ import CADServiceOCC
 from .cnc_analysis import CncAnalysisError, CncAnalysisService, CncReportNotFoundError
+from .draftlint_demo import (
+    DraftLintDemoError,
+    DraftLintDemoService,
+    DraftLintReportNotFoundError,
+    DraftLintSessionNotFoundError,
+)
 from .dfm_bundle import DfmBundleValidationError, load_dfm_bundle
 from .dfm_effective_context import resolve_effective_planning_inputs
 from .dfm_part_facts_bridge import build_extracted_facts_from_part_facts
@@ -64,6 +70,9 @@ DFM_COST_ENABLED = os.getenv("DFM_COST_ENABLED", "true").strip().lower() not in 
 
 # Drawing template lives at the repo root under /template.
 TEMPLATE_PNG = BASE_DIR.parent / "template" / "a4_iso_minimal.png"
+DRAFTLINT_FIXTURE_JSON = (
+    BASE_DIR / "fixtures" / "draftlint" / "demo_case_01" / "report_template.json"
+)
 
 cad_service = CADService(workspace=PROCESS_DIR)
 cad_service_occ = CADServiceOCC(workspace=PROCESS_DIR / "occ")
@@ -73,6 +82,11 @@ cnc_analysis_service = CncAnalysisService(root=MODELS_DIR)
 vision_analysis_service = VisionAnalysisService(root=MODELS_DIR, occ_service=cad_service_occ)
 fusion_analysis_service = FusionAnalysisService(root=MODELS_DIR)
 analysis_run_store = AnalysisRunStore(root=MODELS_DIR)
+draftlint_demo_service = DraftLintDemoService(
+    root=DATA_DIR / "draftlint_demo",
+    fixture_path=DRAFTLINT_FIXTURE_JSON,
+    template_png_path=TEMPLATE_PNG,
+)
 
 app = FastAPI(title="TextCAD Drafting Service", version="0.1.0")
 app.add_middleware(
@@ -433,6 +447,100 @@ def _generate_dfm_review_v2_payload(
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+
+@app.post("/api/draftlint/sessions")
+async def create_draftlint_session(
+    file: UploadFile = File(...),
+    standard_profile: str = Form("ISO 1101 + ISO 5457"),
+):
+    try:
+        file_bytes = await file.read()
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Failed to read upload: {exc}") from exc
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Uploaded file must include a filename.")
+    if not file_bytes:
+        raise HTTPException(status_code=400, detail="Uploaded drawing is empty.")
+
+    try:
+        return draftlint_demo_service.create_session(
+            filename=file.filename,
+            file_bytes=file_bytes,
+            standard_profile=standard_profile,
+        )
+    except DraftLintDemoError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unexpected DraftLint session error: {exc.__class__.__name__}: {exc}",
+        ) from exc
+
+
+@app.get("/api/draftlint/sessions/{session_id}")
+async def get_draftlint_session(session_id: str):
+    try:
+        return draftlint_demo_service.get_session(session_id=session_id)
+    except DraftLintSessionNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except DraftLintDemoError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/api/draftlint/sessions/{session_id}/source")
+async def get_draftlint_session_source(session_id: str):
+    try:
+        source_path = draftlint_demo_service.get_session_source_path(session_id=session_id)
+        mime_type = draftlint_demo_service.get_session_source_mime_type(session_id=session_id)
+    except DraftLintSessionNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except DraftLintDemoError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return FileResponse(
+        source_path,
+        media_type=mime_type,
+        filename=source_path.name,
+    )
+
+
+@app.get("/api/draftlint/reports/{report_id}")
+async def get_draftlint_report(report_id: str):
+    try:
+        return draftlint_demo_service.get_report(report_id=report_id)
+    except DraftLintReportNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except DraftLintDemoError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/api/draftlint/reports/{report_id}/artifacts/{artifact_name}")
+async def get_draftlint_report_artifact(report_id: str, artifact_name: str):
+    try:
+        artifact_path = draftlint_demo_service.get_artifact_path(
+            report_id=report_id,
+            artifact_name=artifact_name,
+        )
+    except DraftLintReportNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except DraftLintDemoError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    media_type = "application/octet-stream"
+    if artifact_path.suffix.lower() == ".json":
+        media_type = "application/json"
+    elif artifact_path.suffix.lower() == ".html":
+        media_type = "text/html"
+    elif artifact_path.suffix.lower() == ".csv":
+        media_type = "text/csv"
+    elif artifact_path.suffix.lower() == ".png":
+        media_type = "image/png"
+
+    return FileResponse(
+        artifact_path,
+        media_type=media_type,
+        filename=artifact_path.name,
+    )
 
 
 @app.get("/api/review-templates")

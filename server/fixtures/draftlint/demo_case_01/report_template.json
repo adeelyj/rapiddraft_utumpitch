@@ -1,0 +1,163 @@
+{
+  "report_id": null,
+  "drawing_id": null,
+  "drawing_name": null,
+  "standard_profile": null,
+  "validation_date": null,
+  "summary": {
+    "total_issues": 5,
+    "critical_count": 1,
+    "major_count": 2,
+    "minor_count": 2,
+    "overall_compliant": false
+  },
+  "customer_summary": {
+    "headline": "5 drawing compliance issues detected across title block, GD&T, and dimensioning.",
+    "priority_message": "Resolve the critical datum reference gap first, then major dimensioning consistency issues.",
+    "next_step": "Apply corrections and re-run DraftLint before release."
+  },
+  "regions": [
+    {
+      "region_id": "reg_title_block",
+      "region_type": "title_block",
+      "bbox": { "x1": 0.72, "y1": 0.74, "x2": 0.98, "y2": 0.98 }
+    },
+    {
+      "region_id": "reg_main_view",
+      "region_type": "drawing_view",
+      "bbox": { "x1": 0.08, "y1": 0.12, "x2": 0.68, "y2": 0.72 }
+    },
+    {
+      "region_id": "reg_notes",
+      "region_type": "general_notes",
+      "bbox": { "x1": 0.72, "y1": 0.14, "x2": 0.96, "y2": 0.45 }
+    }
+  ],
+  "text_elements": [
+    {
+      "text_id": "txt_001",
+      "region_id": "reg_title_block",
+      "text": "DRAWING NO: VB-42-C",
+      "confidence": 0.98,
+      "bbox": { "x1": 0.75, "y1": 0.81, "x2": 0.92, "y2": 0.84 }
+    },
+    {
+      "text_id": "txt_002",
+      "region_id": "reg_notes",
+      "text": "Break all sharp edges 0.2",
+      "confidence": 0.93,
+      "bbox": { "x1": 0.74, "y1": 0.24, "x2": 0.93, "y2": 0.27 }
+    },
+    {
+      "text_id": "txt_003",
+      "region_id": "reg_main_view",
+      "text": "M10 x 1",
+      "confidence": 0.91,
+      "bbox": { "x1": 0.36, "y1": 0.29, "x2": 0.42, "y2": 0.32 }
+    }
+  ],
+  "detected_symbols": [
+    {
+      "symbol_id": "sym_gdt_001",
+      "symbol_type": "gdt_frame",
+      "confidence": 0.95,
+      "bbox": { "x1": 0.31, "y1": 0.39, "x2": 0.45, "y2": 0.44 }
+    },
+    {
+      "symbol_id": "sym_dim_001",
+      "symbol_type": "dimension_callout",
+      "confidence": 0.9,
+      "bbox": { "x1": 0.18, "y1": 0.25, "x2": 0.29, "y2": 0.3 }
+    }
+  ],
+  "ai_analysis": {
+    "title_block": {
+      "has_drawing_number": true,
+      "has_title": true,
+      "has_scale": true,
+      "has_projection_method": false,
+      "has_date": true,
+      "has_author": true,
+      "missing_fields": ["projection_method"],
+      "confidence": 0.88
+    },
+    "gdt_callouts": [
+      {
+        "symbol_id": "sym_gdt_001",
+        "is_compliant": false,
+        "issues": ["Undefined datum reference C in frame 2"],
+        "confidence": 0.9
+      }
+    ],
+    "dimensions": {
+      "has_duplicates": true,
+      "lines_crossing": false,
+      "proper_arrowheads": true,
+      "text_orientation_ok": true,
+      "issues": ["Duplicate 24.00 dimension on left flange"],
+      "confidence": 0.86
+    }
+  },
+  "issues": [
+    {
+      "issue_id": "ISS-001",
+      "severity": "critical",
+      "rule_id": "ISO-1101-DATUM-UNDEFINED",
+      "standard": "ISO 1101",
+      "category": "gdt_callouts",
+      "title": "Undefined datum reference in GD&T frame",
+      "description": "Datum reference C is used in a GD&T frame but no datum feature C is defined on the drawing.",
+      "recommended_action": "Define datum feature C on the drawing view and update all dependent frames.",
+      "confidence": 0.9,
+      "bbox": { "x1": 0.31, "y1": 0.39, "x2": 0.45, "y2": 0.44 }
+    },
+    {
+      "issue_id": "ISS-002",
+      "severity": "major",
+      "rule_id": "ISO-129-DIM-DUPLICATE",
+      "standard": "ISO 129-1",
+      "category": "dimensions",
+      "title": "Duplicate dimension callout",
+      "description": "Dimension 24.00 appears twice for the same feature chain.",
+      "recommended_action": "Remove duplicate callout and retain one controlled dimension source.",
+      "confidence": 0.87,
+      "bbox": { "x1": 0.18, "y1": 0.25, "x2": 0.29, "y2": 0.3 }
+    },
+    {
+      "issue_id": "ISS-003",
+      "severity": "major",
+      "rule_id": "ISO-965-THREAD-CLASS-MISSING",
+      "standard": "ISO 965-1",
+      "category": "thread_callouts",
+      "title": "Thread tolerance class missing",
+      "description": "Thread callout 'M10 x 1' is missing tolerance class designation (for example 6H/6g).",
+      "recommended_action": "Add tolerance class to thread callout based on intended fit.",
+      "confidence": 0.84,
+      "bbox": { "x1": 0.36, "y1": 0.29, "x2": 0.42, "y2": 0.32 }
+    },
+    {
+      "issue_id": "ISS-004",
+      "severity": "minor",
+      "rule_id": "ISO-5457-TITLE-PROJECTION",
+      "standard": "ISO 5457",
+      "category": "title_block",
+      "title": "Projection method not declared",
+      "description": "Title block is missing first-angle or third-angle projection method declaration.",
+      "recommended_action": "Add projection method symbol to title block.",
+      "confidence": 0.82,
+      "bbox": { "x1": 0.75, "y1": 0.84, "x2": 0.92, "y2": 0.89 }
+    },
+    {
+      "issue_id": "ISS-005",
+      "severity": "minor",
+      "rule_id": "ISO-2768-GENERAL-TOLERANCE-NOTE",
+      "standard": "ISO 2768",
+      "category": "drawing_notes",
+      "title": "General tolerance note incomplete",
+      "description": "General tolerance note is present but does not specify tolerance class (for example mK/fH).",
+      "recommended_action": "Complete note with explicit tolerance class in title block or notes section.",
+      "confidence": 0.8,
+      "bbox": { "x1": 0.73, "y1": 0.2, "x2": 0.95, "y2": 0.32 }
+    }
+  ]
+}
