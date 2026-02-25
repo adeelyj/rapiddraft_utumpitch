@@ -63,3 +63,6 @@ Each line below is generated from git commits and includes date + summary.
 
 - 2026-02-24 | `9aefbee` | docs(tracker): log Phase 5 fusion+vision milestone
   <!-- commit:9aefbeeb2a593609445906bd1ad7448fc8bde560 -->
+
+- 2026-02-25 | `95fa40c` | feat(workspace): add session file save/load and compact vision API settings
+  <!-- commit:95fa40c19caff413fcd3c012166708af62c0b714 -->

@@ -1819,11 +1819,16 @@ const App = () => {
           <button className="toolbar__button global-pane__button" onClick={() => setInfoDialog("compare")} disabled={Boolean(busyAction)}>
             Compare Models
           </button>
-          <button className="toolbar__button global-pane__button" onClick={() => setInfoDialog("collaborate")} disabled={Boolean(busyAction)}>
-            Collaborate
-          </button>
         </div>
       </aside>
+      <button
+        className="collab-fab"
+        onClick={() => setInfoDialog("collaborate")}
+        disabled={Boolean(busyAction)}
+        aria-label="Open collaboration options"
+      >
+        Collaborate
+      </button>
       <main className={`workspace ${leftOpen ? "" : "workspace--left-collapsed"} ${rightOpen ? "" : "workspace--right-collapsed"}`}>
         <aside className="sidebar-rail sidebar-rail--left">
           <button
@@ -2121,18 +2126,74 @@ const App = () => {
             setRightTab(null);
           }}
         />
-        {infoDialog && (
+        {infoDialog === "compare" && (
           <div className="modal-backdrop">
             <div className="modal">
-              <h3>{infoDialog === "compare" ? "Model compare" : "Collaborate"}</h3>
+              <h3>Model compare</h3>
               <p>
-                {infoDialog === "compare"
-                  ? "Dummy Feature to load another model and compare with current one"
-                  : "Feature to invite another user, and have an interactive collaboration session with them"}
+                Dummy Feature to load another model and compare with current one
               </p>
               <button className="modal__ok" onClick={() => setInfoDialog(null)}>
                 OK
               </button>
+            </div>
+          </div>
+        )}
+        {infoDialog === "collaborate" && (
+          <div className="modal-backdrop">
+            <div className="collab-modal" role="dialog" aria-modal="true" aria-label="Collaboration options">
+              <div className="collab-modal__header">
+                <h3>Collaborate</h3>
+                <button
+                  type="button"
+                  className="collab-modal__close"
+                  onClick={() => setInfoDialog(null)}
+                  aria-label="Close collaboration dialog"
+                >
+                  x
+                </button>
+              </div>
+              <p className="collab-modal__intro">
+                Choose to call colleagues now or share your live screen with a role-specific AI expert.
+              </p>
+              <div className="collab-modal__matrix">
+                <div className="collab-modal__row">
+                  <div className="collab-modal__row-label">Colleagues</div>
+                  <div className="collab-modal__row-content">
+                    <div className="collab-modal__people">
+                      <button type="button" className="collab-modal__person">
+                        <span className="collab-modal__picture-field" aria-hidden="true" />
+                        <span className="collab-modal__person-name">Daniel Bäuml</span>
+                      </button>
+                      <button type="button" className="collab-modal__person">
+                        <span className="collab-modal__picture-field collab-modal__picture-field--alt" aria-hidden="true" />
+                        <span className="collab-modal__person-name">Henning Schanz</span>
+                      </button>
+                      <button type="button" className="collab-modal__person">
+                        <span className="collab-modal__picture-field" aria-hidden="true" />
+                        <span className="collab-modal__person-name">Eric Eckenrod</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="collab-modal__divider" />
+                <div className="collab-modal__row">
+                  <div className="collab-modal__row-label">AI</div>
+                  <div className="collab-modal__row-content">
+                    <div className="collab-modal__options">
+                      <button type="button" className="collab-modal__pill">CNC Expert</button>
+                      <button type="button" className="collab-modal__pill">Sheet Metal</button>
+                      <button type="button" className="collab-modal__pill">Tooling Expert</button>
+                      <button type="button" className="collab-modal__pill">Procurement Expert</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="collab-modal__actions">
+                <button className="modal__ok" onClick={() => setInfoDialog(null)}>
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         )}

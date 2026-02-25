@@ -231,7 +231,7 @@ h4 {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 50;
+  z-index: 140;
 }
 
 .modal {
@@ -275,6 +275,214 @@ h4 {
   border-color: rgba(239, 101, 26, 0.4);
   box-shadow: 0 8px 18px rgba(239, 101, 26, 0.15);
   transform: translateY(-1px);
+}
+
+.collab-fab {
+  position: fixed;
+  left: 58%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 30;
+  border: 1px solid rgba(239, 101, 26, 0.5);
+  border-radius: 12px;
+  padding: 12px 26px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  background: linear-gradient(145deg, #ff8a3a 0%, #ef651a 100%);
+  color: var(--button-text);
+  box-shadow: 0 14px 30px rgba(239, 101, 26, 0.28);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+}
+
+.collab-fab:hover:not(:disabled) {
+  transform: translateX(-50%) translateY(-1px);
+  filter: brightness(1.04);
+  box-shadow: 0 16px 34px rgba(239, 101, 26, 0.32);
+}
+
+.collab-fab:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.collab-modal {
+  background: linear-gradient(180deg, #ffffff, #f9fbff);
+  color: var(--text-1);
+  border-radius: 16px;
+  padding: 16px;
+  width: min(760px, 94vw);
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.24);
+  border: 1px solid rgba(234, 186, 150, 0.75);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.collab-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.collab-modal__header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.collab-modal__close {
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(130, 156, 230, 0.45);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text-2);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.collab-modal__close:hover {
+  border-color: rgba(239, 101, 26, 0.45);
+}
+
+.collab-modal__intro {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 0.9rem;
+}
+
+.collab-modal__matrix {
+  border: 1px solid rgba(130, 156, 230, 0.26);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.88);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.collab-modal__row {
+  display: grid;
+  grid-template-columns: 108px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.collab-modal__row-label {
+  margin: 0;
+  font-size: 1rem;
+  color: #1f2a44;
+  letter-spacing: 0.2px;
+  font-weight: 600;
+}
+
+.collab-modal__row-content {
+  display: flex;
+  align-items: center;
+}
+
+.collab-modal__divider {
+  height: 1px;
+  background: rgba(28, 56, 104, 0.18);
+  margin-left: 118px;
+}
+
+.collab-modal__people {
+  display: flex;
+  gap: 10px;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+}
+
+.collab-modal__person {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.collab-modal__picture-field {
+  width: 56px;
+  height: 52px;
+  border-radius: 10px;
+  border: 1px solid rgba(28, 56, 104, 0.34);
+  background: linear-gradient(180deg, #f8fbff, #edf3ff);
+  position: relative;
+}
+
+.collab-modal__picture-field::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #111a31;
+  left: 50%;
+  top: 10px;
+  transform: translateX(-50%);
+}
+
+.collab-modal__picture-field::after {
+  content: "";
+  position: absolute;
+  width: 30px;
+  height: 16px;
+  border-radius: 12px 12px 6px 6px;
+  background: #111a31;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+}
+
+.collab-modal__picture-field--alt::before {
+  width: 17px;
+  height: 17px;
+}
+
+.collab-modal__picture-field--alt::after {
+  width: 34px;
+}
+
+.collab-modal__person-name {
+  border: 1px solid rgba(28, 56, 104, 0.52);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #0f2c5e;
+  padding: 4px 9px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.collab-modal__options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.collab-modal__pill {
+  border: 1px solid rgba(28, 56, 104, 0.58);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #0f2c5e;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1.05;
+}
+
+.collab-modal__pill:hover {
+  border-color: rgba(239, 101, 26, 0.45);
+}
+
+.collab-modal__actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .toolbar__button {
@@ -3994,6 +4202,33 @@ h4 {
     left: 8px;
     width: min(86vw, 300px);
     max-height: calc(100vh - 136px);
+  }
+
+  .collab-fab {
+    left: auto;
+    right: 18px;
+    bottom: 18px;
+    transform: none;
+    padding: 10px 18px;
+  }
+
+  .collab-fab:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  .collab-modal {
+    width: min(96vw, 560px);
+    padding: 14px;
+  }
+
+  .collab-modal__row {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .collab-modal__divider {
+    margin-left: 0;
   }
 
   .toolbar__brand-image--logo {
