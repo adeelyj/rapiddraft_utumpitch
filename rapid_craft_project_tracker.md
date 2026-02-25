@@ -60,3 +60,6 @@ Each line below is generated from git commits and includes date + summary.
 
 - 2026-02-24 | `8962e4b` | feat(fusion): add analysis run manifest and model focus overlays
   <!-- commit:8962e4bc8ebef3578c486b4286bf529e5c448ce7 -->
+
+- 2026-02-24 | `9aefbee` | docs(tracker): log Phase 5 fusion+vision milestone
+  <!-- commit:9aefbeeb2a593609445906bd1ad7448fc8bde560 -->

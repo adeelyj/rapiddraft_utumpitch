@@ -25,6 +25,12 @@ type VisionAnalysisSidebarProps = {
   onClose: () => void;
 };
 
+type CachedVisionReportEnvelope = {
+  saved_at?: string;
+  report_id?: string;
+  payload?: VisionReportResponse;
+};
+
 type CriteriaProfile = "default" | "custom";
 
 const DEFAULT_CRITERIA: VisionCriteria = {
@@ -44,6 +50,56 @@ const cloneDefaultCriteria = (): VisionCriteria => ({
   max_flagged_features: DEFAULT_CRITERIA.max_flagged_features,
   confidence_threshold: DEFAULT_CRITERIA.confidence_threshold,
 });
+
+const VISION_REPORT_CACHE_PREFIX = "vision_report_last_v1";
+
+const buildVisionReportCacheKey = (modelId: string | null, componentNodeName: string | null | undefined): string | null => {
+  if (!modelId || !componentNodeName) return null;
+  return `${VISION_REPORT_CACHE_PREFIX}:${modelId}:${componentNodeName}`;
+};
+
+const readCachedVisionReport = (cacheKey: string | null): CachedVisionReportEnvelope | null => {
+  if (!cacheKey) return null;
+  try {
+    const raw = window.localStorage.getItem(cacheKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as VisionReportResponse | CachedVisionReportEnvelope;
+    if (!parsed || typeof parsed !== "object") return null;
+    if ("payload" in parsed || "report_id" in parsed || "saved_at" in parsed) {
+      const envelope = parsed as CachedVisionReportEnvelope;
+      if (envelope.payload && typeof envelope.payload === "object") {
+        return envelope;
+      }
+      return {
+        report_id: envelope.report_id,
+      };
+    }
+    const payload = parsed as VisionReportResponse;
+    if (!payload.report_id) return null;
+    return {
+      report_id: payload.report_id,
+      payload,
+    };
+  } catch {
+    return null;
+  }
+};
+
+const writeCachedVisionReport = (cacheKey: string | null, payload: VisionReportResponse): void => {
+  if (!cacheKey) return;
+  try {
+    window.localStorage.setItem(
+      cacheKey,
+      JSON.stringify({
+        saved_at: new Date().toISOString(),
+        report_id: payload.report_id,
+        payload,
+      } satisfies CachedVisionReportEnvelope),
+    );
+  } catch {
+    // Best effort cache only.
+  }
+};
 
 const joinApiUrl = (base: string, path: string): string => {
   const normalizedBase = base.replace(/\/$/, "");
@@ -91,6 +147,7 @@ const VisionAnalysisSidebar = ({
 }: VisionAnalysisSidebarProps) => {
   const [criteriaProfile, setCriteriaProfile] = useState<CriteriaProfile>("default");
   const [criteriaExpanded, setCriteriaExpanded] = useState(true);
+  const [apiSettingsExpanded, setApiSettingsExpanded] = useState(false);
   const [criteria, setCriteria] = useState<VisionCriteria>(cloneDefaultCriteria());
 
   const [providers, setProviders] = useState<VisionProvidersResponse | null>(null);
@@ -115,6 +172,11 @@ const VisionAnalysisSidebar = ({
   useEffect(() => {
     setReport(null);
     setError(null);
+    const cacheKey = buildVisionReportCacheKey(modelId, selectedComponent?.nodeName);
+    const cached = readCachedVisionReport(cacheKey);
+    if (cached?.payload) {
+      setReport(cached.payload);
+    }
   }, [modelId, selectedComponent?.nodeName]);
 
   useEffect(() => {
@@ -190,6 +252,34 @@ const VisionAnalysisSidebar = ({
       return response;
     }
   };
+
+  useEffect(() => {
+    if (!modelId || !selectedComponent?.nodeName) return;
+    const cacheKey = buildVisionReportCacheKey(modelId, selectedComponent.nodeName);
+    const cached = readCachedVisionReport(cacheKey);
+    const cachedReportId = cached?.report_id ?? cached?.payload?.report_id;
+    if (!cachedReportId) return;
+
+    let cancelled = false;
+    const refreshFromServer = async () => {
+      try {
+        const response = await runWithFallback(`/api/models/${modelId}/vision/reports/${cachedReportId}`, {
+          method: "GET",
+        });
+        if (!response.ok) return;
+        const payload = (await response.json()) as VisionReportResponse;
+        if (cancelled) return;
+        setReport(payload);
+        writeCachedVisionReport(cacheKey, payload);
+      } catch {
+        // Keep cached payload if network retrieval fails.
+      }
+    };
+    refreshFromServer();
+    return () => {
+      cancelled = true;
+    };
+  }, [apiBase, modelId, selectedComponent?.nodeName]);
 
   const routeConfigured = useMemo(() => {
     if (!providers) return true;
@@ -352,6 +442,10 @@ const VisionAnalysisSidebar = ({
 
       const payload = (await response.json()) as VisionReportResponse;
       setReport(payload);
+      writeCachedVisionReport(
+        buildVisionReportCacheKey(modelId, selectedComponent.nodeName),
+        payload,
+      );
     } catch (err) {
       if (err instanceof TypeError) {
         setError(
@@ -502,60 +596,72 @@ const VisionAnalysisSidebar = ({
           </div>
         ) : null}
 
-        <label className="vision-sidebar__field">
-          <span>Analysis route</span>
-          <select
-            value={route}
-            onChange={(event) => setRoute(event.target.value as VisionProviderRoute)}
-            disabled={loadingProviders}
-          >
-            {(providers?.providers ?? [
-              { id: "openai", label: "OpenAI", configured: true, default_model: "" },
-              { id: "claude", label: "Claude", configured: true, default_model: "" },
-              { id: "local", label: "Local LM Studio", configured: true, default_model: "" },
-            ]).map((provider) => (
-              <option key={provider.id} value={provider.id}>
-                {provider.label} {provider.configured ? "" : "(Not configured)"}
-              </option>
-            ))}
-          </select>
-        </label>
+        <button
+          type="button"
+          className="vision-sidebar__criteria-toggle"
+          onClick={() => setApiSettingsExpanded((prev) => !prev)}
+        >
+          <span>API Settings</span>
+          <span>{apiSettingsExpanded ? "v" : ">"}</span>
+        </button>
 
-        <label className="vision-sidebar__field">
-          <span>Model override (optional)</span>
-          <input
-            className="vision-sidebar__criteria-input"
-            type="text"
-            value={modelOverride}
-            onChange={(event) => setModelOverride(event.target.value)}
-            placeholder="Use provider default if blank"
-          />
-        </label>
+        {apiSettingsExpanded ? (
+          <div className="vision-sidebar__criteria-card">
+            <label className="vision-sidebar__field">
+              <span>Analysis route</span>
+              <select
+                value={route}
+                onChange={(event) => setRoute(event.target.value as VisionProviderRoute)}
+                disabled={loadingProviders}
+              >
+                {(providers?.providers ?? [
+                  { id: "openai", label: "OpenAI", configured: true, default_model: "" },
+                  { id: "claude", label: "Claude", configured: true, default_model: "" },
+                  { id: "local", label: "Local LM Studio", configured: true, default_model: "" },
+                ]).map((provider) => (
+                  <option key={provider.id} value={provider.id}>
+                    {provider.label} {provider.configured ? "" : "(Not configured)"}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-        <label className="vision-sidebar__field">
-          <span>Endpoint base URL (optional override)</span>
-          <input
-            className="vision-sidebar__criteria-input"
-            type="text"
-            value={baseUrlOverride}
-            onChange={(event) => setBaseUrlOverride(event.target.value)}
-            placeholder={routeDefaultBaseUrl}
-          />
-          <p className="vision-sidebar__hint">By default API key is read from backend env.</p>
-        </label>
+            <label className="vision-sidebar__field">
+              <span>Model override (optional)</span>
+              <input
+                className="vision-sidebar__criteria-input"
+                type="text"
+                value={modelOverride}
+                onChange={(event) => setModelOverride(event.target.value)}
+                placeholder="Use provider default if blank"
+              />
+            </label>
 
-        <label className="vision-sidebar__field">
-          <span>API key override (optional)</span>
-          <input
-            className="vision-sidebar__criteria-input"
-            type="password"
-            value={apiKeyOverride}
-            onChange={(event) => setApiKeyOverride(event.target.value)}
-            placeholder="Paste provider API key for this run"
-            autoComplete="off"
-          />
-          <p className="vision-sidebar__hint">Hidden input. Used only for this request.</p>
-        </label>
+            <label className="vision-sidebar__field">
+              <span>Endpoint base URL (optional override)</span>
+              <input
+                className="vision-sidebar__criteria-input"
+                type="text"
+                value={baseUrlOverride}
+                onChange={(event) => setBaseUrlOverride(event.target.value)}
+                placeholder={routeDefaultBaseUrl}
+              />
+            </label>
+
+            <label className="vision-sidebar__field">
+              <span>API key override (optional)</span>
+              <input
+                className="vision-sidebar__criteria-input"
+                type="password"
+                value={apiKeyOverride}
+                onChange={(event) => setApiKeyOverride(event.target.value)}
+                placeholder="Paste provider API key for this run"
+                autoComplete="off"
+              />
+            </label>
+            <p className="vision-sidebar__hint">By default API key is read from backend env. Hidden input is used only for this request.</p>
+          </div>
+        ) : null}
 
         <button
           type="button"

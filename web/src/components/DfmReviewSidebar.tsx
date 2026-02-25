@@ -265,6 +265,47 @@ type DfmReviewSidebarProps = {
   onClose: () => void;
 };
 
+const DFM_REVIEW_CACHE_PREFIX = "dfm_review_last_v1";
+
+const buildDfmReviewCacheKey = (modelId: string | null, componentNodeName: string | null | undefined): string | null => {
+  if (!modelId || !componentNodeName) return null;
+  return `${DFM_REVIEW_CACHE_PREFIX}:${modelId}:${componentNodeName}`;
+};
+
+const readCachedDfmReview = (cacheKey: string | null): DfmReviewV2Response | null => {
+  if (!cacheKey) return null;
+  try {
+    const raw = window.localStorage.getItem(cacheKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as
+      | DfmReviewV2Response
+      | {
+          payload?: DfmReviewV2Response;
+        };
+    if (!parsed || typeof parsed !== "object") return null;
+    const payload = "payload" in parsed ? parsed.payload : parsed;
+    if (!payload || typeof payload !== "object") return null;
+    return payload as DfmReviewV2Response;
+  } catch {
+    return null;
+  }
+};
+
+const writeCachedDfmReview = (cacheKey: string | null, payload: DfmReviewV2Response): void => {
+  if (!cacheKey) return;
+  try {
+    window.localStorage.setItem(
+      cacheKey,
+      JSON.stringify({
+        saved_at: new Date().toISOString(),
+        payload,
+      }),
+    );
+  } catch {
+    // Best effort cache only.
+  }
+};
+
 const DEFAULT_FLOW_ORDER = [
   "analysis_mode",
   "manufacturing_process",
@@ -416,7 +457,9 @@ const DfmReviewSidebar = ({
 
   useEffect(() => {
     setError(null);
-    setReviewV2Result(null);
+    const cacheKey = buildDfmReviewCacheKey(modelId, selectedComponent?.nodeName);
+    const cached = readCachedDfmReview(cacheKey);
+    setReviewV2Result(cached);
     setDetailsDefaultVersion((current) => current + 1);
   }, [modelId, selectedComponent?.nodeName]);
 
@@ -588,6 +631,10 @@ const DfmReviewSidebar = ({
       }
       const reviewPayload = (await reviewResponse.json()) as DfmReviewV2Response;
       setReviewV2Result(reviewPayload);
+      writeCachedDfmReview(
+        buildDfmReviewCacheKey(modelId, selectedComponent.nodeName),
+        reviewPayload,
+      );
       setDetailsDefaultVersion((current) => current + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unexpected error while generating DFM review");

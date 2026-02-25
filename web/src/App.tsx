@@ -82,6 +82,41 @@ type VisionInputSource = {
   src: string;
 };
 
+type WorkspaceSessionSnapshot = {
+  model: ModelState;
+  views: Record<string, string>;
+  viewMetadata: Record<string, string>;
+  shapeViews: Record<string, string>;
+  shapeViewMetadata: Record<string, string>;
+  occViews: Record<string, string>;
+  midViews: Record<string, string>;
+  isometricShape2DViews: Record<string, string>;
+  isometricShape2DMetadata: Record<string, string>;
+  isometricMatplotlibViews: Record<string, string>;
+  isometricMatplotlibMetadata: Record<string, string>;
+  components: ModelComponent[];
+  componentVisibility: Record<string, boolean>;
+  selectedComponentNodeName: string | null;
+  componentProfiles: Record<string, ComponentProfile>;
+  visionViewCatalog: VisionSelectableView[];
+  visionViewSelection: Record<string, boolean>;
+  visionPastedScreenshots: VisionPastedScreenshotSlot[];
+};
+
+type SessionDrawingState = {
+  zones: DrawingZone[];
+  dimensions: Dimension[];
+};
+
+type WorkspaceSessionFileV1 = {
+  format: "rapiddraft_workspace_session";
+  version: 1;
+  exported_at: string;
+  workspace: WorkspaceSessionSnapshot;
+  analysis_cache?: Record<string, string>;
+  drawing_state?: SessionDrawingState;
+};
+
 const resolveApiBase = (): string => {
   const configured = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim();
   if (configured) {
@@ -113,11 +148,20 @@ const resolveApiBase = (): string => {
 
 const apiBase = resolveApiBase();
 const DRAWING_STORAGE_KEY = "drawingState";
+const WORKSPACE_SESSION_STORAGE_KEY = "workspace_session_v1";
+const WORKSPACE_SESSION_FILE_FORMAT = "rapiddraft_workspace_session";
+const DFM_REVIEW_CACHE_PREFIX = "dfm_review_last_v1";
+const VISION_REPORT_CACHE_PREFIX = "vision_report_last_v1";
+const FUSION_REPORT_CACHE_PREFIX = "fusion_report_last_v1";
+const FUSION_TUNING_STORAGE_KEY = "fusion_tuning_v1";
+const ANALYSIS_CACHE_PREFIXES = [DFM_REVIEW_CACHE_PREFIX, VISION_REPORT_CACHE_PREFIX, FUSION_REPORT_CACHE_PREFIX] as const;
 const EMPTY_COMPONENT_PROFILE: ComponentProfile = {
   material: "",
   manufacturingProcess: "",
   industry: "",
 };
+
+const isRecord = (value: unknown): value is Record<string, unknown> => Boolean(value && typeof value === "object");
 
 const normalizeComponents = (raw: unknown): ModelComponent[] => {
   if (!Array.isArray(raw)) return [];
@@ -229,6 +273,7 @@ const App = () => {
   const [fitTrigger, setFitTrigger] = useState(0);
   const [infoDialog, setInfoDialog] = useState<null | "compare" | "collaborate">(null);
   const importInputRef = useRef<HTMLInputElement | null>(null);
+  const sessionImportInputRef = useRef<HTMLInputElement | null>(null);
   const [globalPaneOpen, setGlobalPaneOpen] = useState(false);
   const [leftOpen, setLeftOpen] = useState(false);
   const [leftTab, setLeftTab] = useState<"views" | "reviews" | "com" | "dfm" | "km" | "req">("reviews");
@@ -239,6 +284,203 @@ const App = () => {
   const [visionViewSelection, setVisionViewSelection] = useState<Record<string, boolean>>({});
   const [visionPastedScreenshots, setVisionPastedScreenshots] = useState<VisionPastedScreenshotSlot[]>([]);
   const [analysisFocus, setAnalysisFocus] = useState<AnalysisFocusPayload | null>(null);
+  const restoredWorkspaceRef = useRef(false);
+
+  const buildWorkspaceSnapshot = (): WorkspaceSessionSnapshot | null => {
+    if (!model) return null;
+    return {
+      model,
+      views,
+      viewMetadata,
+      shapeViews,
+      shapeViewMetadata,
+      occViews,
+      midViews,
+      isometricShape2DViews,
+      isometricShape2DMetadata,
+      isometricMatplotlibViews,
+      isometricMatplotlibMetadata,
+      components,
+      componentVisibility,
+      selectedComponentNodeName,
+      componentProfiles,
+      visionViewCatalog,
+      visionViewSelection,
+      visionPastedScreenshots,
+    };
+  };
+
+  const applyWorkspaceSnapshot = (snapshot: Partial<WorkspaceSessionSnapshot>): ModelState | null => {
+    if (!isRecord(snapshot.model)) return null;
+    const restoredModel = snapshot.model as ModelState;
+    if (!restoredModel.id || !restoredModel.previewUrl) return null;
+
+    restoredWorkspaceRef.current = true;
+    setModel(restoredModel);
+    setViews(snapshot.views && typeof snapshot.views === "object" ? (snapshot.views as Record<string, string>) : {});
+    setViewMetadata(
+      snapshot.viewMetadata && typeof snapshot.viewMetadata === "object"
+        ? (snapshot.viewMetadata as Record<string, string>)
+        : {},
+    );
+    setShapeViews(snapshot.shapeViews && typeof snapshot.shapeViews === "object" ? (snapshot.shapeViews as Record<string, string>) : {});
+    setShapeViewMetadata(
+      snapshot.shapeViewMetadata && typeof snapshot.shapeViewMetadata === "object"
+        ? (snapshot.shapeViewMetadata as Record<string, string>)
+        : {},
+    );
+    setOccViews(snapshot.occViews && typeof snapshot.occViews === "object" ? (snapshot.occViews as Record<string, string>) : {});
+    setMidViews(snapshot.midViews && typeof snapshot.midViews === "object" ? (snapshot.midViews as Record<string, string>) : {});
+    setIsometricShape2DViews(
+      snapshot.isometricShape2DViews && typeof snapshot.isometricShape2DViews === "object"
+        ? (snapshot.isometricShape2DViews as Record<string, string>)
+        : {},
+    );
+    setIsometricShape2DMetadata(
+      snapshot.isometricShape2DMetadata && typeof snapshot.isometricShape2DMetadata === "object"
+        ? (snapshot.isometricShape2DMetadata as Record<string, string>)
+        : {},
+    );
+    setIsometricMatplotlibViews(
+      snapshot.isometricMatplotlibViews && typeof snapshot.isometricMatplotlibViews === "object"
+        ? (snapshot.isometricMatplotlibViews as Record<string, string>)
+        : {},
+    );
+    setIsometricMatplotlibMetadata(
+      snapshot.isometricMatplotlibMetadata && typeof snapshot.isometricMatplotlibMetadata === "object"
+        ? (snapshot.isometricMatplotlibMetadata as Record<string, string>)
+        : {},
+    );
+
+    const restoredComponents = Array.isArray(snapshot.components) ? (snapshot.components as ModelComponent[]) : [];
+    setComponents(restoredComponents);
+    setComponentVisibility(
+      snapshot.componentVisibility && typeof snapshot.componentVisibility === "object"
+        ? (snapshot.componentVisibility as Record<string, boolean>)
+        : buildComponentVisibility(restoredComponents, true),
+    );
+    setSelectedComponentNodeName(typeof snapshot.selectedComponentNodeName === "string" ? snapshot.selectedComponentNodeName : null);
+    setComponentProfiles(
+      snapshot.componentProfiles && typeof snapshot.componentProfiles === "object"
+        ? (snapshot.componentProfiles as Record<string, ComponentProfile>)
+        : {},
+    );
+    setVisionViewCatalog(Array.isArray(snapshot.visionViewCatalog) ? (snapshot.visionViewCatalog as VisionSelectableView[]) : []);
+    setVisionViewSelection(
+      snapshot.visionViewSelection && typeof snapshot.visionViewSelection === "object"
+        ? (snapshot.visionViewSelection as Record<string, boolean>)
+        : {},
+    );
+    setVisionPastedScreenshots(
+      Array.isArray(snapshot.visionPastedScreenshots)
+        ? (snapshot.visionPastedScreenshots as VisionPastedScreenshotSlot[])
+        : [],
+    );
+    return restoredModel;
+  };
+
+  const collectAnalysisCacheForModel = (modelId: string): Record<string, string> => {
+    const collected: Record<string, string> = {};
+    const modelPrefixPatterns = ANALYSIS_CACHE_PREFIXES.map((prefix) => `${prefix}:${modelId}:`);
+    try {
+      for (let idx = 0; idx < window.localStorage.length; idx += 1) {
+        const key = window.localStorage.key(idx);
+        if (!key) continue;
+        const matchesModelScopedPrefix = modelPrefixPatterns.some((prefix) => key.startsWith(prefix));
+        if (!matchesModelScopedPrefix) continue;
+        const raw = window.localStorage.getItem(key);
+        if (raw !== null) {
+          collected[key] = raw;
+        }
+      }
+      const tuning = window.localStorage.getItem(FUSION_TUNING_STORAGE_KEY);
+      if (tuning !== null) {
+        collected[FUSION_TUNING_STORAGE_KEY] = tuning;
+      }
+    } catch {
+      // Ignore local storage read failures.
+    }
+    return collected;
+  };
+
+  const applyAnalysisCache = (cache: Record<string, string>) => {
+    Object.entries(cache).forEach(([key, raw]) => {
+      try {
+        window.localStorage.setItem(key, raw);
+      } catch {
+        // Best effort restore only.
+      }
+    });
+  };
+
+  const clearAnalysisCacheForModel = (modelId: string) => {
+    const modelPrefixPatterns = ANALYSIS_CACHE_PREFIXES.map((prefix) => `${prefix}:${modelId}:`);
+    try {
+      const keysToRemove: string[] = [];
+      for (let idx = 0; idx < window.localStorage.length; idx += 1) {
+        const key = window.localStorage.key(idx);
+        if (!key) continue;
+        if (modelPrefixPatterns.some((prefix) => key.startsWith(prefix))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((key) => {
+        window.localStorage.removeItem(key);
+      });
+    } catch {
+      // Ignore cache cleanup failures.
+    }
+  };
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(WORKSPACE_SESSION_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Partial<WorkspaceSessionSnapshot>;
+      const restoredModel = applyWorkspaceSnapshot(parsed);
+      if (!restoredModel) return;
+      setStatusMessage(`Restored workspace: ${restoredModel.originalName}`);
+      setLogMessage("Restored previous workspace from local cache.");
+    } catch {
+      // Ignore malformed saved state and continue with a fresh session.
+    }
+  }, []);
+
+  useEffect(() => {
+    const snapshot = buildWorkspaceSnapshot();
+    if (!snapshot) {
+      try {
+        window.localStorage.removeItem(WORKSPACE_SESSION_STORAGE_KEY);
+      } catch {
+        // Ignore storage errors.
+      }
+      return;
+    }
+    try {
+      window.localStorage.setItem(WORKSPACE_SESSION_STORAGE_KEY, JSON.stringify(snapshot));
+    } catch {
+      // Best effort cache only.
+    }
+  }, [
+    componentProfiles,
+    componentVisibility,
+    components,
+    isometricMatplotlibMetadata,
+    isometricMatplotlibViews,
+    isometricShape2DMetadata,
+    isometricShape2DViews,
+    midViews,
+    model,
+    occViews,
+    selectedComponentNodeName,
+    shapeViewMetadata,
+    shapeViews,
+    viewMetadata,
+    views,
+    visionPastedScreenshots,
+    visionViewCatalog,
+    visionViewSelection,
+  ]);
 
   const previewUrl = useMemo(() => {
     if (!model) return null;
@@ -1042,6 +1284,9 @@ const App = () => {
 
   useEffect(() => {
     if (!model) {
+      if (restoredWorkspaceRef.current) {
+        return;
+      }
       setTickets([]);
       setDesignReviews([]);
       setSelectedItemId(null);
@@ -1057,6 +1302,7 @@ const App = () => {
       setAnalysisFocus(null);
       return;
     }
+    restoredWorkspaceRef.current = false;
     fetchTickets(model.id);
     fetchDesignReviews(model.id);
     fetchComponentProfiles(model.id);
@@ -1291,6 +1537,150 @@ const App = () => {
     event.target.value = "";
   };
 
+  const handleSessionImportClick = () => {
+    sessionImportInputRef.current?.click();
+  };
+
+  const handleExportSessionFile = () => {
+    const snapshot = buildWorkspaceSnapshot();
+    if (!snapshot) {
+      setStatusMessage("Load a model before exporting a session.");
+      setLogMessage("Session export skipped: no active model.");
+      return;
+    }
+    setBusyAction("Saving Session");
+    try {
+      let drawingState: SessionDrawingState | undefined;
+      try {
+        const rawDrawing = window.localStorage.getItem(DRAWING_STORAGE_KEY);
+        if (rawDrawing) {
+          const parsed = JSON.parse(rawDrawing) as Partial<SessionDrawingState>;
+          drawingState = {
+            zones: Array.isArray(parsed.zones) ? (parsed.zones as DrawingZone[]) : [],
+            dimensions: Array.isArray(parsed.dimensions) ? (parsed.dimensions as Dimension[]) : [],
+          };
+        }
+      } catch {
+        // Ignore malformed drawing state and continue export.
+      }
+
+      const payload: WorkspaceSessionFileV1 = {
+        format: WORKSPACE_SESSION_FILE_FORMAT,
+        version: 1,
+        exported_at: new Date().toISOString(),
+        workspace: snapshot,
+        analysis_cache: collectAnalysisCacheForModel(snapshot.model.id),
+        drawing_state: drawingState,
+      };
+
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      const safeModelName = snapshot.model.originalName.replace(/\.[^.]+$/, "").replace(/[^\w.-]+/g, "_") || "workspace";
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      link.download = `${safeModelName}-session-${timestamp}.json`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+      setStatusMessage("Session file downloaded.");
+      setLogMessage(`Session exported for ${snapshot.model.originalName}.`);
+      setGlobalPaneOpen(false);
+    } catch (error) {
+      console.error(error);
+      const message = error instanceof Error ? error.message : "Failed to export session file";
+      setStatusMessage(message);
+      setLogMessage(message);
+    } finally {
+      setBusyAction(undefined);
+    }
+  };
+
+  const handleSessionImportFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setBusyAction("Loading Session");
+    try {
+      const rawText = await file.text();
+      const parsed = JSON.parse(rawText) as unknown;
+
+      let snapshot: Partial<WorkspaceSessionSnapshot> | null = null;
+      let analysisCache: Record<string, string> = {};
+      let drawingState: SessionDrawingState | null = null;
+
+      if (isRecord(parsed) && parsed.format === WORKSPACE_SESSION_FILE_FORMAT && parsed.version === 1) {
+        const typed = parsed as Partial<WorkspaceSessionFileV1>;
+        if (!isRecord(typed.workspace)) {
+          throw new Error("Session file is missing workspace payload.");
+        }
+        snapshot = typed.workspace as Partial<WorkspaceSessionSnapshot>;
+        if (isRecord(typed.analysis_cache)) {
+          const restoredCache: Record<string, string> = {};
+          Object.entries(typed.analysis_cache).forEach(([key, value]) => {
+            if (typeof value === "string") {
+              restoredCache[key] = value;
+            }
+          });
+          analysisCache = restoredCache;
+        }
+        if (isRecord(typed.drawing_state)) {
+          drawingState = {
+            zones: Array.isArray(typed.drawing_state.zones) ? (typed.drawing_state.zones as DrawingZone[]) : [],
+            dimensions: Array.isArray(typed.drawing_state.dimensions)
+              ? (typed.drawing_state.dimensions as Dimension[])
+              : [],
+          };
+        }
+      } else if (isRecord(parsed) && isRecord(parsed.model)) {
+        // Backward compatibility: support raw snapshot files without the v1 wrapper.
+        snapshot = parsed as Partial<WorkspaceSessionSnapshot>;
+      } else {
+        throw new Error("Unsupported session file format.");
+      }
+
+      if (!snapshot) {
+        throw new Error("Session file did not include a valid workspace snapshot.");
+      }
+
+      const snapshotModelId =
+        isRecord(snapshot.model) && typeof snapshot.model.id === "string" ? (snapshot.model.id as string) : null;
+      if (snapshotModelId) {
+        clearAnalysisCacheForModel(snapshotModelId);
+      }
+      applyAnalysisCache(analysisCache);
+      const restoredModel = applyWorkspaceSnapshot(snapshot);
+      if (!restoredModel) {
+        throw new Error("Session file did not include a valid model snapshot.");
+      }
+
+      if (drawingState) {
+        setDrawingZones(drawingState.zones);
+        setDimensions(drawingState.dimensions);
+        try {
+          window.localStorage.setItem(DRAWING_STORAGE_KEY, JSON.stringify(drawingState));
+        } catch {
+          // Ignore drawing cache write failures.
+        }
+      }
+
+      try {
+        window.localStorage.setItem(WORKSPACE_SESSION_STORAGE_KEY, JSON.stringify(snapshot));
+      } catch {
+        // Ignore local cache write failures.
+      }
+      setStatusMessage(`Session loaded: ${restoredModel.originalName}`);
+      setLogMessage(`Restored workspace from ${file.name}.`);
+      setGlobalPaneOpen(false);
+    } catch (error) {
+      console.error(error);
+      const message = error instanceof Error ? error.message : "Failed to import session file";
+      setStatusMessage(message);
+      setLogMessage(message);
+    } finally {
+      event.target.value = "";
+      setBusyAction(undefined);
+    }
+  };
+
   const handleCommentPin = (payload: {
     position: [number, number, number];
     normal: [number, number, number];
@@ -1399,8 +1789,25 @@ const App = () => {
             className="sr-only"
             onChange={handleImportFileChange}
           />
+          <input
+            type="file"
+            ref={sessionImportInputRef}
+            accept=".json"
+            className="sr-only"
+            onChange={handleSessionImportFileChange}
+          />
           <button className="toolbar__button global-pane__button" onClick={handleImportClick} disabled={Boolean(busyAction)}>
             Import STEP
+          </button>
+          <button
+            className="toolbar__button global-pane__button"
+            onClick={handleExportSessionFile}
+            disabled={!model || Boolean(busyAction)}
+          >
+            Save Session File
+          </button>
+          <button className="toolbar__button global-pane__button" onClick={handleSessionImportClick} disabled={Boolean(busyAction)}>
+            Load Session File
           </button>
           <button
             className="toolbar__button global-pane__button"

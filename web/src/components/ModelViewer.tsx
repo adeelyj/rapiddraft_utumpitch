@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
-import { Center, Environment, GizmoHelper, GizmoViewport, OrbitControls } from "@react-three/drei";
+import { Center, Environment, GizmoHelper, GizmoViewport, Html, Line, OrbitControls } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { Box3, Object3D, Vector2, Vector3 } from "three";
 import ReviewPins from "./ReviewPins";

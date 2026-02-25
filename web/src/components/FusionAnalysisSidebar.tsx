@@ -13,14 +13,68 @@ type FusionAnalysisSidebarProps = {
 
 type AnalysisMode = "geometry_dfm" | "drawing_spec" | "full";
 type StandardsProfileMode = "pilot" | "profile";
+type CachedFusionReportEnvelope = {
+  saved_at?: string;
+  report_id?: string;
+  payload?: FusionReportResponse;
+};
 
 const formatSignal = (value: number): string => value.toFixed(3);
 const FUSION_TUNING_STORAGE_KEY = "fusion_tuning_v1";
+const FUSION_REPORT_CACHE_PREFIX = "fusion_report_last_v1";
 const DEFAULT_FUSION_TUNING: FusionTuning = {
   threshold: 0.28,
   weight_semantic: 0.6,
   weight_refs: 0.25,
   weight_geometry: 0.15,
+};
+
+const buildFusionReportCacheKey = (modelId: string | null, componentNodeName: string | null | undefined): string | null => {
+  if (!modelId || !componentNodeName) return null;
+  return `${FUSION_REPORT_CACHE_PREFIX}:${modelId}:${componentNodeName}`;
+};
+
+const readCachedFusionReport = (cacheKey: string | null): CachedFusionReportEnvelope | null => {
+  if (!cacheKey) return null;
+  try {
+    const raw = window.localStorage.getItem(cacheKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as FusionReportResponse | CachedFusionReportEnvelope;
+    if (!parsed || typeof parsed !== "object") return null;
+    if ("payload" in parsed || "report_id" in parsed || "saved_at" in parsed) {
+      const envelope = parsed as CachedFusionReportEnvelope;
+      if (envelope.payload && typeof envelope.payload === "object") {
+        return envelope;
+      }
+      return {
+        report_id: envelope.report_id,
+      };
+    }
+    const payload = parsed as FusionReportResponse;
+    if (!payload.report_id) return null;
+    return {
+      report_id: payload.report_id,
+      payload,
+    };
+  } catch {
+    return null;
+  }
+};
+
+const writeCachedFusionReport = (cacheKey: string | null, payload: FusionReportResponse): void => {
+  if (!cacheKey) return;
+  try {
+    window.localStorage.setItem(
+      cacheKey,
+      JSON.stringify({
+        saved_at: new Date().toISOString(),
+        report_id: payload.report_id,
+        payload,
+      } satisfies CachedFusionReportEnvelope),
+    );
+  } catch {
+    // Best effort cache only.
+  }
 };
 
 const FusionAnalysisSidebar = ({ open, apiBase, modelId, selectedComponent, onFocusInModel, onClose }: FusionAnalysisSidebarProps) => {
@@ -33,6 +87,16 @@ const FusionAnalysisSidebar = ({ open, apiBase, modelId, selectedComponent, onFo
   const [visionReportId, setVisionReportId] = useState("");
   const [tuningExpanded, setTuningExpanded] = useState(false);
   const [fusionTuning, setFusionTuning] = useState<FusionTuning>(DEFAULT_FUSION_TUNING);
+  const cacheKey = useMemo(() => buildFusionReportCacheKey(modelId, selectedComponent?.nodeName), [modelId, selectedComponent?.nodeName]);
+
+  useEffect(() => {
+    setReport(null);
+    setError(null);
+    const cached = readCachedFusionReport(cacheKey);
+    if (cached?.payload) {
+      setReport(cached.payload);
+    }
+  }, [cacheKey]);
 
   useEffect(() => {
     try {
@@ -59,6 +123,34 @@ const FusionAnalysisSidebar = ({ open, apiBase, modelId, selectedComponent, onFo
       // Best effort only.
     }
   }, [fusionTuning]);
+
+  useEffect(() => {
+    if (!cacheKey || !modelId) return;
+    const cached = readCachedFusionReport(cacheKey);
+    const cachedReportId = cached?.report_id ?? cached?.payload?.report_id;
+    if (!cachedReportId) return;
+
+    let cancelled = false;
+    const refreshFromServer = async () => {
+      try {
+        const response = await fetch(`${apiBase}/api/models/${modelId}/fusion/reports/${cachedReportId}`, {
+          method: "GET",
+        });
+        if (!response.ok) return;
+        const payload = (await response.json()) as FusionReportResponse;
+        if (cancelled) return;
+        setReport(payload);
+        writeCachedFusionReport(cacheKey, payload);
+      } catch {
+        // Keep cached payload if network retrieval fails.
+      }
+    };
+
+    refreshFromServer();
+    return () => {
+      cancelled = true;
+    };
+  }, [apiBase, cacheKey, modelId]);
 
   const canRun = Boolean(modelId && selectedComponent && !running);
   const selectedVisionReportId = useMemo(() => {
@@ -143,6 +235,7 @@ const FusionAnalysisSidebar = ({ open, apiBase, modelId, selectedComponent, onFo
       }
       const payload = (await response.json()) as FusionReportResponse;
       setReport(payload);
+      writeCachedFusionReport(cacheKey, payload);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unexpected error while running fusion analysis");
     } finally {
