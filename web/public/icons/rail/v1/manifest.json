@@ -1,0 +1,107 @@
+{
+  "version": "v1",
+  "family": "sidebar-rail",
+  "target_size_px": 20,
+  "icons": [
+    {
+      "icon_id": "nav_views",
+      "labels": [
+        "Views"
+      ],
+      "files": {
+        "png": "/icons/rail/v1/nav_views.png"
+      }
+    },
+    {
+      "icon_id": "nav_comments",
+      "labels": [
+        "Comments"
+      ],
+      "files": {
+        "png": "/icons/rail/v1/nav_comments.png"
+      }
+    },
+    {
+      "icon_id": "nav_reviews",
+      "labels": [
+        "Reviews"
+      ],
+      "files": {
+        "png": "/icons/rail/v1/nav_reviews.png"
+      }
+    },
+    {
+      "icon_id": "nav_dfm",
+      "labels": [
+        "Design For Manufacturing",
+        "DFM (AI)"
+      ],
+      "files": {
+        "png": "/icons/rail/v1/nav_dfm.png"
+      }
+    },
+    {
+      "icon_id": "nav_knowledge",
+      "labels": [
+        "Knowledge Management"
+      ],
+      "files": {
+        "png": "/icons/rail/v1/nav_knowledge.png"
+      }
+    },
+    {
+      "icon_id": "nav_requirements",
+      "labels": [
+        "Requirements"
+      ],
+      "files": {
+        "png": "/icons/rail/v1/nav_requirements.png"
+      }
+    },
+    {
+      "icon_id": "nav_vision",
+      "labels": [
+        "Vision"
+      ],
+      "files": {
+        "png": "/icons/rail/v1/nav_vision.png"
+      }
+    },
+    {
+      "icon_id": "nav_draftlint",
+      "labels": [
+        "DraftLint"
+      ],
+      "files": {
+        "png": "/icons/rail/v1/nav_draftlint.png"
+      }
+    },
+    {
+      "icon_id": "nav_cnc",
+      "labels": [
+        "CNC"
+      ],
+      "files": {
+        "png": "/icons/rail/v1/nav_cnc.png"
+      }
+    },
+    {
+      "icon_id": "nav_fusion2",
+      "labels": [
+        "Fusion"
+      ],
+      "files": {
+        "png": "/icons/rail/v1/nav_fusion2.png"
+      }
+    },
+    {
+      "icon_id": "nav_rep",
+      "labels": [
+        "REP"
+      ],
+      "files": {
+        "png": "/icons/rail/v1/nav_rep.png"
+      }
+    }
+  ]
+}

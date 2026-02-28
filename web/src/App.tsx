@@ -16,6 +16,15 @@ import VisionAnalysisSidebar from "./components/VisionAnalysisSidebar";
 import FusionAnalysisSidebar from "./components/FusionAnalysisSidebar";
 import DraftLintSidebar from "./components/DraftLintSidebar";
 import DraftLintWorkspace from "./components/DraftLintWorkspace";
+import RailTabIcon from "./components/RailTabIcon";
+import {
+  LEFT_RAIL_TAB_ORDER,
+  LEFT_RAIL_TAB_SPECS,
+  RIGHT_RAIL_TAB_ORDER,
+  RIGHT_RAIL_TAB_SPECS,
+  type LeftRailTab,
+  type RightRailTab,
+} from "./config/railIcons";
 import type { AnalysisFocusPayload } from "./types/analysis";
 import type { DraftLintReportResponse } from "./types/draftlint";
 import type {
@@ -204,6 +213,85 @@ const normalizeComponentProfiles = (raw: unknown): Record<string, ComponentProfi
   return profiles;
 };
 
+const normalizeStringMap = (raw: unknown): Record<string, string> => {
+  if (!raw || typeof raw !== "object") return {};
+  const next: Record<string, string> = {};
+  Object.entries(raw as Record<string, unknown>).forEach(([key, value]) => {
+    if (typeof value === "string") {
+      next[key] = value;
+    }
+  });
+  return next;
+};
+
+const normalizeBooleanMap = (raw: unknown): Record<string, boolean> => {
+  if (!raw || typeof raw !== "object") return {};
+  const next: Record<string, boolean> = {};
+  Object.entries(raw as Record<string, unknown>).forEach(([key, value]) => {
+    if (typeof value === "boolean") {
+      next[key] = value;
+    }
+  });
+  return next;
+};
+
+const normalizeVisionViewCatalog = (raw: unknown): VisionSelectableView[] => {
+  if (!Array.isArray(raw)) return [];
+  return raw.flatMap((entry) => {
+    if (!entry || typeof entry !== "object") return [];
+    const record = entry as Record<string, unknown>;
+    const id = typeof record.id === "string" ? record.id.trim() : "";
+    const label = typeof record.label === "string" ? record.label.trim() : "";
+    const src = typeof record.src === "string" ? record.src.trim() : "";
+    if (!id || !label || !src) return [];
+    return [{ id, label, src }];
+  });
+};
+
+const normalizeVisionPastedScreenshots = (raw: unknown): VisionPastedScreenshotSlot[] => {
+  if (!Array.isArray(raw)) return [];
+  return raw.flatMap((entry, index) => {
+    if (!entry || typeof entry !== "object") return [];
+    const record = entry as Record<string, unknown>;
+    const idRaw = typeof record.id === "string" && record.id.trim() ? record.id.trim() : `vision_shot_restored_${index + 1}`;
+    const labelRaw =
+      typeof record.label === "string" && record.label.trim() ? record.label.trim() : `Screenshot ${index + 1}`;
+    const dataUrlRaw =
+      typeof record.dataUrl === "string" && record.dataUrl.trim() ? record.dataUrl.trim() : null;
+    const selectedRaw = typeof record.selected === "boolean" ? record.selected : false;
+    return [
+      {
+        id: idRaw,
+        label: labelRaw,
+        dataUrl: dataUrlRaw,
+        selected: Boolean(dataUrlRaw && selectedRaw),
+      } satisfies VisionPastedScreenshotSlot,
+    ];
+  });
+};
+
+const resolvePreviewValidationUrl = (previewUrl: string): string =>
+  previewUrl.startsWith("http") ? previewUrl : `${apiBase}${previewUrl}`;
+
+const validatePreviewAvailability = async (previewUrl: string): Promise<boolean> => {
+  if (!previewUrl.trim()) return false;
+  const validationUrl = resolvePreviewValidationUrl(previewUrl.trim());
+  try {
+    const headResponse = await fetch(validationUrl, { method: "HEAD" });
+    if (headResponse.ok) return true;
+    if (headResponse.status !== 405) return false;
+  } catch {
+    return false;
+  }
+
+  try {
+    const rangeResponse = await fetch(validationUrl, { headers: { Range: "bytes=0-0" } });
+    return rangeResponse.ok;
+  } catch {
+    return false;
+  }
+};
+
 const normalizeProfileOptions = (raw: unknown): DfmProfileOptions | null => {
   if (!raw || typeof raw !== "object") return null;
   const rootPayload = raw as Record<string, unknown>;
@@ -279,9 +367,9 @@ const App = () => {
   const sessionImportInputRef = useRef<HTMLInputElement | null>(null);
   const [globalPaneOpen, setGlobalPaneOpen] = useState(false);
   const [leftOpen, setLeftOpen] = useState(false);
-  const [leftTab, setLeftTab] = useState<"views" | "reviews" | "com" | "dfm" | "km" | "req">("reviews");
+  const [leftTab, setLeftTab] = useState<LeftRailTab>("reviews");
   const [rightOpen, setRightOpen] = useState(false);
-  const [rightTab, setRightTab] = useState<"dfm" | "rep" | "cnc" | "vision" | "fusion" | "draftlint" | null>(null);
+  const [rightTab, setRightTab] = useState<RightRailTab | null>(null);
   const [pinMode, setPinMode] = useState<"none" | "comment" | "review">("none");
   const [visionViewCatalog, setVisionViewCatalog] = useState<VisionSelectableView[]>([]);
   const [visionViewSelection, setVisionViewSelection] = useState<Record<string, boolean>>({});
@@ -325,65 +413,38 @@ const App = () => {
 
     restoredWorkspaceRef.current = true;
     setModel(restoredModel);
-    setViews(snapshot.views && typeof snapshot.views === "object" ? (snapshot.views as Record<string, string>) : {});
-    setViewMetadata(
-      snapshot.viewMetadata && typeof snapshot.viewMetadata === "object"
-        ? (snapshot.viewMetadata as Record<string, string>)
-        : {},
-    );
-    setShapeViews(snapshot.shapeViews && typeof snapshot.shapeViews === "object" ? (snapshot.shapeViews as Record<string, string>) : {});
-    setShapeViewMetadata(
-      snapshot.shapeViewMetadata && typeof snapshot.shapeViewMetadata === "object"
-        ? (snapshot.shapeViewMetadata as Record<string, string>)
-        : {},
-    );
-    setOccViews(snapshot.occViews && typeof snapshot.occViews === "object" ? (snapshot.occViews as Record<string, string>) : {});
-    setMidViews(snapshot.midViews && typeof snapshot.midViews === "object" ? (snapshot.midViews as Record<string, string>) : {});
-    setIsometricShape2DViews(
-      snapshot.isometricShape2DViews && typeof snapshot.isometricShape2DViews === "object"
-        ? (snapshot.isometricShape2DViews as Record<string, string>)
-        : {},
-    );
-    setIsometricShape2DMetadata(
-      snapshot.isometricShape2DMetadata && typeof snapshot.isometricShape2DMetadata === "object"
-        ? (snapshot.isometricShape2DMetadata as Record<string, string>)
-        : {},
-    );
-    setIsometricMatplotlibViews(
-      snapshot.isometricMatplotlibViews && typeof snapshot.isometricMatplotlibViews === "object"
-        ? (snapshot.isometricMatplotlibViews as Record<string, string>)
-        : {},
-    );
-    setIsometricMatplotlibMetadata(
-      snapshot.isometricMatplotlibMetadata && typeof snapshot.isometricMatplotlibMetadata === "object"
-        ? (snapshot.isometricMatplotlibMetadata as Record<string, string>)
-        : {},
-    );
+    setViews(normalizeStringMap(snapshot.views));
+    setViewMetadata(normalizeStringMap(snapshot.viewMetadata));
+    setShapeViews(normalizeStringMap(snapshot.shapeViews));
+    setShapeViewMetadata(normalizeStringMap(snapshot.shapeViewMetadata));
+    setOccViews(normalizeStringMap(snapshot.occViews));
+    setMidViews(normalizeStringMap(snapshot.midViews));
+    setIsometricShape2DViews(normalizeStringMap(snapshot.isometricShape2DViews));
+    setIsometricShape2DMetadata(normalizeStringMap(snapshot.isometricShape2DMetadata));
+    setIsometricMatplotlibViews(normalizeStringMap(snapshot.isometricMatplotlibViews));
+    setIsometricMatplotlibMetadata(normalizeStringMap(snapshot.isometricMatplotlibMetadata));
 
-    const restoredComponents = Array.isArray(snapshot.components) ? (snapshot.components as ModelComponent[]) : [];
+    const restoredComponents = normalizeComponents(snapshot.components);
     setComponents(restoredComponents);
-    setComponentVisibility(
-      snapshot.componentVisibility && typeof snapshot.componentVisibility === "object"
-        ? (snapshot.componentVisibility as Record<string, boolean>)
-        : buildComponentVisibility(restoredComponents, true),
-    );
-    setSelectedComponentNodeName(typeof snapshot.selectedComponentNodeName === "string" ? snapshot.selectedComponentNodeName : null);
-    setComponentProfiles(
-      snapshot.componentProfiles && typeof snapshot.componentProfiles === "object"
-        ? (snapshot.componentProfiles as Record<string, ComponentProfile>)
-        : {},
-    );
-    setVisionViewCatalog(Array.isArray(snapshot.visionViewCatalog) ? (snapshot.visionViewCatalog as VisionSelectableView[]) : []);
-    setVisionViewSelection(
-      snapshot.visionViewSelection && typeof snapshot.visionViewSelection === "object"
-        ? (snapshot.visionViewSelection as Record<string, boolean>)
-        : {},
-    );
-    setVisionPastedScreenshots(
-      Array.isArray(snapshot.visionPastedScreenshots)
-        ? (snapshot.visionPastedScreenshots as VisionPastedScreenshotSlot[])
-        : [],
-    );
+    const restoredVisibility = normalizeBooleanMap(snapshot.componentVisibility);
+    const hasRestoredVisibility = Object.keys(restoredVisibility).length > 0;
+    const normalizedVisibility = hasRestoredVisibility
+      ? restoredComponents.reduce<Record<string, boolean>>((acc, component) => {
+          acc[component.nodeName] = restoredVisibility[component.nodeName] ?? true;
+          return acc;
+        }, {})
+      : buildComponentVisibility(restoredComponents, true);
+    setComponentVisibility(normalizedVisibility);
+    const restoredSelectedNode =
+      typeof snapshot.selectedComponentNodeName === "string" &&
+      restoredComponents.some((component) => component.nodeName === snapshot.selectedComponentNodeName)
+        ? snapshot.selectedComponentNodeName
+        : null;
+    setSelectedComponentNodeName(restoredSelectedNode);
+    setComponentProfiles(normalizeComponentProfiles(snapshot.componentProfiles));
+    setVisionViewCatalog(normalizeVisionViewCatalog(snapshot.visionViewCatalog));
+    setVisionViewSelection(normalizeBooleanMap(snapshot.visionViewSelection));
+    setVisionPastedScreenshots(normalizeVisionPastedScreenshots(snapshot.visionPastedScreenshots));
     return restoredModel;
   };
 
@@ -441,17 +502,53 @@ const App = () => {
   };
 
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(WORKSPACE_SESSION_STORAGE_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as Partial<WorkspaceSessionSnapshot>;
-      const restoredModel = applyWorkspaceSnapshot(parsed);
-      if (!restoredModel) return;
-      setStatusMessage(`Restored workspace: ${restoredModel.originalName}`);
-      setLogMessage("Restored previous workspace from local cache.");
-    } catch {
-      // Ignore malformed saved state and continue with a fresh session.
-    }
+    let cancelled = false;
+
+    const clearCachedWorkspace = () => {
+      try {
+        window.localStorage.removeItem(WORKSPACE_SESSION_STORAGE_KEY);
+      } catch {
+        // Ignore local storage removal failures.
+      }
+    };
+
+    const restoreWorkspace = async () => {
+      try {
+        const raw = window.localStorage.getItem(WORKSPACE_SESSION_STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw) as Partial<WorkspaceSessionSnapshot>;
+
+        const parsedModel = isRecord(parsed.model) ? (parsed.model as Record<string, unknown>) : null;
+        const parsedPreviewUrl = typeof parsedModel?.previewUrl === "string" ? parsedModel.previewUrl : null;
+        if (!parsedModel || !parsedPreviewUrl) {
+          clearCachedWorkspace();
+          return;
+        }
+
+        const isPreviewAvailable = await validatePreviewAvailability(parsedPreviewUrl);
+        if (!isPreviewAvailable) {
+          clearCachedWorkspace();
+          return;
+        }
+
+        if (cancelled) return;
+        const restoredModel = applyWorkspaceSnapshot(parsed);
+        if (!restoredModel) {
+          clearCachedWorkspace();
+          return;
+        }
+        setStatusMessage(`Restored workspace: ${restoredModel.originalName}`);
+        setLogMessage("Restored previous workspace from local cache.");
+      } catch {
+        // Clear malformed saved state and continue with a fresh session.
+        clearCachedWorkspace();
+      }
+    };
+
+    restoreWorkspace();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -627,10 +724,22 @@ const App = () => {
 
   const readErrorDetail = async (response: Response, fallback: string) => {
     try {
-      const payload = await response.json();
-      return (payload?.detail ?? payload?.message ?? fallback) as string;
+      const rawText = await response.text();
+      if (!rawText.trim()) {
+        return `${fallback} (HTTP ${response.status})`;
+      }
+      try {
+        const payload = JSON.parse(rawText) as { detail?: unknown; message?: unknown };
+        const parsedDetail = payload?.detail ?? payload?.message;
+        if (typeof parsedDetail === "string" && parsedDetail.trim()) {
+          return parsedDetail.trim();
+        }
+      } catch {
+        // Non-JSON error payload (e.g. plain text).
+      }
+      return rawText.trim();
     } catch {
-      return fallback;
+      return `${fallback} (HTTP ${response.status})`;
     }
   };
 
@@ -1399,12 +1508,12 @@ const App = () => {
     setDimensions((prev) => prev.slice(0, -1));
   };
 
-  const handleLeftRailToggle = (tab: "views" | "reviews" | "com" | "dfm" | "km" | "req") => {
+  const handleLeftRailToggle = (tab: LeftRailTab) => {
     setLeftOpen((prev) => !(prev && leftTab === tab));
     setLeftTab(tab);
   };
 
-  const handleRightRailToggle = (tab: "dfm" | "rep" | "cnc" | "vision" | "fusion" | "draftlint") => {
+  const handleRightRailToggle = (tab: RightRailTab) => {
     if (rightOpen && rightTab === tab) {
       setRightOpen(false);
       setRightTab(null);
@@ -1681,6 +1790,18 @@ const App = () => {
         throw new Error("Session file did not include a valid workspace snapshot.");
       }
 
+      const snapshotPreviewUrl =
+        isRecord(snapshot.model) && typeof snapshot.model.previewUrl === "string" ? snapshot.model.previewUrl : null;
+      if (!snapshotPreviewUrl) {
+        throw new Error("Session file model preview URL is missing.");
+      }
+      const isSnapshotPreviewAvailable = await validatePreviewAvailability(snapshotPreviewUrl);
+      if (!isSnapshotPreviewAvailable) {
+        throw new Error(
+          "Session file references a model preview that is no longer available. Re-open the model and export a fresh session file.",
+        );
+      }
+
       const snapshotModelId =
         isRecord(snapshot.model) && typeof snapshot.model.id === "string" ? (snapshot.model.id as string) : null;
       if (snapshotModelId) {
@@ -1856,63 +1977,23 @@ const App = () => {
           >
             Export Views
           </button>
-          <button className="toolbar__button global-pane__button" onClick={() => setInfoDialog("compare")} disabled={Boolean(busyAction)}>
-            Compare Models
-          </button>
         </div>
       </aside>
-      <button
-        className="collab-fab"
-        onClick={() => setInfoDialog("collaborate")}
-        disabled={Boolean(busyAction)}
-        aria-label="Open collaboration options"
-      >
-        Collaborate
-      </button>
       <main className={`workspace ${leftOpen ? "" : "workspace--left-collapsed"} ${rightOpen ? "" : "workspace--right-collapsed"}`}>
         <aside className="sidebar-rail sidebar-rail--left">
-          <button
-            className={`sidebar-rail__button ${leftOpen && leftTab === "views" ? "sidebar-rail__button--active" : ""}`}
-            onClick={() => handleLeftRailToggle("views")}
-          >
-            <span className="sidebar-rail__icon">V</span>
-            <span className="sidebar-rail__label">Views</span>
-          </button>
-          <button
-            className={`sidebar-rail__button ${leftOpen && leftTab === "com" ? "sidebar-rail__button--active" : ""}`}
-            onClick={() => handleLeftRailToggle("com")}
-          >
-            <span className="sidebar-rail__icon">C</span>
-            <span className="sidebar-rail__label">Comments</span>
-          </button>
-          <button
-            className={`sidebar-rail__button ${leftOpen && leftTab === "reviews" ? "sidebar-rail__button--active" : ""}`}
-            onClick={() => handleLeftRailToggle("reviews")}
-          >
-            <span className="sidebar-rail__icon">R</span>
-            <span className="sidebar-rail__label">Reviews</span>
-          </button>
-          <button
-            className={`sidebar-rail__button ${leftOpen && leftTab === "dfm" ? "sidebar-rail__button--active" : ""}`}
-            onClick={() => handleLeftRailToggle("dfm")}
-          >
-            <span className="sidebar-rail__icon">M</span>
-            <span className="sidebar-rail__label">Design For Manufacturing</span>
-          </button>
-          <button
-            className={`sidebar-rail__button ${leftOpen && leftTab === "km" ? "sidebar-rail__button--active" : ""}`}
-            onClick={() => handleLeftRailToggle("km")}
-          >
-            <span className="sidebar-rail__icon">K</span>
-            <span className="sidebar-rail__label">Knowledge Management</span>
-          </button>
-          <button
-            className={`sidebar-rail__button ${leftOpen && leftTab === "req" ? "sidebar-rail__button--active" : ""}`}
-            onClick={() => handleLeftRailToggle("req")}
-          >
-            <span className="sidebar-rail__icon">Q</span>
-            <span className="sidebar-rail__label">Requirements</span>
-          </button>
+          {LEFT_RAIL_TAB_ORDER.map((tab) => {
+            const spec = LEFT_RAIL_TAB_SPECS[tab];
+            return (
+              <button
+                key={tab}
+                className={`sidebar-rail__button ${leftOpen && leftTab === tab ? "sidebar-rail__button--active" : ""}`}
+                onClick={() => handleLeftRailToggle(tab)}
+              >
+                <RailTabIcon iconId={spec.iconId} fallbackGlyph={spec.fallbackGlyph} />
+                <span className="sidebar-rail__label">{spec.label}</span>
+              </button>
+            );
+          })}
         </aside>
         <aside className={`sidebar-panel sidebar-panel--left ${leftOpen ? "sidebar-panel--open" : ""}`}>
           {leftTab === "views" ? (
@@ -1976,6 +2057,24 @@ const App = () => {
           )}
         </aside>
         <div className="workspace__main">
+          <div className="fab-actions">
+            <button
+              className="fab-actions__button fab-actions__button--secondary"
+              onClick={() => setInfoDialog("compare")}
+              disabled={Boolean(busyAction)}
+              aria-label="Open model comparison"
+            >
+              Compare Models
+            </button>
+            <button
+              className="fab-actions__button fab-actions__button--primary"
+              onClick={() => setInfoDialog("collaborate")}
+              disabled={Boolean(busyAction)}
+              aria-label="Open collaboration options"
+            >
+              Collaborate
+            </button>
+          </div>
           {isDraftLintMode ? (
             <DraftLintWorkspace
               sourcePreviewUrl={draftLintSourcePreviewUrl}
@@ -2070,48 +2169,19 @@ const App = () => {
           )}
         </div>
         <aside className="sidebar-rail sidebar-rail--right">
-          <button
-            className={`sidebar-rail__button ${rightOpen && rightTab === "vision" ? "sidebar-rail__button--active" : ""}`}
-            onClick={() => handleRightRailToggle("vision")}
-          >
-            <span className="sidebar-rail__icon">V</span>
-            <span className="sidebar-rail__label">Vision</span>
-          </button>
-          <button
-            className={`sidebar-rail__button ${rightOpen && rightTab === "draftlint" ? "sidebar-rail__button--active" : ""}`}
-            onClick={() => handleRightRailToggle("draftlint")}
-          >
-            <span className="sidebar-rail__icon">L</span>
-            <span className="sidebar-rail__label">DraftLint</span>
-          </button>
-          <button
-            className={`sidebar-rail__button ${rightOpen && rightTab === "cnc" ? "sidebar-rail__button--active" : ""}`}
-            onClick={() => handleRightRailToggle("cnc")}
-          >
-            <span className="sidebar-rail__icon">C</span>
-            <span className="sidebar-rail__label">CNC</span>
-          </button>
-          <button
-            className={`sidebar-rail__button ${rightOpen && rightTab === "dfm" ? "sidebar-rail__button--active" : ""}`}
-            onClick={() => handleRightRailToggle("dfm")}
-          >
-            <span className="sidebar-rail__icon">D</span>
-            <span className="sidebar-rail__label">DFM (AI)</span>
-          </button>
-          <button
-            className={`sidebar-rail__button ${rightOpen && rightTab === "fusion" ? "sidebar-rail__button--active" : ""}`}
-            onClick={() => handleRightRailToggle("fusion")}
-          >
-            <span className="sidebar-rail__icon">F</span>
-            <span className="sidebar-rail__label">Fusion</span>
-          </button>
-          <button
-            className={`sidebar-rail__button ${rightOpen && rightTab === "rep" ? "sidebar-rail__button--active" : ""}`}
-            onClick={() => handleRightRailToggle("rep")}
-          >
-            <span className="sidebar-rail__icon">R</span>
-            <span className="sidebar-rail__label">REP</span>
-          </button>
+          {RIGHT_RAIL_TAB_ORDER.map((tab) => {
+            const spec = RIGHT_RAIL_TAB_SPECS[tab];
+            return (
+              <button
+                key={tab}
+                className={`sidebar-rail__button ${rightOpen && rightTab === tab ? "sidebar-rail__button--active" : ""}`}
+                onClick={() => handleRightRailToggle(tab)}
+              >
+                <RailTabIcon iconId={spec.iconId} fallbackGlyph={spec.fallbackGlyph} />
+                <span className="sidebar-rail__label">{spec.label}</span>
+              </button>
+            );
+          })}
         </aside>
         <DfmReviewSidebar
           open={rightOpen && rightTab === "dfm"}
