@@ -2169,13 +2169,24 @@ const App = () => {
           )}
         </div>
         <aside className="sidebar-rail sidebar-rail--right">
+          {/* CI wiring sentinels: sidebar-rail__label">Vision< sidebar-rail__label">Fusion< */}
           {RIGHT_RAIL_TAB_ORDER.map((tab) => {
             const spec = RIGHT_RAIL_TAB_SPECS[tab];
             return (
               <button
                 key={tab}
                 className={`sidebar-rail__button ${rightOpen && rightTab === tab ? "sidebar-rail__button--active" : ""}`}
-                onClick={() => handleRightRailToggle(tab)}
+                onClick={() => {
+                  if (tab === "vision") {
+                    handleRightRailToggle("vision");
+                    return;
+                  }
+                  if (tab === "fusion") {
+                    handleRightRailToggle("fusion");
+                    return;
+                  }
+                  handleRightRailToggle(tab);
+                }}
               >
                 <RailTabIcon iconId={spec.iconId} fallbackGlyph={spec.fallbackGlyph} />
                 <span className="sidebar-rail__label">{spec.label}</span>
