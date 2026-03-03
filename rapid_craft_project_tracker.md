@@ -66,3 +66,18 @@ Each line below is generated from git commits and includes date + summary.
 
 - 2026-02-25 | `95fa40c` | feat(workspace): add session file save/load and compact vision API settings
   <!-- commit:95fa40c19caff413fcd3c012166708af62c0b714 -->
+
+- 2026-02-25 | `2b55fe1` | feat(ui): collaboration modal polish and save draftlint frontend demo plan
+  <!-- commit:2b55fe17a6aad7f7021a26e1400724933d87e559 -->
+
+- 2026-02-25 | `96a701d` | feat(draftlint): add demo scan workspace and mock API contract
+  <!-- commit:96a701d930aa0fd43e4641a02d2187ee716edbd9 -->
+
+- 2026-02-28 | `3aa0a05` | Refine sidebar rail icons and viewer action layout
+  <!-- commit:3aa0a05a1cc706415e29f14ad68012103b63f577 -->
+
+- 2026-02-28 | `a74d675` | chore: trigger Railway redeploy
+  <!-- commit:a74d675f5511e8f9377c45d8cd244e636f7aff47 -->
+
+- 2026-02-28 | `1bbe859` | Fix sidebar wiring CI assertions for vision and fusion
+  <!-- commit:1bbe859666cfd4d9788551a0aad000e81d170e11 -->

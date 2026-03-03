@@ -1,8 +1,8 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { Center, Environment, GizmoHelper, GizmoViewport, Html, Line, OrbitControls } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { Box3, Object3D, Vector2, Vector3 } from "three";
+import { Box3, MOUSE, Object3D, Vector2, Vector3 } from "three";
 import ReviewPins from "./ReviewPins";
 import type { AnalysisFocusPayload } from "../types/analysis";
 import type { PinPosition, PinnedItem } from "../types/review";
@@ -41,7 +41,7 @@ type ModelViewerProps = {
   modelId: string | null;
   previewUrl: string | null;
   message?: string;
-  onCreateDrawing?: () => void;
+  onFitView?: () => void;
   fitTrigger: number;
   components?: ModelComponent[];
   componentVisibility?: Record<string, boolean>;
@@ -77,6 +77,19 @@ type ModelViewerProps = {
   }) => void;
   analysisFocus?: AnalysisFocusPayload | null;
   onClearAnalysisFocus?: () => void;
+};
+
+type CameraSnapshot = {
+  position: [number, number, number];
+  target: [number, number, number];
+};
+
+type OrbitControlsLike = {
+  target: Vector3;
+  update: () => void;
+  enabled: boolean;
+  dollyIn?: (scale: number) => void;
+  dollyOut?: (scale: number) => void;
 };
 
 const joinApiUrl = (base: string, path: string): string => {
@@ -117,9 +130,17 @@ const formatMetricValue = (metric: PartFactMetric): string => {
 const sortedMetrics = (metrics: Record<string, PartFactMetric>): Array<[string, PartFactMetric]> =>
   Object.entries(metrics).sort((a, b) => a[1].label.localeCompare(b[1].label));
 
-const FitCamera = ({ object, trigger }: { object: Object3D; trigger: number }) => {
+const FitCamera = ({
+  object,
+  trigger,
+  onFitted,
+}: {
+  object: Object3D;
+  trigger: number;
+  onFitted?: (snapshot: CameraSnapshot) => void;
+}) => {
   const camera = useThree((state) => state.camera);
-  const controls = useThree((state) => state.controls) as { target: Vector3; update: () => void } | null;
+  const controls = useThree((state) => state.controls) as OrbitControlsLike | null;
 
   useEffect(() => {
     if (!object) return;
@@ -142,10 +163,14 @@ const FitCamera = ({ object, trigger }: { object: Object3D; trigger: number }) =
       controls.target.copy(center);
       controls.update();
     }
+    onFitted?.({
+      position: [newPosition.x, newPosition.y, newPosition.z],
+      target: [center.x, center.y, center.z],
+    });
     // Only re-run when the object changes. camera/controls identities may change
     // between renders and cause repeated camera adjustments leading to a continuous zoom.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [object, trigger]);
+  }, [object, trigger, onFitted]);
 
   return null;
 };
@@ -163,6 +188,11 @@ const ModelContents = ({
   components,
   componentVisibility,
   analysisFocus,
+  zoomInTrigger,
+  zoomOutTrigger,
+  homeTrigger,
+  homeView,
+  onFitCaptured,
 }: {
   previewUrl: string;
   fitTrigger: number;
@@ -176,12 +206,17 @@ const ModelContents = ({
   components: ModelComponent[];
   componentVisibility: Record<string, boolean>;
   analysisFocus?: AnalysisFocusPayload | null;
+  zoomInTrigger: number;
+  zoomOutTrigger: number;
+  homeTrigger: number;
+  homeView: CameraSnapshot | null;
+  onFitCaptured?: (snapshot: CameraSnapshot) => void;
 }) => {
   const gltf = useLoader(GLTFLoader, previewUrl);
   const camera = useThree((state) => state.camera);
   const raycaster = useThree((state) => state.raycaster);
   const gl = useThree((state) => state.gl);
-  const controls = useThree((state) => state.controls) as { target: Vector3; update: () => void; enabled: boolean } | null;
+  const controls = useThree((state) => state.controls) as OrbitControlsLike | null;
   const [analysisMarkerExpanded, setAnalysisMarkerExpanded] = useState(true);
   const flyRef = useRef<{
     startPos: Vector3;
@@ -242,6 +277,25 @@ const ModelContents = ({
       gl.domElement.style.cursor = "default";
     };
   }, [pinMode, onCommentPin, onReviewPin, gl, camera, raycaster, controls, gltf.scene]);
+
+  useEffect(() => {
+    if (!controls || zoomInTrigger <= 0 || typeof controls.dollyIn !== "function") return;
+    controls.dollyIn(1.18);
+    controls.update();
+  }, [zoomInTrigger, controls]);
+
+  useEffect(() => {
+    if (!controls || zoomOutTrigger <= 0 || typeof controls.dollyOut !== "function") return;
+    controls.dollyOut(1.18);
+    controls.update();
+  }, [zoomOutTrigger, controls]);
+
+  useEffect(() => {
+    if (!controls || !homeView || homeTrigger <= 0) return;
+    camera.position.set(homeView.position[0], homeView.position[1], homeView.position[2]);
+    controls.target.set(homeView.target[0], homeView.target[1], homeView.target[2]);
+    controls.update();
+  }, [homeTrigger, homeView, controls, camera]);
 
   useEffect(() => {
     if (!selectedItemId) return;
@@ -320,7 +374,7 @@ const ModelContents = ({
 
   return (
     <>
-      <FitCamera object={gltf.scene} trigger={fitTrigger} />
+      <FitCamera object={gltf.scene} trigger={fitTrigger} onFitted={onFitCaptured} />
       <Center disableY>
         <group>
           <primitive object={gltf.scene} dispose={null} />
@@ -366,7 +420,7 @@ const ModelViewer = ({
   modelId,
   previewUrl,
   message,
-  onCreateDrawing,
+  onFitView = () => undefined,
   fitTrigger,
   components = [],
   componentVisibility = {},
@@ -392,13 +446,43 @@ const ModelViewer = ({
   onClearAnalysisFocus = () => undefined,
 }: ModelViewerProps) => {
   const overlayMessage = message ?? (previewUrl ? "Loading preview..." : "Import a STEP file to begin.");
+  const hasLeftPanels = Boolean(previewUrl && components.length > 0);
+  const panelStatusMessage = message?.trim() ?? "";
+  const [navigationMode, setNavigationMode] = useState<"rotate" | "pan">("rotate");
+  const [zoomInTrigger, setZoomInTrigger] = useState(0);
+  const [zoomOutTrigger, setZoomOutTrigger] = useState(0);
+  const [homeTrigger, setHomeTrigger] = useState(0);
+  const [homeView, setHomeView] = useState<CameraSnapshot | null>(null);
   const selectedComponent =
     components.find((component) => component.nodeName === selectedComponentNodeName) ?? components[0] ?? null;
+  const visibleComponentCount = useMemo(
+    () => components.filter((component) => componentVisibility[component.nodeName] ?? true).length,
+    [components, componentVisibility],
+  );
+  const orbitMouseButtons = useMemo(
+    () =>
+      navigationMode === "pan"
+        ? { LEFT: MOUSE.PAN, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.ROTATE }
+        : { LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.PAN },
+    [navigationMode],
+  );
   const profile = selectedComponentProfile ?? { material: "", manufacturingProcess: "", industry: "" };
   const [partFacts, setPartFacts] = useState<PartFactsResponse | null>(null);
   const [partFactsLoading, setPartFactsLoading] = useState(false);
   const [partFactsRefreshing, setPartFactsRefreshing] = useState(false);
   const [partFactsError, setPartFactsError] = useState<string | null>(null);
+  const handleFitCaptured = useCallback((snapshot: CameraSnapshot) => {
+    setHomeView((previous) => previous ?? snapshot);
+  }, []);
+  const viewerControlsDisabled = pinMode !== "none";
+
+  useEffect(() => {
+    setNavigationMode("rotate");
+    setZoomInTrigger(0);
+    setZoomOutTrigger(0);
+    setHomeTrigger(0);
+    setHomeView(null);
+  }, [previewUrl]);
 
   const fetchPartFacts = async (refresh: boolean) => {
     if (!modelId || !selectedComponent?.nodeName) {
@@ -471,10 +555,15 @@ const ModelViewer = ({
                 components={components}
                 componentVisibility={componentVisibility}
                 analysisFocus={analysisFocus}
+                zoomInTrigger={zoomInTrigger}
+                zoomOutTrigger={zoomOutTrigger}
+                homeTrigger={homeTrigger}
+                homeView={homeView}
+                onFitCaptured={handleFitCaptured}
               />
             </Suspense>
             <Environment preset="city" />
-            <OrbitControls makeDefault enabled={pinMode === "none"} />
+            <OrbitControls makeDefault enabled={pinMode === "none"} mouseButtons={orbitMouseButtons} />
             <GizmoHelper alignment="bottom-right" margin={[128, 128]}>
               <GizmoViewport axisColors={["#ef4444", "#22c55e", "#3b82f6"]} labelColor="#0f172a" />
             </GizmoHelper>
@@ -483,7 +572,67 @@ const ModelViewer = ({
       ) : (
         <Placeholder />
       )}
-      <div className="viewer-overlay">{overlayMessage}</div>
+      {previewUrl ? (
+        <div className="viewer-nav-controls" role="toolbar" aria-label="3D view controls">
+          <button
+            type="button"
+            className={`viewer-nav-controls__button ${navigationMode === "rotate" ? "viewer-nav-controls__button--active" : ""}`}
+            onClick={() => setNavigationMode("rotate")}
+            aria-pressed={navigationMode === "rotate"}
+            aria-label="Rotate mode"
+            disabled={viewerControlsDisabled}
+          >
+            Rotate
+          </button>
+          <button
+            type="button"
+            className={`viewer-nav-controls__button ${navigationMode === "pan" ? "viewer-nav-controls__button--active" : ""}`}
+            onClick={() => setNavigationMode("pan")}
+            aria-pressed={navigationMode === "pan"}
+            aria-label="Pan mode"
+            disabled={viewerControlsDisabled}
+          >
+            Pan
+          </button>
+          <button
+            type="button"
+            className="viewer-nav-controls__button"
+            onClick={() => setZoomInTrigger((prev) => prev + 1)}
+            aria-label="Zoom in"
+            disabled={viewerControlsDisabled}
+          >
+            +
+          </button>
+          <button
+            type="button"
+            className="viewer-nav-controls__button"
+            onClick={() => setZoomOutTrigger((prev) => prev + 1)}
+            aria-label="Zoom out"
+            disabled={viewerControlsDisabled}
+          >
+            -
+          </button>
+          <button
+            type="button"
+            className="viewer-nav-controls__button"
+            onClick={onFitView}
+            aria-label="Fit to screen"
+            disabled={viewerControlsDisabled}
+          >
+            Fit
+          </button>
+          <button
+            type="button"
+            className="viewer-nav-controls__button"
+            onClick={() => setHomeTrigger((prev) => prev + 1)}
+            disabled={viewerControlsDisabled || !homeView}
+            aria-label="Reset to home view"
+          >
+            Home
+          </button>
+        </div>
+      ) : null}
+      {!hasLeftPanels ? <div className="viewer-overlay">{overlayMessage}</div> : null}
       {previewUrl && analysisFocus ? (
         <div className={`analysis-focus-overlay analysis-focus-overlay--${analysisTone(analysisFocus.severity)}`}>
           <div className="analysis-focus-overlay__header">
@@ -496,11 +645,16 @@ const ModelViewer = ({
           {analysisFocus.details ? <p className="analysis-focus-overlay__details">{analysisFocus.details}</p> : null}
         </div>
       ) : null}
-      {previewUrl && components.length > 0 && (
+      {hasLeftPanels && (
         <div className="viewer-left-panels">
-          <section className="assembly-tree" aria-label="Assembly tree">
+          <section className="assembly-tree assembly-card" aria-label="Assembly tree">
             <header className="assembly-tree__header">
-              <h3>Assembly</h3>
+              <div className="assembly-tree__title">
+                <h3>Assembly</h3>
+                <span className="assembly-tree__count">
+                  Visible {visibleComponentCount}/{components.length}
+                </span>
+              </div>
               <div className="assembly-tree__actions">
                 <button type="button" onClick={onShowAllComponents}>
                   Show all
@@ -511,6 +665,14 @@ const ModelViewer = ({
               </div>
             </header>
             <div className="assembly-tree__list" role="list">
+              {visibleComponentCount === 0 ? (
+                <div className="assembly-tree__empty">
+                  <p>All parts are hidden.</p>
+                  <button type="button" onClick={onShowAllComponents}>
+                    Show all
+                  </button>
+                </div>
+              ) : null}
               {components.map((component) => (
                 <div
                   key={component.id}
@@ -533,68 +695,73 @@ const ModelViewer = ({
                     onClick={(event) => event.stopPropagation()}
                     onChange={() => onToggleComponent(component.nodeName)}
                   />
-                  <span>{component.displayName}</span>
+                  <span className="assembly-tree__item-label" title={component.displayName}>
+                    {component.displayName}
+                  </span>
                 </div>
               ))}
             </div>
           </section>
           {selectedComponent && (
-            <section className="component-profile-panel" aria-label="Component profile">
-              <header className="component-profile-panel__header">
-                <h3>{selectedComponent.displayName}</h3>
-                <span className="component-profile-panel__status">{profileSaving ? "Saving..." : "Saved"}</span>
-              </header>
-              <label className="component-profile-panel__field">
-                <span>Material</span>
-                <select
-                  value={profile.material}
-                  onChange={(event) => onChangeComponentProfile("material", event.target.value)}
-                  disabled={!profileOptions}
-                >
-                  <option value="">Select material</option>
-                  {(profileOptions?.materials ?? []).map((option) => (
-                    <option key={option.id} value={option.label}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="component-profile-panel__field">
-                <span>Manufacturing process</span>
-                <select
-                  value={profile.manufacturingProcess}
-                  onChange={(event) => onChangeComponentProfile("manufacturingProcess", event.target.value)}
-                  disabled={!profileOptions}
-                >
-                  <option value="">Select process</option>
-                  {(profileOptions?.manufacturingProcesses ?? []).map((option) => (
-                    <option key={option.id} value={option.label}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="component-profile-panel__field">
-                <span>Industry</span>
-                <select
-                  value={profile.industry}
-                  onChange={(event) => onChangeComponentProfile("industry", event.target.value)}
-                  disabled={!profileOptions}
-                >
-                  <option value="">Select industry</option>
-                  {(profileOptions?.industries ?? []).map((option) => (
-                    <option key={option.id} value={option.label}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <div className="component-profile-panel__standards">
-                <span>Standards:</span>
-                <p>{selectedIndustryStandards.length ? selectedIndustryStandards.join(", ") : "None"}</p>
-              </div>
-              <section className="part-facts" aria-label="Part facts">
-                <header className="part-facts__header">
+            <>
+              <section className="component-profile-panel summary-card" aria-label="Component profile summary">
+                <header className="component-profile-panel__header">
+                  <h3>{selectedComponent.displayName}</h3>
+                  <span className="component-profile-panel__status">{profileSaving ? "Saving..." : "Saved"}</span>
+                </header>
+                <label className="component-profile-panel__field">
+                  <span>Material</span>
+                  <select
+                    value={profile.material}
+                    onChange={(event) => onChangeComponentProfile("material", event.target.value)}
+                    disabled={!profileOptions}
+                  >
+                    <option value="">Select material</option>
+                    {(profileOptions?.materials ?? []).map((option) => (
+                      <option key={option.id} value={option.label}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="component-profile-panel__field">
+                  <span>Manufacturing process</span>
+                  <select
+                    value={profile.manufacturingProcess}
+                    onChange={(event) => onChangeComponentProfile("manufacturingProcess", event.target.value)}
+                    disabled={!profileOptions}
+                  >
+                    <option value="">Select process</option>
+                    {(profileOptions?.manufacturingProcesses ?? []).map((option) => (
+                      <option key={option.id} value={option.label}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="component-profile-panel__field">
+                  <span>Industry</span>
+                  <select
+                    value={profile.industry}
+                    onChange={(event) => onChangeComponentProfile("industry", event.target.value)}
+                    disabled={!profileOptions}
+                  >
+                    <option value="">Select industry</option>
+                    {(profileOptions?.industries ?? []).map((option) => (
+                      <option key={option.id} value={option.label}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="component-profile-panel__standards">
+                  <span>Standards:</span>
+                  <p>{selectedIndustryStandards.length ? selectedIndustryStandards.join(", ") : "None"}</p>
+                </div>
+                {profileError ? <p className="component-profile-panel__error">{profileError}</p> : null}
+              </section>
+              <section className="part-facts-card" aria-label="Part facts">
+                <header className="part-facts-card__header">
                   <h4>Part Facts</h4>
                   <button
                     type="button"
@@ -604,85 +771,28 @@ const ModelViewer = ({
                     {partFactsRefreshing ? "Refreshing..." : "Refresh"}
                   </button>
                 </header>
-                {partFacts ? (
-                  <>
-                    <p className="part-facts__meta">
-                      Core extraction: {partFacts.coverage.core_extraction_coverage.percent.toFixed(1)}% (
-                      {partFacts.coverage.core_extraction_coverage.known_metrics}/
-                      {partFacts.coverage.core_extraction_coverage.applicable_metrics} applicable,{" "}
-                      {partFacts.coverage.core_extraction_coverage.not_applicable_metrics} N/A)
-                    </p>
-                    <p className="part-facts__meta">
-                      Full rule readiness: {partFacts.coverage.full_rule_readiness_coverage.percent.toFixed(1)}% (
-                      {partFacts.coverage.full_rule_readiness_coverage.known_metrics}/
-                      {partFacts.coverage.full_rule_readiness_coverage.applicable_metrics} applicable,{" "}
-                      {partFacts.coverage.full_rule_readiness_coverage.not_applicable_metrics} N/A)
-                    </p>
-                    <p className="part-facts__meta">
-                      Confidence: {partFacts.overall_confidence}
-                    </p>
-                    <div className="part-facts__section">
-                      <h5>Geometry</h5>
-                      <div className="part-facts__metrics">
-                        {sortedMetrics(partFacts.sections.geometry).map(([key, metric]) => (
-                          <div key={key} className="part-facts__metric">
-                            <div className="part-facts__metric-main">
-                              <span>{metric.label}</span>
-                              <strong>{formatMetricValue(metric)}</strong>
-                            </div>
-                            <div className="part-facts__metric-meta">
-                              <span className={metricStateClass(metric.state)}>{metric.state}</span>
-                              <span>{Math.round(metric.confidence * 100)}%</span>
-                            </div>
-                            {metric.reason ? <p className="part-facts__reason">{metric.reason}</p> : null}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="part-facts__section">
-                      <h5>Manufacturing Signals</h5>
-                      <div className="part-facts__metrics">
-                        {sortedMetrics(partFacts.sections.manufacturing_signals).map(([key, metric]) => (
-                          <div key={key} className="part-facts__metric">
-                            <div className="part-facts__metric-main">
-                              <span>{metric.label}</span>
-                              <strong>{formatMetricValue(metric)}</strong>
-                            </div>
-                            <div className="part-facts__metric-meta">
-                              <span className={metricStateClass(metric.state)}>{metric.state}</span>
-                              <span>{Math.round(metric.confidence * 100)}%</span>
-                            </div>
-                            {metric.reason ? <p className="part-facts__reason">{metric.reason}</p> : null}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="part-facts__section">
-                      <h5>Declared Context</h5>
-                      <div className="part-facts__metrics">
-                        {sortedMetrics(partFacts.sections.declared_context).map(([key, metric]) => (
-                          <div key={key} className="part-facts__metric">
-                            <div className="part-facts__metric-main">
-                              <span>{metric.label}</span>
-                              <strong>{formatMetricValue(metric)}</strong>
-                            </div>
-                            <div className="part-facts__metric-meta">
-                              <span className={metricStateClass(metric.state)}>{metric.state}</span>
-                              <span>{Math.round(metric.confidence * 100)}%</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <details className="part-facts__details">
-                      <summary>Downstream Input Coverage</summary>
+                <div className="part-facts-card__body">
+                  {partFacts ? (
+                    <>
                       <p className="part-facts__meta">
-                        Missing inputs: {partFacts.missing_inputs.length ? partFacts.missing_inputs.join(", ") : "None"}
+                        Core extraction: {partFacts.coverage.core_extraction_coverage.percent.toFixed(1)}% (
+                        {partFacts.coverage.core_extraction_coverage.known_metrics}/
+                        {partFacts.coverage.core_extraction_coverage.applicable_metrics} applicable,{" "}
+                        {partFacts.coverage.core_extraction_coverage.not_applicable_metrics} N/A)
+                      </p>
+                      <p className="part-facts__meta">
+                        Full rule readiness: {partFacts.coverage.full_rule_readiness_coverage.percent.toFixed(1)}% (
+                        {partFacts.coverage.full_rule_readiness_coverage.known_metrics}/
+                        {partFacts.coverage.full_rule_readiness_coverage.applicable_metrics} applicable,{" "}
+                        {partFacts.coverage.full_rule_readiness_coverage.not_applicable_metrics} N/A)
+                      </p>
+                      <p className="part-facts__meta">
+                        Confidence: {partFacts.overall_confidence}
                       </p>
                       <div className="part-facts__section">
-                        <h5>Process Inputs</h5>
+                        <h5>Geometry</h5>
                         <div className="part-facts__metrics">
-                          {sortedMetrics(partFacts.sections.process_inputs).map(([key, metric]) => (
+                          {sortedMetrics(partFacts.sections.geometry).map(([key, metric]) => (
                             <div key={key} className="part-facts__metric">
                               <div className="part-facts__metric-main">
                                 <span>{metric.label}</span>
@@ -698,9 +808,9 @@ const ModelViewer = ({
                         </div>
                       </div>
                       <div className="part-facts__section">
-                        <h5>Rule Inputs</h5>
+                        <h5>Manufacturing Signals</h5>
                         <div className="part-facts__metrics">
-                          {sortedMetrics(partFacts.sections.rule_inputs).map(([key, metric]) => (
+                          {sortedMetrics(partFacts.sections.manufacturing_signals).map(([key, metric]) => (
                             <div key={key} className="part-facts__metric">
                               <div className="part-facts__metric-main">
                                 <span>{metric.label}</span>
@@ -715,27 +825,81 @@ const ModelViewer = ({
                           ))}
                         </div>
                       </div>
-                    </details>
-                    {partFacts.errors.length ? (
-                      <p className="part-facts__error">Errors: {partFacts.errors.join(" | ")}</p>
-                    ) : null}
-                  </>
-                ) : (
-                  <p className="part-facts__meta">
-                    {partFactsLoading ? "Extracting part facts..." : "Part facts not loaded yet."}
-                  </p>
-                )}
-                {partFactsError ? <p className="part-facts__error">{partFactsError}</p> : null}
+                      <div className="part-facts__section">
+                        <h5>Declared Context</h5>
+                        <div className="part-facts__metrics">
+                          {sortedMetrics(partFacts.sections.declared_context).map(([key, metric]) => (
+                            <div key={key} className="part-facts__metric">
+                              <div className="part-facts__metric-main">
+                                <span>{metric.label}</span>
+                                <strong>{formatMetricValue(metric)}</strong>
+                              </div>
+                              <div className="part-facts__metric-meta">
+                                <span className={metricStateClass(metric.state)}>{metric.state}</span>
+                                <span>{Math.round(metric.confidence * 100)}%</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <details className="part-facts__details">
+                        <summary>Downstream Input Coverage</summary>
+                        <p className="part-facts__meta">
+                          Missing inputs: {partFacts.missing_inputs.length ? partFacts.missing_inputs.join(", ") : "None"}
+                        </p>
+                        <div className="part-facts__section">
+                          <h5>Process Inputs</h5>
+                          <div className="part-facts__metrics">
+                            {sortedMetrics(partFacts.sections.process_inputs).map(([key, metric]) => (
+                              <div key={key} className="part-facts__metric">
+                                <div className="part-facts__metric-main">
+                                  <span>{metric.label}</span>
+                                  <strong>{formatMetricValue(metric)}</strong>
+                                </div>
+                                <div className="part-facts__metric-meta">
+                                  <span className={metricStateClass(metric.state)}>{metric.state}</span>
+                                  <span>{Math.round(metric.confidence * 100)}%</span>
+                                </div>
+                                {metric.reason ? <p className="part-facts__reason">{metric.reason}</p> : null}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="part-facts__section">
+                          <h5>Rule Inputs</h5>
+                          <div className="part-facts__metrics">
+                            {sortedMetrics(partFacts.sections.rule_inputs).map(([key, metric]) => (
+                              <div key={key} className="part-facts__metric">
+                                <div className="part-facts__metric-main">
+                                  <span>{metric.label}</span>
+                                  <strong>{formatMetricValue(metric)}</strong>
+                                </div>
+                                <div className="part-facts__metric-meta">
+                                  <span className={metricStateClass(metric.state)}>{metric.state}</span>
+                                  <span>{Math.round(metric.confidence * 100)}%</span>
+                                </div>
+                                {metric.reason ? <p className="part-facts__reason">{metric.reason}</p> : null}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </details>
+                      {partFacts.errors.length ? (
+                        <p className="part-facts__error">Errors: {partFacts.errors.join(" | ")}</p>
+                      ) : null}
+                    </>
+                  ) : (
+                    <p className="part-facts__meta">
+                      {partFactsLoading ? "Extracting part facts..." : "Part facts not loaded yet."}
+                    </p>
+                  )}
+                  {partFactsError ? <p className="part-facts__error">{partFactsError}</p> : null}
+                </div>
               </section>
-              {profileError ? <p className="component-profile-panel__error">{profileError}</p> : null}
-            </section>
+            </>
           )}
+          {panelStatusMessage ? <div className="viewer-left-panels__status">{panelStatusMessage}</div> : null}
         </div>
-      )}
-      {previewUrl && (
-        <button className="viewer__create-drawing" onClick={onCreateDrawing}>
-          Create Drawing
-        </button>
       )}
     </section>
   );

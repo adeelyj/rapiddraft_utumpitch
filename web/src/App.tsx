@@ -172,21 +172,78 @@ const EMPTY_COMPONENT_PROFILE: ComponentProfile = {
   manufacturingProcess: "",
   industry: "",
 };
+const GENERIC_COMPONENT_NAME_PREFIX = "open cascade step translator";
 
 const isRecord = (value: unknown): value is Record<string, unknown> => Boolean(value && typeof value === "object");
 
-const normalizeComponents = (raw: unknown): ModelComponent[] => {
+const normalizeWhitespace = (value: string): string => value.replace(/\s+/g, " ").trim();
+
+const normalizeModelNameStem = (modelOriginalName?: string | null): string => {
+  if (typeof modelOriginalName !== "string" || !modelOriginalName.trim()) return "";
+  const fileName = modelOriginalName.trim().split(/[\\/]/).pop() ?? modelOriginalName.trim();
+  const stem = fileName.replace(/\.[^./\\]+$/, "");
+  return normalizeWhitespace(stem);
+};
+
+const isTranslatorPlaceholderName = (value: string): boolean =>
+  normalizeWhitespace(value).toLowerCase().startsWith(GENERIC_COMPONENT_NAME_PREFIX);
+
+const normalizeComponents = (raw: unknown, modelOriginalName?: string | null): ModelComponent[] => {
   if (!Array.isArray(raw)) return [];
-  return raw.flatMap((entry, index) => {
+  type ParsedComponent = {
+    id: string;
+    nodeName: string;
+    rawDisplayName: string;
+    triangleCount: number;
+    componentNumber: number;
+  };
+  const parsed: ParsedComponent[] = raw.flatMap<ParsedComponent>((entry, index) => {
     if (!entry || typeof entry !== "object") return [];
     const record = entry as Record<string, unknown>;
-    const fallbackNodeName = `component_${index + 1}`;
+    const componentNumber = index + 1;
+    const fallbackNodeName = `component_${componentNumber}`;
     const nodeName = typeof record.nodeName === "string" && record.nodeName.trim() ? record.nodeName : fallbackNodeName;
     const id = typeof record.id === "string" && record.id.trim() ? record.id : nodeName;
-    const displayName =
-      typeof record.displayName === "string" && record.displayName.trim() ? record.displayName : `Part ${index + 1}`;
+    const rawDisplayName = typeof record.displayName === "string" ? normalizeWhitespace(record.displayName) : "";
     const triangleCount = typeof record.triangleCount === "number" && Number.isFinite(record.triangleCount) ? record.triangleCount : 0;
-    return [{ id, nodeName, displayName, triangleCount }];
+    return [{ id, nodeName, rawDisplayName, triangleCount, componentNumber }];
+  });
+
+  const fallbackBaseName = normalizeModelNameStem(modelOriginalName);
+  const fallbackNameCount = parsed.reduce((count, component) => {
+    if (!component.rawDisplayName || isTranslatorPlaceholderName(component.rawDisplayName)) {
+      return count + 1;
+    }
+    return count;
+  }, 0);
+
+  return parsed.map((component) => {
+    if (component.rawDisplayName && !isTranslatorPlaceholderName(component.rawDisplayName)) {
+      return {
+        id: component.id,
+        nodeName: component.nodeName,
+        displayName: component.rawDisplayName,
+        triangleCount: component.triangleCount,
+      };
+    }
+
+    if (fallbackBaseName) {
+      const fallbackDisplayName =
+        fallbackNameCount > 1 ? `${fallbackBaseName} - Part ${component.componentNumber}` : fallbackBaseName;
+      return {
+        id: component.id,
+        nodeName: component.nodeName,
+        displayName: fallbackDisplayName,
+        triangleCount: component.triangleCount,
+      };
+    }
+
+    return {
+      id: component.id,
+      nodeName: component.nodeName,
+      displayName: `Part ${component.componentNumber}`,
+      triangleCount: component.triangleCount,
+    };
   });
 };
 
@@ -424,7 +481,7 @@ const App = () => {
     setIsometricMatplotlibViews(normalizeStringMap(snapshot.isometricMatplotlibViews));
     setIsometricMatplotlibMetadata(normalizeStringMap(snapshot.isometricMatplotlibMetadata));
 
-    const restoredComponents = normalizeComponents(snapshot.components);
+    const restoredComponents = normalizeComponents(snapshot.components, restoredModel.originalName);
     setComponents(restoredComponents);
     const restoredVisibility = normalizeBooleanMap(snapshot.componentVisibility);
     const hasRestoredVisibility = Object.keys(restoredVisibility).length > 0;
@@ -1110,7 +1167,7 @@ const App = () => {
         previewUrl: payload.previewUrl,
         originalName: payload.originalName,
       });
-      const loadedComponents = normalizeComponents(payload.components);
+      const loadedComponents = normalizeComponents(payload.components, payload.originalName);
       setComponents(loadedComponents);
       setComponentVisibility(buildComponentVisibility(loadedComponents, true));
       setSelectedComponentNodeName(loadedComponents[0]?.nodeName ?? null);
@@ -1604,16 +1661,29 @@ const App = () => {
   };
 
   const handleSelectComponent = (nodeName: string) => {
+    setComponentVisibility((prev) => {
+      if (prev[nodeName] === false) {
+        return {
+          ...prev,
+          [nodeName]: true,
+        };
+      }
+      return prev;
+    });
     setSelectedComponentNodeName(nodeName);
     setProfileError(null);
+  };
+
+  const handleFitView = () => {
+    setFitTrigger((prev) => prev + 1);
   };
 
   const handleFocusInModel = (payload: AnalysisFocusPayload) => {
     setAnalysisFocus(payload);
     if (payload.component_node_name) {
-      setSelectedComponentNodeName(payload.component_node_name);
+      handleSelectComponent(payload.component_node_name);
     }
-    setFitTrigger((prev) => prev + 1);
+    handleFitView();
   };
 
   const handleDraftLintSourceChange = (payload: {
@@ -2057,24 +2127,36 @@ const App = () => {
           )}
         </aside>
         <div className="workspace__main">
-          <div className="fab-actions">
-            <button
-              className="fab-actions__button fab-actions__button--secondary"
-              onClick={() => setInfoDialog("compare")}
-              disabled={Boolean(busyAction)}
-              aria-label="Open model comparison"
-            >
-              Compare Models
-            </button>
-            <button
-              className="fab-actions__button fab-actions__button--primary"
-              onClick={() => setInfoDialog("collaborate")}
-              disabled={Boolean(busyAction)}
-              aria-label="Open collaboration options"
-            >
-              Collaborate
-            </button>
-          </div>
+          {!isDraftLintMode && !isDrawingOpen ? (
+            <div className="fab-actions">
+              {previewUrl ? (
+                <button
+                  className="fab-actions__button fab-actions__button--secondary"
+                  onClick={handleCreateDrawing}
+                  disabled={Boolean(busyAction)}
+                  aria-label="Create drawing"
+                >
+                  Create Drawing
+                </button>
+              ) : null}
+              <button
+                className="fab-actions__button fab-actions__button--secondary"
+                onClick={() => setInfoDialog("compare")}
+                disabled={Boolean(busyAction)}
+                aria-label="Open model comparison"
+              >
+                Compare Models
+              </button>
+              <button
+                className="fab-actions__button fab-actions__button--primary"
+                onClick={() => setInfoDialog("collaborate")}
+                disabled={Boolean(busyAction)}
+                aria-label="Open collaboration options"
+              >
+                Collaborate
+              </button>
+            </div>
+          ) : null}
           {isDraftLintMode ? (
             <DraftLintWorkspace
               sourcePreviewUrl={draftLintSourcePreviewUrl}
@@ -2108,7 +2190,6 @@ const App = () => {
                 modelId={model?.id ?? null}
                 previewUrl={previewUrl}
                 message={statusMessage}
-                onCreateDrawing={handleCreateDrawing}
                 fitTrigger={fitTrigger}
                 components={components}
                 componentVisibility={componentVisibility}
@@ -2132,6 +2213,7 @@ const App = () => {
                 showReviewCards={leftOpen && pinMode === "none" && (leftTab === "reviews" || leftTab === "com")}
                 analysisFocus={analysisFocus}
                 onClearAnalysisFocus={() => setAnalysisFocus(null)}
+                onFitView={handleFitView}
               />
               <CommentForm
                 open={commentFormOpen}
@@ -2154,17 +2236,6 @@ const App = () => {
                   setPinMode("none");
                 }}
               />
-              {previewUrl && (
-                <div className="viewer__mode-stack">
-                  <button
-                    className="viewer__fit"
-                    onClick={() => setFitTrigger((t) => t + 1)}
-                    aria-label="Fit model to view"
-                  >
-                    Fit to screen
-                  </button>
-                </div>
-              )}
             </div>
           )}
         </div>

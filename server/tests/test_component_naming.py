@@ -56,3 +56,37 @@ def test_resolve_component_name_uses_fallback_when_missing(tmp_path: Path):
     assert service._resolve_component_name(1, ["Part A"]) == "Part A"
     assert service._resolve_component_name(2, ["Part A"]) == "Part 2"
     assert service._resolve_component_name(3, []) == "Part 3"
+
+
+def test_resolve_component_name_replaces_translator_placeholder_with_model_name_hint(tmp_path: Path):
+    service = CADService(workspace=tmp_path / "workspace")
+
+    name = service._resolve_component_name(
+        1,
+        ["Open CASCADE STEP translator 7.8 1"],
+        model_name_hint="CombiCUT_Backbone_SS316L.step",
+        fallback_count=1,
+    )
+
+    assert name == "CombiCUT_Backbone_SS316L"
+
+
+def test_resolve_component_name_adds_part_suffix_when_multiple_fallbacks_use_same_hint(tmp_path: Path):
+    service = CADService(workspace=tmp_path / "workspace")
+    step_names = ["Open CASCADE STEP translator 7.8 1", "Open CASCADE STEP translator 7.8 2"]
+
+    first = service._resolve_component_name(
+        1,
+        step_names,
+        model_name_hint="CombiCUT_Backbone_SS316L.step",
+        fallback_count=2,
+    )
+    second = service._resolve_component_name(
+        2,
+        step_names,
+        model_name_hint="CombiCUT_Backbone_SS316L.step",
+        fallback_count=2,
+    )
+
+    assert first == "CombiCUT_Backbone_SS316L - Part 1"
+    assert second == "CombiCUT_Backbone_SS316L - Part 2"

@@ -170,6 +170,10 @@ class OpenAIVisionProvider(_BaseVisionProvider):
         request_payload.update(self.request_defaults)
         if "temperature" not in request_payload:
             request_payload["temperature"] = 0
+        _apply_openai_non_stream_safety_limits(
+            request_payload=request_payload,
+            base_url=base_url,
+        )
 
         url = _build_chat_completions_url(base_url)
         response = _post_json(
@@ -610,7 +614,9 @@ def _build_openai_request_defaults(
 
     if use_fireworks_preset and _is_fireworks_base_url(base_url):
         if max_tokens is None:
-            max_tokens = 32768
+            # Fireworks OpenAI-compatible chat/completions requires stream=true
+            # for max_tokens > 4096. This client is non-streaming.
+            max_tokens = 4096
         if top_p is None:
             top_p = 1.0
         if top_k is None:
@@ -636,3 +642,26 @@ def _build_openai_request_defaults(
         request_defaults["temperature"] = temperature
 
     return request_defaults
+
+
+def _apply_openai_non_stream_safety_limits(
+    *,
+    request_payload: dict[str, Any],
+    base_url: str,
+) -> None:
+    """
+    Keep request settings compatible with providers we call in non-stream mode.
+
+    Fireworks' OpenAI-compatible chat/completions rejects requests with
+    max_tokens > 4096 unless stream=true. This client expects non-stream JSON
+    responses, so we clamp max_tokens when targeting Fireworks.
+    """
+    if not _is_fireworks_base_url(base_url):
+        return
+
+    max_tokens = request_payload.get("max_tokens")
+    if not isinstance(max_tokens, (int, float)):
+        return
+    if int(max_tokens) <= 4096:
+        return
+    request_payload["max_tokens"] = 4096

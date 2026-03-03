@@ -1175,9 +1175,15 @@ async def upload_model(file: UploadFile = File(...)):
     with metadata.step_path.open("wb") as out_file:
         shutil.copyfileobj(file.file, out_file)
     try:
-        import_result = cad_service.import_model(metadata.step_path, metadata.preview_path)
+        import_result = cad_service.import_model(
+            metadata.step_path,
+            metadata.preview_path,
+            model_name_hint=file.filename,
+        )
     except CADProcessingError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Unexpected STEP import failure: {exc}")
 
     metadata.components = [
         {

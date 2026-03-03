@@ -87,6 +87,7 @@ class CADService:
             r"\bPRODUCT\s*\(\s*'((?:''|[^'])*)'\s*,\s*'((?:''|[^'])*)'\s*,",
             re.IGNORECASE,
         )
+        self._translator_name_pattern = re.compile(r"^open\s+cascade\s+step\s+translator\b", re.IGNORECASE)
 
     # ------------------------------------------------------------------ helpers
     def _load_shape(self, step_path: Path):
@@ -103,12 +104,23 @@ class CADService:
             ) from exc
 
         logger.info("Loading STEP file from %s", step_path)
-        doc = FreeCAD.newDocument("ImportDoc")
-        shape = Part.read(str(step_path))
-        obj = doc.addObject("Part::Feature", "ImportedShape")
-        obj.Shape = shape
-        doc.recompute()
-        return doc, obj
+        try:
+            doc = FreeCAD.newDocument("ImportDoc")
+        except Exception as exc:
+            raise CADProcessingError(f"Failed to open FreeCAD document for import: {exc}") from exc
+
+        try:
+            shape = Part.read(str(step_path))
+            obj = doc.addObject("Part::Feature", "ImportedShape")
+            obj.Shape = shape
+            doc.recompute()
+            return doc, obj
+        except Exception as exc:
+            try:
+                FreeCAD.closeDocument(doc.Name)
+            except Exception:  # pragma: no cover
+                pass
+            raise CADProcessingError(f"Failed to parse STEP file: {exc}") from exc
 
     def _tessellate(self, shape_obj) -> Tuple[np.ndarray, np.ndarray]:
         """Extract triangle mesh data from the FreeCAD shape."""
@@ -151,9 +163,35 @@ class CADService:
             names.append(normalized)
         return names
 
-    def _resolve_component_name(self, component_number: int, step_names: List[str]) -> str:
-        if component_number <= len(step_names):
-            return step_names[component_number - 1]
+    def _normalize_model_name_hint(self, model_name_hint: str | None) -> str:
+        if not model_name_hint:
+            return ""
+        normalized = Path(model_name_hint).name
+        stem = Path(normalized).stem
+        return " ".join(stem.split()).strip()
+
+    def _is_translator_placeholder_name(self, value: str) -> bool:
+        normalized = " ".join(value.split()).strip()
+        if not normalized:
+            return True
+        return bool(self._translator_name_pattern.match(normalized))
+
+    def _resolve_component_name(
+        self,
+        component_number: int,
+        step_names: List[str],
+        model_name_hint: str | None = None,
+        fallback_count: int = 0,
+    ) -> str:
+        step_name = step_names[component_number - 1] if component_number <= len(step_names) else ""
+        if step_name and not self._is_translator_placeholder_name(step_name):
+            return step_name
+
+        fallback_base_name = self._normalize_model_name_hint(model_name_hint)
+        if fallback_base_name:
+            if fallback_count > 1:
+                return f"{fallback_base_name} - Part {component_number}"
+            return fallback_base_name
         return f"Part {component_number}"
 
     def _project_points(
@@ -246,7 +284,7 @@ class CADService:
         plt.close(fig)
 
     # ------------------------------------------------------------------ public API
-    def import_model(self, step_path: Path, gltf_path: Path) -> ImportResult:
+    def import_model(self, step_path: Path, gltf_path: Path, model_name_hint: str | None = None) -> ImportResult:
         """
         Loads a STEP file and exports a glTF scene for browser consumption.
 
@@ -259,6 +297,14 @@ class CADService:
 
         try:
             component_shapes = self._extract_component_shapes(obj.Shape)
+            expected_component_count = len(component_shapes) if component_shapes else 1
+            fallback_count = sum(
+                1
+                for component_number in range(1, expected_component_count + 1)
+                if self._is_translator_placeholder_name(
+                    step_names[component_number - 1] if component_number <= len(step_names) else ""
+                )
+            )
             for shape in component_shapes:
                 points, triangles = self._tessellate_shape(shape)
                 if points.size == 0 or triangles.size == 0:
@@ -267,7 +313,12 @@ class CADService:
                 component_number = len(components) + 1
                 component_id = f"component_{component_number}"
                 node_name = component_id
-                display_name = self._resolve_component_name(component_number, step_names)
+                display_name = self._resolve_component_name(
+                    component_number,
+                    step_names,
+                    model_name_hint=model_name_hint,
+                    fallback_count=fallback_count,
+                )
 
                 mesh = trimesh.Trimesh(vertices=points, faces=triangles, process=False)
                 scene.add_geometry(mesh, geom_name=node_name, node_name=node_name)
@@ -287,7 +338,12 @@ class CADService:
                     raise CADProcessingError("STEP import produced no tessellated geometry")
                 mesh = trimesh.Trimesh(vertices=points, faces=triangles, process=False)
                 scene.add_geometry(mesh, geom_name="component_1", node_name="component_1")
-                fallback_name = self._resolve_component_name(1, step_names)
+                fallback_name = self._resolve_component_name(
+                    1,
+                    step_names,
+                    model_name_hint=model_name_hint,
+                    fallback_count=max(fallback_count, 1),
+                )
                 components.append(
                     ComponentInfo(
                         id="component_1",
