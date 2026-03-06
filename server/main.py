@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import logging
 import os
 import shutil
 import zipfile
@@ -74,19 +75,47 @@ DRAFTLINT_FIXTURE_JSON = (
     BASE_DIR / "fixtures" / "draftlint" / "demo_case_01" / "report_template.json"
 )
 
+logger = logging.getLogger(__name__)
+
 cad_service = CADService(workspace=PROCESS_DIR)
-cad_service_occ = CADServiceOCC(workspace=PROCESS_DIR / "occ")
 model_store = ModelStore(root=MODELS_DIR)
 review_store = ReviewStore(root=MODELS_DIR, templates_path=DATA_DIR / "review_templates.json")
 cnc_analysis_service = CncAnalysisService(root=MODELS_DIR)
-vision_analysis_service = VisionAnalysisService(root=MODELS_DIR, occ_service=cad_service_occ)
-fusion_analysis_service = FusionAnalysisService(root=MODELS_DIR)
 analysis_run_store = AnalysisRunStore(root=MODELS_DIR)
 draftlint_demo_service = DraftLintDemoService(
     root=DATA_DIR / "draftlint_demo",
     fixture_path=DRAFTLINT_FIXTURE_JSON,
     template_png_path=TEMPLATE_PNG,
 )
+_OPTIONAL_SERVICE_STARTUP_ERRORS: dict[str, str] = {}
+
+cad_service_occ: CADServiceOCC | None
+try:
+    cad_service_occ = CADServiceOCC(workspace=PROCESS_DIR / "occ")
+except Exception as exc:
+    cad_service_occ = None
+    _OPTIONAL_SERVICE_STARTUP_ERRORS["cad_service_occ"] = f"{exc.__class__.__name__}: {exc}"
+    logger.exception("Optional service startup failed: cad_service_occ")
+
+vision_analysis_service: VisionAnalysisService | None
+if cad_service_occ is None:
+    vision_analysis_service = None
+    _OPTIONAL_SERVICE_STARTUP_ERRORS["vision_analysis_service"] = "cad_service_occ is unavailable"
+else:
+    try:
+        vision_analysis_service = VisionAnalysisService(root=MODELS_DIR, occ_service=cad_service_occ)
+    except Exception as exc:
+        vision_analysis_service = None
+        _OPTIONAL_SERVICE_STARTUP_ERRORS["vision_analysis_service"] = f"{exc.__class__.__name__}: {exc}"
+        logger.exception("Optional service startup failed: vision_analysis_service")
+
+fusion_analysis_service: FusionAnalysisService | None
+try:
+    fusion_analysis_service = FusionAnalysisService(root=MODELS_DIR)
+except Exception as exc:
+    fusion_analysis_service = None
+    _OPTIONAL_SERVICE_STARTUP_ERRORS["fusion_analysis_service"] = f"{exc.__class__.__name__}: {exc}"
+    logger.exception("Optional service startup failed: fusion_analysis_service")
 
 app = FastAPI(title="TextCAD Drafting Service", version="0.1.0")
 app.add_middleware(
@@ -278,6 +307,32 @@ def _require_model(model_id: str) -> None:
         raise HTTPException(status_code=404, detail="Model not found")
 
 
+def _raise_optional_service_unavailable(service_name: str) -> None:
+    detail = _OPTIONAL_SERVICE_STARTUP_ERRORS.get(service_name, "Service is unavailable.")
+    raise HTTPException(status_code=503, detail=f"{service_name} unavailable: {detail}")
+
+
+def _require_occ_service() -> CADServiceOCC:
+    if cad_service_occ is None:
+        _raise_optional_service_unavailable("cad_service_occ")
+    assert cad_service_occ is not None
+    return cad_service_occ
+
+
+def _require_vision_service() -> VisionAnalysisService:
+    if vision_analysis_service is None:
+        _raise_optional_service_unavailable("vision_analysis_service")
+    assert vision_analysis_service is not None
+    return vision_analysis_service
+
+
+def _require_fusion_service() -> FusionAnalysisService:
+    if fusion_analysis_service is None:
+        _raise_optional_service_unavailable("fusion_analysis_service")
+    assert fusion_analysis_service is not None
+    return fusion_analysis_service
+
+
 def _default_dfm_role_id() -> str:
     roles = DFM_BUNDLE.roles.get("roles", [])
     general_role = next(
@@ -446,7 +501,10 @@ def _generate_dfm_review_v2_payload(
 
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    payload: dict[str, Any] = {"status": "ok"}
+    if _OPTIONAL_SERVICE_STARTUP_ERRORS:
+        payload["degradedServices"] = sorted(_OPTIONAL_SERVICE_STARTUP_ERRORS.keys())
+    return payload
 
 
 @app.post("/api/draftlint/sessions")
@@ -787,6 +845,7 @@ async def create_vision_view_set(model_id: str, body: CreateVisionViewSetBody):
     metadata = model_store.get(model_id)
     if not metadata:
         raise HTTPException(status_code=404, detail="Model not found")
+    vision_service = _require_vision_service()
 
     component = None
     component_solid_index = None
@@ -800,7 +859,7 @@ async def create_vision_view_set(model_id: str, body: CreateVisionViewSetBody):
             component_solid_index = None
 
     try:
-        return vision_analysis_service.create_view_set(
+        return vision_service.create_view_set(
             model_id=model_id,
             step_path=metadata.step_path,
             component_node_name=body.component_node_name,
@@ -818,7 +877,8 @@ async def create_vision_view_set(model_id: str, body: CreateVisionViewSetBody):
 @app.get("/api/models/{model_id}/vision/providers")
 async def list_vision_providers(model_id: str):
     _require_model(model_id)
-    return vision_analysis_service.list_providers()
+    vision_service = _require_vision_service()
+    return vision_service.list_providers()
 
 
 @app.post("/api/models/{model_id}/vision/reports")
@@ -826,6 +886,7 @@ async def create_vision_report(model_id: str, body: CreateVisionReportBody):
     metadata = model_store.get(model_id)
     if not metadata:
         raise HTTPException(status_code=404, detail="Model not found")
+    vision_service = _require_vision_service()
 
     component = None
     if body.component_node_name:
@@ -854,7 +915,7 @@ async def create_vision_report(model_id: str, body: CreateVisionReportBody):
             part_facts_payload = None
 
     try:
-        return vision_analysis_service.create_report(
+        return vision_service.create_report(
             model_id=model_id,
             component_node_name=body.component_node_name,
             view_set_id=body.view_set_id.strip(),
@@ -881,8 +942,9 @@ async def create_vision_report(model_id: str, body: CreateVisionReportBody):
 @app.get("/api/models/{model_id}/vision/reports/{report_id}")
 async def get_vision_report(model_id: str, report_id: str):
     _require_model(model_id)
+    vision_service = _require_vision_service()
     try:
-        return vision_analysis_service.get_report(model_id=model_id, report_id=report_id)
+        return vision_service.get_report(model_id=model_id, report_id=report_id)
     except VisionReportNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except VisionAnalysisError as exc:
@@ -892,6 +954,8 @@ async def get_vision_report(model_id: str, report_id: str):
 @app.post("/api/models/{model_id}/fusion/reviews")
 async def create_fusion_review(model_id: str, body: CreateFusionReviewBody):
     _require_model(model_id)
+    fusion_service = _require_fusion_service()
+    vision_service = _require_vision_service()
     dfm_body = _resolve_dfm_review_request_for_fusion(body)
     if not dfm_body.component_node_name:
         raise HTTPException(
@@ -910,7 +974,7 @@ async def create_fusion_review(model_id: str, body: CreateFusionReviewBody):
 
     if requested_vision_report_id:
         try:
-            vision_report_payload = vision_analysis_service.get_report(
+            vision_report_payload = vision_service.get_report(
                 model_id=model_id,
                 report_id=requested_vision_report_id,
             )
@@ -932,14 +996,14 @@ async def create_fusion_review(model_id: str, body: CreateFusionReviewBody):
         except VisionAnalysisError as exc:
             raise HTTPException(status_code=500, detail=str(exc))
     else:
-        latest_vision_report_id = fusion_analysis_service.latest_vision_report_id(
+        latest_vision_report_id = fusion_service.latest_vision_report_id(
             model_id,
             component_node_name=dfm_body.component_node_name,
         )
         resolved_vision_report_id = latest_vision_report_id
         if latest_vision_report_id:
             try:
-                vision_report_payload = vision_analysis_service.get_report(
+                vision_report_payload = vision_service.get_report(
                     model_id=model_id,
                     report_id=latest_vision_report_id,
                 )
@@ -962,7 +1026,7 @@ async def create_fusion_review(model_id: str, body: CreateFusionReviewBody):
         raise HTTPException(status_code=500, detail=str(exc))
 
     try:
-        fusion_report = fusion_analysis_service.create_report(
+        fusion_report = fusion_service.create_report(
             model_id=model_id,
             component_node_name=dfm_body.component_node_name,
             dfm_review=dfm_review,
@@ -993,8 +1057,9 @@ async def create_fusion_review(model_id: str, body: CreateFusionReviewBody):
 @app.get("/api/models/{model_id}/fusion/reports/{report_id}")
 async def get_fusion_report(model_id: str, report_id: str):
     _require_model(model_id)
+    fusion_service = _require_fusion_service()
     try:
-        return fusion_analysis_service.get_report(model_id=model_id, report_id=report_id)
+        return fusion_service.get_report(model_id=model_id, report_id=report_id)
     except FusionReportNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except FusionAnalysisError as exc:
@@ -1018,8 +1083,9 @@ async def get_analysis_run_manifest(model_id: str, analysis_run_id: str):
 @app.get("/api/models/{model_id}/vision/view-sets/{view_set_id}/views/{view_name}")
 async def get_vision_view_image(model_id: str, view_set_id: str, view_name: str):
     _require_model(model_id)
+    vision_service = _require_vision_service()
     try:
-        image_path = vision_analysis_service.get_view_image_path(
+        image_path = vision_service.get_view_image_path(
             model_id=model_id,
             view_set_id=view_set_id,
             view_name=view_name,
@@ -1306,8 +1372,9 @@ async def generate_occ_views(model_id: str):
     metadata = model_store.get(model_id)
     if not metadata:
         raise HTTPException(status_code=404, detail="Model not found")
+    occ_service = _require_occ_service()
     try:
-        view_files = cad_service_occ.generate_occ_views(metadata.step_path, metadata.step_path.parent / "occ_views")
+        view_files = occ_service.generate_occ_views(metadata.step_path, metadata.step_path.parent / "occ_views")
     except CADProcessingError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -1335,8 +1402,9 @@ async def generate_mid_views(model_id: str):
     metadata = model_store.get(model_id)
     if not metadata:
         raise HTTPException(status_code=404, detail="Model not found")
+    occ_service = _require_occ_service()
     try:
-        view_files = cad_service_occ.generate_mid_views(metadata.step_path, metadata.step_path.parent / "mid_views")
+        view_files = occ_service.generate_mid_views(metadata.step_path, metadata.step_path.parent / "mid_views")
     except CADProcessingError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
