@@ -107,6 +107,24 @@ def test_adapt_cadex_features_sample_8_maps_stepped_holes_and_edge_taxonomy():
     assert facts["concave_fillet_edge_milled_faces_present"] is True
 
 
+def test_adapt_cadex_features_sample_6_maps_lathe_grooves_and_bores():
+    payload = _load_json(
+        REPO_ROOT / "benchmark_data" / "dfm_mtk" / "cases" / "sample 6" / "sample6_features.json"
+    )
+
+    adapted = adapt_cadex_features_to_facts(payload)
+
+    facts = adapted["extracted_part_facts"]
+    assert facts["outer_diameter_groove_count"] == 1
+    assert facts["outer_diameter_groove_features"] is True
+    assert facts["end_face_groove_count"] == 1
+    assert facts["end_face_groove_features"] is True
+    assert facts["bore_count"] == 3
+    assert facts["turned_diameter_faces_count"] == 18
+    assert facts["turned_end_faces_count"] == 4
+    assert facts["turned_profile_faces_count"] == 4
+
+
 def test_extract_cadex_dfm_reference_sample_3_maps_issue_categories():
     payload = _load_json(
         REPO_ROOT / "benchmark_data" / "dfm_mtk" / "cases" / "sample 3" / "sample3_dfm.json"

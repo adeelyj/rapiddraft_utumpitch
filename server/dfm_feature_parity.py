@@ -113,6 +113,8 @@ def summarize_current_detection(extracted_facts: dict[str, Any]) -> dict[str, An
                 "partial_hole_count",
                 "stepped_hole_count",
                 "bore_count",
+                "outer_diameter_groove_count",
+                "end_face_groove_count",
                 "hole_diameter",
                 "hole_depth",
                 "pockets_present",
@@ -129,6 +131,7 @@ def summarize_current_detection(extracted_facts: dict[str, Any]) -> dict[str, An
                 "flat_milled_face_count",
                 "flat_side_milled_face_count",
                 "curved_milled_face_count",
+                "circular_milled_face_count",
                 "convex_profile_edge_milled_face_count",
                 "concave_fillet_edge_milled_face_count",
                 "turned_faces_present",
@@ -256,6 +259,36 @@ def assess_feature_group(
         recommended_hook = (
             "Use coaxial grouping and long-axis depth checks to separate bores from exterior turned cylinders."
         )
+    elif "outer diameter groove" in normalized:
+        specific_count = _safe_int(extracted_facts.get("outer_diameter_groove_count")) or 0
+        if specific_count > 0:
+            status = "partially_detected"
+            note = (
+                "Outer-diameter groove geometry is now surfaced with a dedicated count from short recessed turned bands."
+            )
+        elif extracted_facts.get("turned_faces_present") or extracted_facts.get("rotational_symmetry"):
+            status = "partially_detected"
+            note = (
+                "Turning-style geometry is present, but this groove family is still inferred from generic lathe signals."
+            )
+        recommended_hook = (
+            "Detect short exterior diameter reductions that are bounded by larger coaxial turned bands on both axial sides."
+        )
+    elif "end face groove" in normalized:
+        specific_count = _safe_int(extracted_facts.get("end_face_groove_count")) or 0
+        if specific_count > 0:
+            status = "partially_detected"
+            note = (
+                "End-face groove geometry is now surfaced with a dedicated count from short annular recesses near the turned part end."
+            )
+        elif extracted_facts.get("turned_faces_present") or extracted_facts.get("rotational_symmetry"):
+            status = "partially_detected"
+            note = (
+                "Turning-style geometry is present, but this groove family is still inferred from generic lathe signals."
+            )
+        recommended_hook = (
+            "Detect short annular recess walls near the part end and distinguish them from deeper bores."
+        )
     elif "hole" in normalized:
         if extracted_facts.get("hole_features"):
             status = "partially_detected"
@@ -320,6 +353,13 @@ def assess_feature_group(
                 status = "partially_detected"
                 note = (
                     "Curved milled faces are surfaced with a dedicated count, even though the product taxonomy is still broader than Cadex's."
+                )
+        elif "circular milled" in normalized:
+            specific_count = _safe_int(extracted_facts.get("circular_milled_face_count")) or 0
+            if specific_count > 0:
+                status = "partially_detected"
+                note = (
+                    "Circular milled faces are surfaced with a dedicated count from short cylindrical or conical machining features."
                 )
         elif "flat side milled" in normalized:
             specific_count = _safe_int(extracted_facts.get("flat_side_milled_face_count")) or 0
@@ -531,11 +571,14 @@ def _detected_count_for_group(
         ("partial hole", "partial_hole_count"),
         ("stepped hole", "stepped_hole_count"),
         ("bore", "bore_count"),
+        ("outer diameter groove", "outer_diameter_groove_count"),
+        ("end face groove", "end_face_groove_count"),
         ("turn diameter", "turned_diameter_faces_count"),
         ("turn face", "turned_end_faces_count"),
         ("turn form", "turned_profile_faces_count"),
         ("convex profile edge", "convex_profile_edge_milled_face_count"),
         ("concave fillet edge", "concave_fillet_edge_milled_face_count"),
+        ("circular milled", "circular_milled_face_count"),
         ("flat side milled", "flat_side_milled_face_count"),
         ("curved milled", "curved_milled_face_count"),
     )

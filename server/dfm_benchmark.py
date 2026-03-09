@@ -311,10 +311,13 @@ def adapt_cadex_features_to_facts(
     partial_hole_count = 0
     stepped_hole_count = 0
     bore_count = 0
+    outer_diameter_groove_count = 0
+    end_face_groove_count = 0
     turned_diameter_faces_count = 0
     turned_end_faces_count = 0
     turned_profile_faces_count = 0
     boss_count = 0
+    circular_milled_face_count = 0
     flat_milled_face_count = 0
     flat_side_milled_face_count = 0
     curved_milled_face_count = 0
@@ -336,8 +339,14 @@ def adapt_cadex_features_to_facts(
             stepped_hole_count += feature_count
         elif "bore" in normalized_name:
             bore_count += feature_count
+        elif "outer diameter groove" in normalized_name:
+            outer_diameter_groove_count += feature_count
+        elif "end face groove" in normalized_name:
+            end_face_groove_count += feature_count
         elif "flat side milled" in normalized_name:
             flat_side_milled_face_count += feature_count
+        elif "circular milled" in normalized_name:
+            circular_milled_face_count += feature_count
         elif "convex profile edge" in normalized_name:
             convex_profile_edge_milled_face_count += feature_count
         elif "concave fillet edge" in normalized_name:
@@ -380,6 +389,15 @@ def adapt_cadex_features_to_facts(
     if bore_count > 0 or "bore_features" in categories:
         extracted_facts["bore_count"] = bore_count or 1
         extracted_facts["bore_features"] = True
+    if (
+        outer_diameter_groove_count > 0
+        or "outer_diameter_groove_features" in categories
+    ):
+        extracted_facts["outer_diameter_groove_count"] = outer_diameter_groove_count or 1
+        extracted_facts["outer_diameter_groove_features"] = True
+    if end_face_groove_count > 0 or "end_face_groove_features" in categories:
+        extracted_facts["end_face_groove_count"] = end_face_groove_count or 1
+        extracted_facts["end_face_groove_features"] = True
     subtype_hole_count = through_hole_count + partial_hole_count + stepped_hole_count + bore_count
     if subtype_hole_count > 0:
         extracted_facts["hole_count"] = subtype_hole_count
@@ -388,7 +406,8 @@ def adapt_cadex_features_to_facts(
     if "rotational_symmetry" in categories:
         extracted_facts["rotational_symmetry"] = True
     milled_face_count = (
-        flat_milled_face_count
+        circular_milled_face_count
+        + flat_milled_face_count
         + flat_side_milled_face_count
         + curved_milled_face_count
     )
@@ -403,6 +422,9 @@ def adapt_cadex_features_to_facts(
     if curved_milled_face_count > 0 or "curved_milled_faces_present" in categories:
         extracted_facts["curved_milled_face_count"] = curved_milled_face_count or 1
         extracted_facts["curved_milled_faces_present"] = True
+    if circular_milled_face_count > 0 or "circular_milled_faces_present" in categories:
+        extracted_facts["circular_milled_face_count"] = circular_milled_face_count or 1
+        extracted_facts["circular_milled_faces_present"] = True
     if (
         convex_profile_edge_milled_face_count > 0
         or "convex_profile_edge_milled_faces_present" in categories
@@ -586,6 +608,8 @@ def extract_feature_categories_from_facts(extracted_facts: dict[str, Any]) -> li
             "partial_hole_count",
             "stepped_hole_count",
             "bore_count",
+            "outer_diameter_groove_count",
+            "end_face_groove_count",
         )
     ):
         categories.add("hole_features")
@@ -609,6 +633,16 @@ def extract_feature_categories_from_facts(extracted_facts: dict[str, Any]) -> li
         for key in ("bore_features", "bore_count")
     ):
         categories.add("bore_features")
+    if any(
+        _truthy(extracted_facts.get(key))
+        for key in ("outer_diameter_groove_features", "outer_diameter_groove_count")
+    ):
+        categories.add("outer_diameter_groove_features")
+    if any(
+        _truthy(extracted_facts.get(key))
+        for key in ("end_face_groove_features", "end_face_groove_count")
+    ):
+        categories.add("end_face_groove_features")
     if _truthy(extracted_facts.get("pockets_present")):
         categories.add("pockets_present")
     if any(
@@ -629,6 +663,7 @@ def extract_feature_categories_from_facts(extracted_facts: dict[str, Any]) -> li
             "flat_milled_face_count",
             "flat_side_milled_face_count",
             "curved_milled_face_count",
+            "circular_milled_face_count",
             "convex_profile_edge_milled_face_count",
             "concave_fillet_edge_milled_face_count",
         )
@@ -644,6 +679,11 @@ def extract_feature_categories_from_facts(extracted_facts: dict[str, Any]) -> li
         for key in ("flat_side_milled_faces_present", "flat_side_milled_face_count")
     ):
         categories.add("flat_side_milled_faces_present")
+    if any(
+        _truthy(extracted_facts.get(key))
+        for key in ("circular_milled_faces_present", "circular_milled_face_count")
+    ):
+        categories.add("circular_milled_faces_present")
     if any(
         _truthy(extracted_facts.get(key))
         for key in ("curved_milled_faces_present", "curved_milled_face_count")
@@ -1101,6 +1141,10 @@ def _cadex_feature_categories(group_name: Any) -> list[str]:
         categories.append("stepped_hole_features")
     if "bore" in normalized:
         categories.append("bore_features")
+    if "outer diameter groove" in normalized:
+        categories.append("outer_diameter_groove_features")
+    if "end face groove" in normalized:
+        categories.append("end_face_groove_features")
     if "turn" in normalized or "lathe" in normalized:
         categories.append("turned_faces_present")
         categories.append("rotational_symmetry")
@@ -1112,6 +1156,8 @@ def _cadex_feature_categories(group_name: Any) -> list[str]:
         categories.append("convex_profile_edge_milled_faces_present")
     if "concave fillet edge" in normalized:
         categories.append("concave_fillet_edge_milled_faces_present")
+    if "circular milled" in normalized:
+        categories.append("circular_milled_faces_present")
     if "curved milled" in normalized:
         categories.append("curved_milled_faces_present")
     if "flat side milled" in normalized:

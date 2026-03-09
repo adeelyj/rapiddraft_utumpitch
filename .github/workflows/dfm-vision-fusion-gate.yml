@@ -36,6 +36,9 @@ jobs:
           server/tests/test_fusion_analysis.py
           server/tests/test_fusion_endpoints_wiring.py
 
+      - name: Run DFM feature detection gate
+        run: python scripts/run_dfm_feature_detection_gate.py
+
   web-build:
     runs-on: ubuntu-latest
     steps:

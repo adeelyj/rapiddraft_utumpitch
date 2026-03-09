@@ -203,6 +203,11 @@ def _derive_milled_and_boss_features(
             "manufacturing_signals",
             "curved_milled_face_count",
         )
+        circular_milled_face_count = _known_numeric_metric(
+            sections,
+            "manufacturing_signals",
+            "circular_milled_face_count",
+        )
         convex_profile_edge_milled_face_count = _known_numeric_metric(
             sections,
             "manufacturing_signals",
@@ -225,6 +230,7 @@ def _derive_milled_and_boss_features(
                 flat_milled_face_count is not None and flat_milled_face_count > 0,
                 flat_side_milled_face_count is not None and flat_side_milled_face_count > 0,
                 curved_milled_face_count is not None and curved_milled_face_count > 0,
+                circular_milled_face_count is not None and circular_milled_face_count > 0,
                 convex_profile_edge_milled_face_count is not None
                 and convex_profile_edge_milled_face_count > 0,
                 concave_fillet_edge_milled_face_count is not None
@@ -238,6 +244,8 @@ def _derive_milled_and_boss_features(
             facts.setdefault("flat_side_milled_faces_present", True)
         if curved_milled_face_count is not None and curved_milled_face_count > 0:
             facts.setdefault("curved_milled_faces_present", True)
+        if circular_milled_face_count is not None and circular_milled_face_count > 0:
+            facts.setdefault("circular_milled_faces_present", True)
         if (
             convex_profile_edge_milled_face_count is not None
             and convex_profile_edge_milled_face_count > 0

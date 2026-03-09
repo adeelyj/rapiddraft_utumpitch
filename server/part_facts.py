@@ -71,7 +71,7 @@ def _safe_optional_int(value: Any) -> int | None:
 
 
 class PartFactsService:
-    SCHEMA_VERSION = "1.7.0"
+    SCHEMA_VERSION = "1.8.0"
 
     def __init__(
         self,
@@ -427,6 +427,12 @@ class PartFactsService:
             turned_profile_faces_count = (
                 _safe_optional_int(turning_detection.get("turned_profile_faces_count")) or 0
             )
+            outer_diameter_groove_count = (
+                _safe_optional_int(turning_detection.get("outer_diameter_groove_count")) or 0
+            )
+            end_face_groove_count = (
+                _safe_optional_int(turning_detection.get("end_face_groove_count")) or 0
+            )
             sections["manufacturing_signals"]["rotational_symmetry"] = _metric(
                 label="Rotational symmetry detected",
                 value=rotational_symmetry,
@@ -475,6 +481,22 @@ class PartFactsService:
                 confidence=0.8 if turned_profile_faces_count > 0 else 0.65,
                 source="occ.face_inventory.turning_detection",
             )
+            sections["manufacturing_signals"]["outer_diameter_groove_count"] = _metric(
+                label="Outer diameter groove count",
+                value=outer_diameter_groove_count,
+                unit=None,
+                state="inferred",
+                confidence=0.8 if outer_diameter_groove_count > 0 else 0.65,
+                source="occ.face_inventory.turning_detection",
+            )
+            sections["manufacturing_signals"]["end_face_groove_count"] = _metric(
+                label="End face groove count",
+                value=end_face_groove_count,
+                unit=None,
+                state="inferred",
+                confidence=0.8 if end_face_groove_count > 0 else 0.65,
+                source="occ.face_inventory.turning_detection",
+            )
             sections["process_inputs"]["rotational_symmetry"] = _metric(
                 label="Rotational symmetry",
                 value=rotational_symmetry,
@@ -513,6 +535,9 @@ class PartFactsService:
             )
             curved_milled_face_count = (
                 _safe_optional_int(milled_face_detection.get("curved_milled_face_count")) or 0
+            )
+            circular_milled_face_count = (
+                _safe_optional_int(milled_face_detection.get("circular_milled_face_count")) or 0
             )
             convex_profile_edge_milled_face_count = (
                 _safe_optional_int(
@@ -564,6 +589,14 @@ class PartFactsService:
                 unit=None,
                 state="inferred",
                 confidence=0.75 if curved_milled_face_count > 0 else 0.6,
+                source="occ.face_inventory.milled_face_detection",
+            )
+            sections["manufacturing_signals"]["circular_milled_face_count"] = _metric(
+                label="Circular milled face count",
+                value=circular_milled_face_count,
+                unit=None,
+                state="inferred",
+                confidence=0.75 if circular_milled_face_count > 0 else 0.6,
                 source="occ.face_inventory.milled_face_detection",
             )
             sections["manufacturing_signals"]["convex_profile_edge_milled_face_count"] = _metric(

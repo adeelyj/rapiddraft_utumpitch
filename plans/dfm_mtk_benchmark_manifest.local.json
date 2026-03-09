@@ -88,6 +88,55 @@
       "context_overrides": {
         "cadex_process_label": "CNC Machining Milling"
       }
+    },
+    {
+      "case_id": "sample_5",
+      "label": "sample 5 - Part77",
+      "step_file": "benchmark_data/dfm_mtk/cases/sample 5/sample 5.stp",
+      "cadex_features_file": "benchmark_data/dfm_mtk/cases/sample 5/sample5_features.json",
+      "cadex_dfm_file": "benchmark_data/dfm_mtk/cases/sample 5/sample5_dfm.json",
+      "component_node_name": null,
+      "component_profile": {
+        "material": "",
+        "manufacturingProcess": "CNC Machining",
+        "industry": ""
+      },
+      "context_overrides": {
+        "cadex_process_label": "CNC Machining Milling"
+      }
+    },
+    {
+      "case_id": "sample_6",
+      "label": "sample 6 - P0010092",
+      "step_file": "benchmark_data/dfm_mtk/cases/sample 6/sample 6.stp",
+      "cadex_features_file": "benchmark_data/dfm_mtk/cases/sample 6/sample6_features.json",
+      "cadex_dfm_file": "benchmark_data/dfm_mtk/cases/sample 6/sample6_dfm.json",
+      "component_node_name": null,
+      "component_profile": {
+        "material": "",
+        "manufacturingProcess": "CNC Machining",
+        "industry": ""
+      },
+      "context_overrides": {
+        "cadex_process_label": "CNC Machining Lathe+Milling"
+      }
+    },
+    {
+      "case_id": "sample_7",
+      "label": "sample 7 - Part1T",
+      "step_file": "benchmark_data/dfm_mtk/cases/sample 7/sample 7.stp",
+      "cadex_features_file": "benchmark_data/dfm_mtk/cases/sample 7/sample7_features.json",
+      "cadex_dfm_file": "benchmark_data/dfm_mtk/cases/sample 7/sample7_dfm.json",
+      "component_node_name": null,
+      "component_profile": {
+        "material": "",
+        "manufacturingProcess": "CNC Machining",
+        "industry": ""
+      },
+      "context_overrides": {
+        "cadex_process_label": "CNC Machining Milling",
+        "cadex_features_file_note": "sample7_features.json mirrors the combined Cadex export in sample7_dfm.json"
+      }
     }
   ]
 }

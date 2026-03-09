@@ -5,11 +5,14 @@ import math
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 FIXTURE_ROOT = REPO_ROOT / "server" / "tests" / "fixtures" / "cnc_turning"
+FEATURE_FIXTURE_ROOT = REPO_ROOT / "server" / "tests" / "fixtures" / "cnc_feature_detection"
 
 from server.cnc_geometry_occ import (
     detect_boss_features_from_face_inventory,
@@ -22,6 +25,59 @@ from server.cnc_geometry_occ import (
 
 def _load_turning_fixture(name: str) -> dict:
     return json.loads((FIXTURE_ROOT / name).read_text(encoding="utf-8-sig"))
+
+
+def _load_feature_fixture(name: str) -> dict:
+    return json.loads((FEATURE_FIXTURE_ROOT / name).read_text(encoding="utf-8-sig"))
+
+
+def _run_feature_detection_stack(fixture: dict) -> dict[str, dict]:
+    bbox_bounds = tuple(fixture["bbox_bounds"])
+    face_inventory = fixture["face_inventory"]
+    turning_detection = detect_turning_from_face_inventory(
+        face_inventory,
+        bbox_bounds=bbox_bounds,
+    )
+    hole_detection = detect_hole_features_from_face_inventory(
+        face_inventory,
+        bbox_bounds=bbox_bounds,
+        turning_detection=turning_detection,
+    )
+    pocket_detection = detect_pocket_features_from_face_inventory(
+        face_inventory,
+        bbox_bounds=bbox_bounds,
+    )
+    boss_detection = detect_boss_features_from_face_inventory(
+        face_inventory,
+        bbox_bounds=bbox_bounds,
+        turning_detection=turning_detection,
+    )
+    milled_face_detection = detect_milled_faces_from_face_inventory(
+        face_inventory,
+        bbox_bounds=bbox_bounds,
+        turning_detection=turning_detection,
+        pocket_detection=pocket_detection,
+        hole_detection=hole_detection,
+        boss_detection=boss_detection,
+    )
+    return {
+        "turning_detection": turning_detection,
+        "hole_detection": hole_detection,
+        "pocket_detection": pocket_detection,
+        "boss_detection": boss_detection,
+        "milled_face_detection": milled_face_detection,
+    }
+
+
+def _assert_detection_counts_match_fixture(result: dict[str, dict], fixture: dict) -> None:
+    expected_detection = fixture["expected_detection"]
+    for section_name, expected_counts in expected_detection.items():
+        actual_section = result[section_name]
+        for key, expected_value in expected_counts.items():
+            assert actual_section[key] == expected_value
+
+
+FEATURE_FIXTURE_NAMES = sorted(path.name for path in FEATURE_FIXTURE_ROOT.glob("*.json"))
 
 
 def test_detect_turning_from_face_inventory_accepts_long_axis_turning_cluster():
@@ -125,6 +181,55 @@ def test_detect_turning_from_face_inventory_rejects_short_axis_milling_shape():
     assert result["rotational_symmetry"] is False
     assert result["turned_faces_present"] is False
     assert result["turned_face_count"] == 0
+
+
+def test_detect_turning_from_face_inventory_accepts_short_highly_revolved_part():
+    face_inventory = [
+        {
+            "face_index": 1,
+            "surface_type": "cylinder",
+            "area_mm2": 4200.0,
+            "axis_direction": [1.0, 0.0, 0.0],
+            "bbox_bounds": [-22.0, -28.0, -28.0, -2.0, 28.0, 28.0],
+            "is_exterior": True,
+        },
+        {
+            "face_index": 2,
+            "surface_type": "cylinder",
+            "area_mm2": 4600.0,
+            "axis_direction": [1.0, 0.0, 0.0],
+            "bbox_bounds": [-2.0, -34.0, -34.0, 16.0, 34.0, 34.0],
+            "is_exterior": True,
+        },
+        {
+            "face_index": 3,
+            "surface_type": "cone",
+            "area_mm2": 2600.0,
+            "axis_direction": [1.0, 0.0, 0.0],
+            "bbox_bounds": [16.0, -39.0, -39.0, 22.0, 39.0, 39.0],
+            "is_exterior": True,
+        },
+        {
+            "face_index": 4,
+            "surface_type": "plane",
+            "area_mm2": 1800.0,
+            "sample_normal": [1.0, 0.0, 0.0],
+            "bbox_bounds": [22.0, -20.0, -20.0, 22.0, 20.0, 20.0],
+            "is_exterior": True,
+            "adjacent_face_indices": [3],
+        },
+    ]
+
+    result = detect_turning_from_face_inventory(
+        face_inventory,
+        bbox_bounds=(-22.0, -40.0, -40.0, 22.0, 40.0, 40.0),
+    )
+
+    assert result["rotational_symmetry"] is True
+    assert result["turned_faces_present"] is True
+    assert result["primary_axis"] == (1.0, 0.0, 0.0)
+    assert result["clusters"][0]["dominant_axis_ratio"] < 0.8
+    assert result["clusters"][0]["exterior_revolved_area_ratio"] >= 0.75
 
 
 def test_detect_turning_from_face_inventory_counts_torus_as_profile_face():
@@ -499,6 +604,97 @@ def test_detect_hole_features_from_face_inventory_counts_central_bore_without_tu
     assert result["through_hole_count"] == 0
     assert result["partial_hole_count"] == 0
     assert result["bore_count"] == 1
+
+
+def test_detect_hole_features_from_face_inventory_treats_split_same_diameter_walls_as_through_hole():
+    half_wall_area = math.pi * 4.0 * 10.0 * 0.5
+    face_inventory = [
+        {
+            "face_index": 1,
+            "surface_type": "cylinder",
+            "area_mm2": half_wall_area,
+            "bbox_bounds": [0.0, -2.0, -2.0, 10.0, 0.0, 2.0],
+            "axis_direction": [1.0, 0.0, 0.0],
+            "axis_origin": [0.0, 0.0, 0.0],
+            "axial_span_mm": 10.0,
+            "is_exterior": False,
+        },
+        {
+            "face_index": 2,
+            "surface_type": "cylinder",
+            "area_mm2": half_wall_area,
+            "bbox_bounds": [0.0, 0.0, -2.0, 10.0, 2.0, 2.0],
+            "axis_direction": [1.0, 0.0, 0.0],
+            "axis_origin": [0.0, 0.0, 0.0],
+            "axial_span_mm": 10.0,
+            "is_exterior": False,
+        },
+    ]
+
+    result = detect_hole_features_from_face_inventory(
+        face_inventory,
+        bbox_bounds=(0.0, -5.0, -5.0, 10.0, 5.0, 5.0),
+    )
+
+    assert result["hole_count"] == 1
+    assert result["through_hole_count"] == 1
+    assert result["partial_hole_count"] == 0
+    assert result["candidates"][0]["subtype"] == "through_hole"
+    assert result["candidates"][0]["group_completeness_ratio"] == 1.0
+
+
+def test_detect_hole_features_from_face_inventory_splits_same_axis_line_into_two_through_holes():
+    face_inventory = [
+        {
+            "face_index": 1,
+            "surface_type": "cylinder",
+            "area_mm2": 40.84,
+            "bbox_bounds": [0.0, -30.5, -4.0, 8.0, -24.0, 4.0],
+            "axis_direction": [0.0, 1.0, 0.0],
+            "axis_origin": [4.0, 0.0, 0.0],
+            "axial_span_mm": 6.5,
+            "is_exterior": False,
+        },
+        {
+            "face_index": 2,
+            "surface_type": "cylinder",
+            "area_mm2": 40.84,
+            "bbox_bounds": [8.0, -30.5, -4.0, 16.0, -24.0, 4.0],
+            "axis_direction": [0.0, 1.0, 0.0],
+            "axis_origin": [12.0, 0.0, 0.0],
+            "axial_span_mm": 6.5,
+            "is_exterior": False,
+        },
+        {
+            "face_index": 3,
+            "surface_type": "cylinder",
+            "area_mm2": 40.84,
+            "bbox_bounds": [0.0, 24.0, -4.0, 8.0, 30.5, 4.0],
+            "axis_direction": [0.0, 1.0, 0.0],
+            "axis_origin": [4.0, 0.0, 0.0],
+            "axial_span_mm": 6.5,
+            "is_exterior": False,
+        },
+        {
+            "face_index": 4,
+            "surface_type": "cylinder",
+            "area_mm2": 40.84,
+            "bbox_bounds": [8.0, 24.0, -4.0, 16.0, 30.5, 4.0],
+            "axis_direction": [0.0, 1.0, 0.0],
+            "axis_origin": [12.0, 0.0, 0.0],
+            "axial_span_mm": 6.5,
+            "is_exterior": False,
+        },
+    ]
+
+    result = detect_hole_features_from_face_inventory(
+        face_inventory,
+        bbox_bounds=(0.0, -32.0, -8.0, 16.0, 32.0, 8.0),
+    )
+
+    assert result["hole_count"] == 2
+    assert result["through_hole_count"] == 2
+    assert result["partial_hole_count"] == 0
 
 
 def test_detect_hole_features_from_face_inventory_rejects_same_diameter_exterior_profile_band():
@@ -1299,6 +1495,97 @@ def test_detect_milled_faces_from_face_inventory_uses_hybrid_counting_on_turning
     assert result["count_strategy"]["flat"] == "raw_faces_plus_moderate_groups"
 
 
+def test_detect_milled_faces_from_face_inventory_counts_short_turning_exceptions():
+    face_inventory = [
+        {
+            "face_index": 1,
+            "surface_type": "cone",
+            "area_mm2": 80.0,
+            "bbox_bounds": [10.0, -25.0, -25.0, 12.0, 0.0, 25.0],
+            "axis_direction": [1.0, 0.0, 0.0],
+            "axis_origin": [0.0, 0.0, 0.0],
+            "sample_point_mm": [11.0, 24.5, 0.0],
+            "is_exterior": True,
+            "adjacent_face_indices": [],
+        },
+        {
+            "face_index": 2,
+            "surface_type": "cone",
+            "area_mm2": 80.0,
+            "bbox_bounds": [10.0, 0.0, -25.0, 12.0, 25.0, 25.0],
+            "axis_direction": [1.0, 0.0, 0.0],
+            "axis_origin": [0.0, 0.0, 0.0],
+            "sample_point_mm": [11.0, 24.5, 0.0],
+            "is_exterior": True,
+            "adjacent_face_indices": [],
+        },
+        {
+            "face_index": 3,
+            "surface_type": "cone",
+            "area_mm2": 80.0,
+            "bbox_bounds": [32.0, -25.0, -25.0, 34.0, 0.0, 25.0],
+            "axis_direction": [1.0, 0.0, 0.0],
+            "axis_origin": [0.0, 0.0, 0.0],
+            "sample_point_mm": [33.0, 24.5, 0.0],
+            "is_exterior": True,
+            "adjacent_face_indices": [],
+        },
+        {
+            "face_index": 4,
+            "surface_type": "cone",
+            "area_mm2": 80.0,
+            "bbox_bounds": [32.0, 0.0, -25.0, 34.0, 25.0, 25.0],
+            "axis_direction": [1.0, 0.0, 0.0],
+            "axis_origin": [0.0, 0.0, 0.0],
+            "sample_point_mm": [33.0, 24.5, 0.0],
+            "is_exterior": True,
+            "adjacent_face_indices": [],
+        },
+        {
+            "face_index": 5,
+            "surface_type": "torus",
+            "area_mm2": 100.0,
+            "bbox_bounds": [33.5, -36.0, -36.0, 34.5, 0.0, 36.0],
+            "axis_direction": [1.0, 0.0, 0.0],
+            "axis_origin": [34.0, 0.0, 0.0],
+            "sample_point_mm": [34.0, 31.8, 0.0],
+            "is_exterior": True,
+            "adjacent_face_indices": [],
+        },
+        {
+            "face_index": 6,
+            "surface_type": "torus",
+            "area_mm2": 100.0,
+            "bbox_bounds": [33.5, 0.0, -36.0, 34.5, 36.0, 36.0],
+            "axis_direction": [1.0, 0.0, 0.0],
+            "axis_origin": [34.0, 0.0, 0.0],
+            "sample_point_mm": [34.0, 31.8, 0.0],
+            "is_exterior": True,
+            "adjacent_face_indices": [],
+        },
+    ]
+
+    result = detect_milled_faces_from_face_inventory(
+        face_inventory,
+        bbox_bounds=(0.0, -40.0, -40.0, 44.0, 40.0, 40.0),
+        turning_detection={
+            "primary_axis": [1.0, 0.0, 0.0],
+            "primary_cluster": {
+                "dominant_axis_ratio": 0.55,
+                "exterior_revolved_area_ratio": 0.85,
+                "face_indices": [1, 2, 3, 4, 5, 6],
+            },
+            "turned_diameter_groups": [{"radius_mm": 39.75}],
+        },
+        pocket_detection={"candidates": [], "rejected_candidates": []},
+        hole_detection={"candidates": [], "rejected_candidates": []},
+        boss_detection={"candidates": [], "rejected_candidates": []},
+    )
+
+    assert result["circular_milled_face_count"] == 4
+    assert result["curved_milled_face_count"] == 2
+
+
 def test_detect_milled_faces_from_face_inventory_counts_convex_profile_edge_cylinders():
     face_inventory = [
         {
@@ -1546,3 +1833,19 @@ def test_detect_milled_faces_from_face_inventory_counts_open_pocket_side_walls_a
     assert result["flat_milled_face_count"] == 5
     assert result["flat_side_milled_face_count"] == 6
     assert result["flat_side_milled_face_indices"] == [11, 14, 19, 21, 24, 25]
+
+
+@pytest.mark.parametrize("fixture_name", FEATURE_FIXTURE_NAMES)
+def test_feature_detection_stack_matches_real_feature_fixture_counts(fixture_name: str):
+    fixture = _load_feature_fixture(fixture_name)
+
+    result = _run_feature_detection_stack(fixture)
+
+    _assert_detection_counts_match_fixture(result, fixture)
+    case_id = fixture["case_id"]
+    if case_id == "sample_4":
+        assert result["hole_detection"]["threaded_holes_count"] == 6
+        assert result["turning_detection"]["primary_axis"] is None
+    if case_id == "sample_8":
+        assert result["hole_detection"]["threaded_holes_count"] == 7
+        assert result["milled_face_detection"]["concave_fillet_edge_milled_face_indices"]

@@ -14,16 +14,36 @@ TURN_AXIS_ANGLE_TOLERANCE_DEG = 5.0
 TURN_AXIS_MIN_AREA_RATIO = 0.35
 TURN_AXIS_MIN_SPAN_RATIO = 0.6
 TURN_AXIS_DOMINANT_DIMENSION_RATIO = 0.8
+TURN_AXIS_MIN_REVOLVED_FRACTION = 0.75
 TURN_END_FACE_POSITION_TOLERANCE_RATIO = 0.03
 TURN_END_FACE_POSITION_TOLERANCE_MM = 1.0
 TURN_DIAMETER_RADIUS_TOLERANCE_MM = 1.5
 TURN_DIAMETER_AXIAL_GAP_TOLERANCE_MM = 1.0
+TURN_SHORT_AXIS_CENTER_OFFSET_RATIO = 0.2
+TURN_SHORT_AXIS_CENTER_OFFSET_MM = 8.0
+TURN_SHORT_END_CLUSTER_GAP_MM = 2.25
+TURN_SHORT_END_MIN_RADIUS_RATIO = 0.75
+TURN_SHORT_PROFILE_MIN_RADIUS_RATIO = 0.78
+TURN_SHORT_PROFILE_MIN_SPAN_MM = 1.0
+TURN_SHORT_TORUS_MIN_SPAN_MM = 1.5
+TURN_SHORT_GROOVE_MAX_SPAN_MM = 3.0
+TURN_SHORT_GROOVE_MIN_DEPTH_MM = 0.6
+TURN_SHORT_END_GROOVE_MAX_SPAN_MM = 1.5
+TURN_SHORT_RADIUS_TOLERANCE_MM = 0.25
+TURN_SHORT_BORE_MIN_SPAN_MM = 3.0
+TURN_SHORT_BORE_MIN_RADIUS_RATIO = 0.5
+TURN_SHORT_BORE_MAX_RADIUS_RATIO = 0.75
+TURN_SHORT_SMALL_HOLE_RADIUS_MAX_MM = 3.0
+TURN_SHORT_CIRCULAR_MILLED_MAX_RADIUS_RATIO = 0.7
 HOLE_THROUGH_COMPLETENESS_MIN = 0.7
 HOLE_PARTIAL_COMPLETENESS_MIN = 0.35
 HOLE_MIN_DEPTH_TO_DIAMETER_RATIO = 0.45
 HOLE_BORE_DEPTH_RATIO = 0.7
 HOLE_BORE_DIAMETER_RATIO = 0.2
 HOLE_DIAMETER_BAND_TOLERANCE_MM = 1.5
+HOLE_COMPONENT_AXIAL_GAP_TOLERANCE_MM = 1.0
+HOLE_INTERIOR_MULTI_SEGMENT_THROUGH_COMPLETENESS_MIN = 0.3
+HOLE_INTERIOR_MULTI_SEGMENT_MAX_DIAMETER_MM = 12.0
 HOLE_STEPPED_MIN_DEPTH_TO_DIAMETER_RATIO = 1.0
 HOLE_STEPPED_OUTER_DEPTH_RATIO = 1.2
 HOLE_STEPPED_FULL_DEPTH_RATIO = 0.9
@@ -36,6 +56,7 @@ POCKET_MIN_AREA_MM2 = 20.0
 POCKET_OPEN_WALL_COUNT_MIN = 4
 POCKET_OPEN_EXTERIOR_WALL_COUNT_MAX = 5
 POCKET_OPEN_EXTERIOR_RECESS_RATIO = 0.18
+POCKET_OPEN_EXTERIOR_RECESS_RATIO_RELAXED = 0.17
 POCKET_OPEN_EXTERIOR_RECESS_MM = 8.0
 POCKET_OPEN_EXTERIOR_INTERIOR_PLANE_MIN = 2
 POCKET_OPEN_EXTERIOR_INTERIOR_CURVED_MIN = 1
@@ -57,6 +78,9 @@ CONCAVE_FILLET_SHORT_CYLINDER_SPAN_RATIO_MAX = 0.3
 CURVED_HALF_CYLINDER_MIN_COMPLETENESS = 0.4
 CURVED_HALF_CYLINDER_MAX_DIAMETER_MM = 5.0
 CURVED_CONE_GROUP_SPLIT_AREA_RATIO = 8.0
+FLAT_TWIN_FACE_MAX_AREA_MM2 = 400.0
+FLAT_TWIN_FACE_POSITION_GAP_MM = 6.0
+FLAT_TWIN_FACE_SPAN_TOLERANCE_MM = 1.0
 
 
 class CncGeometryError(RuntimeError):
@@ -291,6 +315,16 @@ def _project_bounds_span(
     return max(0.0, projected_max - projected_min)
 
 
+def _bbox_center_point(
+    bounds: tuple[float, float, float, float, float, float],
+) -> tuple[float, float, float]:
+    return (
+        (bounds[0] + bounds[3]) * 0.5,
+        (bounds[1] + bounds[4]) * 0.5,
+        (bounds[2] + bounds[5]) * 0.5,
+    )
+
+
 def detect_turning_from_face_inventory(
     face_inventory: list[dict[str, Any]],
     *,
@@ -299,6 +333,7 @@ def detect_turning_from_face_inventory(
     min_area_ratio: float = TURN_AXIS_MIN_AREA_RATIO,
     min_span_ratio: float = TURN_AXIS_MIN_SPAN_RATIO,
     min_dominant_axis_ratio: float = TURN_AXIS_DOMINANT_DIMENSION_RATIO,
+    min_revolved_fraction: float = TURN_AXIS_MIN_REVOLVED_FRACTION,
 ) -> dict[str, Any]:
     axis_tolerance_cos = math.cos(math.radians(max(0.0, axis_angle_tolerance_deg)))
     max_part_dimension = max(
@@ -309,9 +344,13 @@ def detect_turning_from_face_inventory(
     )
 
     candidate_faces: list[dict[str, Any]] = []
+    total_exterior_area = 0.0
     for face in face_inventory:
         if not isinstance(face, dict):
             continue
+        area = float(face.get("area_mm2") or 0.0)
+        if math.isfinite(area) and area > 0 and face.get("is_exterior") is True:
+            total_exterior_area += area
         surface_type = str(face.get("surface_type") or "").strip().lower()
         if surface_type not in {"cylinder", "cone", "surface_of_revolution", "torus"}:
             continue
@@ -325,7 +364,6 @@ def detect_turning_from_face_inventory(
         )
         if axis is None:
             continue
-        area = float(face.get("area_mm2") or 0.0)
         if not math.isfinite(area) or area <= 0:
             continue
         candidate_face = dict(face)
@@ -401,10 +439,32 @@ def detect_turning_from_face_inventory(
         dominant_axis_ratio = (
             part_axis_span / max_part_dimension if max_part_dimension > 0 else 0.0
         )
+        revolved_fraction = (
+            cluster["area_mm2"] / total_exterior_area if total_exterior_area > 0 else 0.0
+        )
+        axis_normal_exterior_plane_count = 0
+        for face in face_inventory:
+            if not isinstance(face, dict):
+                continue
+            if face.get("is_exterior") is not True:
+                continue
+            if str(face.get("surface_type") or "").strip().lower() != "plane":
+                continue
+            normal = _normalized_face_vector(face)
+            if normal is None:
+                continue
+            if abs(_dot(normal, axis)) >= axis_tolerance_cos:
+                axis_normal_exterior_plane_count += 1
         accepted = (
             area_ratio >= min_area_ratio
             and span_ratio >= min_span_ratio
-            and dominant_axis_ratio >= min_dominant_axis_ratio
+            and (
+                dominant_axis_ratio >= min_dominant_axis_ratio
+                or (
+                    revolved_fraction >= min_revolved_fraction
+                    and axis_normal_exterior_plane_count >= 1
+                )
+            )
         )
 
         summary = {
@@ -417,6 +477,8 @@ def detect_turning_from_face_inventory(
             "part_axis_span_mm": round(part_axis_span, 4),
             "span_ratio": round(span_ratio, 4),
             "dominant_axis_ratio": round(dominant_axis_ratio, 4),
+            "exterior_revolved_area_ratio": round(revolved_fraction, 4),
+            "axis_normal_exterior_plane_count": axis_normal_exterior_plane_count,
             "accepted": accepted,
             "surface_types": sorted(
                 {
@@ -450,6 +512,7 @@ def detect_turning_from_face_inventory(
             "primary_axis": None,
             "candidate_face_count": len(candidate_faces),
             "total_exterior_revolved_area_mm2": round(total_revolved_area, 4),
+            "total_exterior_area_mm2": round(total_exterior_area, 4),
             "max_part_dimension_mm": round(max_part_dimension, 4),
             "clusters": cluster_summaries,
             "thresholds": {
@@ -457,6 +520,7 @@ def detect_turning_from_face_inventory(
                 "min_area_ratio": min_area_ratio,
                 "min_span_ratio": min_span_ratio,
                 "min_dominant_axis_ratio": min_dominant_axis_ratio,
+                "min_revolved_fraction": min_revolved_fraction,
             },
         }
 
@@ -476,6 +540,17 @@ def detect_turning_from_face_inventory(
         for face in accepted_cluster["faces"]
         if str(face.get("surface_type") or "").strip().lower() != "cylinder"
     ]
+    short_turning_analysis: dict[str, Any] = _analyze_short_turning_axis_features(
+        accepted_cluster=accepted_cluster,
+        face_inventory=face_inventory,
+        primary_axis=primary_axis,
+        bbox_bounds=bbox_bounds,
+        axis_tolerance_cos=axis_tolerance_cos,
+    )
+    is_short_turning_part = (
+        float(accepted_cluster.get("dominant_axis_ratio") or 0.0) < min_dominant_axis_ratio
+        and float(accepted_cluster.get("exterior_revolved_area_ratio") or 0.0) >= min_revolved_fraction
+    )
 
     turned_end_faces: list[dict[str, Any]] = []
     end_position_tolerance = max(
@@ -536,21 +611,39 @@ def detect_turning_from_face_inventory(
             if (has_turning_adjacency and within_cluster_span) or at_cluster_end or at_part_end:
                 turned_end_faces.append(face)
 
+    turned_diameter_faces_count = len(turned_diameter_groups)
+    turned_profile_faces_count = len(turned_profile_faces)
+    turned_end_faces_count = len(turned_end_faces)
+    if is_short_turning_part:
+        turned_diameter_faces_count = int(
+            short_turning_analysis.get("turned_diameter_faces_count") or turned_diameter_faces_count
+        )
+        turned_profile_faces_count = int(
+            short_turning_analysis.get("turned_profile_faces_count") or turned_profile_faces_count
+        )
+        turned_end_faces_count = int(
+            short_turning_analysis.get("turned_end_faces_count") or turned_end_faces_count
+        )
     turned_face_count = (
-        len(turned_diameter_groups)
-        + len(turned_profile_faces)
-        + len(turned_end_faces)
+        turned_diameter_faces_count
+        + turned_profile_faces_count
+        + turned_end_faces_count
     )
     return {
         "rotational_symmetry": turned_face_count > 0,
         "turned_faces_present": turned_face_count > 0,
         "turned_face_count": turned_face_count,
-        "turned_diameter_faces_count": len(turned_diameter_groups),
-        "turned_end_faces_count": len(turned_end_faces),
-        "turned_profile_faces_count": len(turned_profile_faces),
+        "turned_diameter_faces_count": turned_diameter_faces_count,
+        "turned_end_faces_count": turned_end_faces_count,
+        "turned_profile_faces_count": turned_profile_faces_count,
+        "outer_diameter_groove_count": int(
+            short_turning_analysis.get("outer_diameter_groove_count") or 0
+        ),
+        "end_face_groove_count": int(short_turning_analysis.get("end_face_groove_count") or 0),
         "primary_axis": primary_axis,
         "candidate_face_count": len(candidate_faces),
         "total_exterior_revolved_area_mm2": round(total_revolved_area, 4),
+        "total_exterior_area_mm2": round(total_exterior_area, 4),
         "max_part_dimension_mm": round(max_part_dimension, 4),
         "primary_cluster": {
             key: value
@@ -564,11 +657,19 @@ def detect_turning_from_face_inventory(
             for face in turned_end_faces
             if isinstance(face.get("face_index"), int)
         ],
+        "axial_bore_groups": short_turning_analysis.get("bore_groups", []),
+        "outer_diameter_groove_groups": short_turning_analysis.get(
+            "outer_diameter_groove_groups",
+            [],
+        ),
+        "end_face_groove_groups": short_turning_analysis.get("end_face_groove_groups", []),
+        "turned_end_clusters": short_turning_analysis.get("turned_end_clusters", []),
         "thresholds": {
             "axis_angle_tolerance_deg": axis_angle_tolerance_deg,
             "min_area_ratio": min_area_ratio,
             "min_span_ratio": min_span_ratio,
             "min_dominant_axis_ratio": min_dominant_axis_ratio,
+            "min_revolved_fraction": min_revolved_fraction,
         },
     }
 
@@ -582,6 +683,20 @@ def _distance_point_to_axis(
     axis_projection = _mul(axis_direction, _dot(delta, axis_direction))
     perpendicular = _sub(delta, axis_projection)
     return math.sqrt(max(0.0, _dot(perpendicular, perpendicular)))
+
+
+def _axis_offset_from_primary_axis(
+    axis_origin: tuple[float, float, float] | None,
+    primary_axis: tuple[float, float, float],
+    bbox_bounds: tuple[float, float, float, float, float, float],
+) -> float | None:
+    if axis_origin is None:
+        return None
+    return _distance_point_to_axis(
+        axis_origin,
+        _bbox_center_point(bbox_bounds),
+        primary_axis,
+    )
 
 
 def _turn_radius_from_face(
@@ -709,6 +824,414 @@ def _group_turned_diameter_faces(
     ]
 
 
+def _cluster_short_turning_cylinders(
+    cylinder_faces: list[dict[str, Any]],
+    *,
+    primary_axis: tuple[float, float, float],
+    bbox_bounds: tuple[float, float, float, float, float, float],
+) -> list[dict[str, Any]]:
+    center_offset_limit = max(
+        TURN_SHORT_AXIS_CENTER_OFFSET_MM,
+        max(
+            bbox_bounds[3] - bbox_bounds[0],
+            bbox_bounds[4] - bbox_bounds[1],
+            bbox_bounds[5] - bbox_bounds[2],
+            0.0,
+        )
+        * TURN_SHORT_AXIS_CENTER_OFFSET_RATIO,
+    )
+    candidates: list[dict[str, Any]] = []
+    for face in cylinder_faces:
+        if not isinstance(face, dict):
+            continue
+        face_bounds = face.get("bbox_bounds")
+        if not isinstance(face_bounds, list) or len(face_bounds) != 6:
+            continue
+        axis_origin_payload = face.get("axis_origin")
+        axis_origin = None
+        if isinstance(axis_origin_payload, (list, tuple)) and len(axis_origin_payload) == 3:
+            axis_origin = (
+                float(axis_origin_payload[0]),
+                float(axis_origin_payload[1]),
+                float(axis_origin_payload[2]),
+            )
+        axis_offset = _axis_offset_from_primary_axis(axis_origin, primary_axis, bbox_bounds)
+        if axis_offset is None or axis_offset > center_offset_limit:
+            continue
+        axis_min, axis_max = _project_bounds_range(
+            tuple(float(value) for value in face_bounds),
+            primary_axis,
+        )
+        radius = _turn_radius_from_face(face, primary_axis)
+        if radius is None or not math.isfinite(radius) or radius <= 0:
+            continue
+        candidates.append(
+            {
+                "face_index": int(face.get("face_index"))
+                if isinstance(face.get("face_index"), int)
+                else None,
+                "radius_mm": radius,
+                "axis_min": axis_min,
+                "axis_max": axis_max,
+                "span_mm": max(0.0, axis_max - axis_min),
+                "is_exterior": face.get("is_exterior"),
+                "surface_type": str(face.get("surface_type") or "").strip().lower(),
+            }
+        )
+
+    groups: list[dict[str, Any]] = []
+    for candidate in sorted(
+        candidates,
+        key=lambda item: (item["axis_min"], item["radius_mm"], item["face_index"] or 0),
+    ):
+        matched_group = None
+        for group in groups:
+            if abs(candidate["radius_mm"] - group["radius_mm"]) > TURN_SHORT_RADIUS_TOLERANCE_MM:
+                continue
+            overlaps_or_touches = (
+                candidate["axis_min"] <= group["axis_max"] + TURN_DIAMETER_AXIAL_GAP_TOLERANCE_MM
+                and candidate["axis_max"] >= group["axis_min"] - TURN_DIAMETER_AXIAL_GAP_TOLERANCE_MM
+            )
+            if not overlaps_or_touches:
+                continue
+            matched_group = group
+            break
+        if matched_group is None:
+            groups.append(
+                {
+                    "radius_mm": candidate["radius_mm"],
+                    "axis_min": candidate["axis_min"],
+                    "axis_max": candidate["axis_max"],
+                    "face_indices": [candidate["face_index"]]
+                    if candidate["face_index"] is not None
+                    else [],
+                    "has_exterior_face": candidate["is_exterior"] is True,
+                    "has_interior_face": candidate["is_exterior"] is False,
+                }
+            )
+            continue
+        matched_group["radius_mm"] = (matched_group["radius_mm"] + candidate["radius_mm"]) * 0.5
+        matched_group["axis_min"] = min(matched_group["axis_min"], candidate["axis_min"])
+        matched_group["axis_max"] = max(matched_group["axis_max"], candidate["axis_max"])
+        if candidate["face_index"] is not None:
+            matched_group["face_indices"].append(candidate["face_index"])
+        if candidate["is_exterior"] is True:
+            matched_group["has_exterior_face"] = True
+        if candidate["is_exterior"] is False:
+            matched_group["has_interior_face"] = True
+
+    return [
+        {
+            "radius_mm": round(group["radius_mm"], 4),
+            "axis_min": round(group["axis_min"], 4),
+            "axis_max": round(group["axis_max"], 4),
+            "span_mm": round(max(0.0, group["axis_max"] - group["axis_min"]), 4),
+            "face_indices": sorted(group["face_indices"]),
+            "has_exterior_face": bool(group["has_exterior_face"]),
+            "has_interior_face": bool(group["has_interior_face"]),
+        }
+        for group in groups
+    ]
+
+
+def _analyze_short_turning_axis_features(
+    *,
+    accepted_cluster: dict[str, Any],
+    face_inventory: list[dict[str, Any]],
+    primary_axis: tuple[float, float, float],
+    bbox_bounds: tuple[float, float, float, float, float, float],
+    axis_tolerance_cos: float,
+) -> dict[str, Any]:
+    turned_faces = list(accepted_cluster.get("faces", []))
+    turned_cylinder_faces = [
+        face
+        for face in turned_faces
+        if str(face.get("surface_type") or "").strip().lower() == "cylinder"
+    ]
+    cylinder_faces = [
+        face
+        for face in face_inventory
+        if str(face.get("surface_type") or "").strip().lower() == "cylinder"
+        and _axis_alignment_cos(_surface_axis_direction(face), primary_axis) >= axis_tolerance_cos
+    ]
+    revolved_profile_faces = [
+        face
+        for face in turned_faces
+        if str(face.get("surface_type") or "").strip().lower() in {"cone", "torus"}
+    ]
+    short_cylinder_groups = _cluster_short_turning_cylinders(
+        cylinder_faces,
+        primary_axis=primary_axis,
+        bbox_bounds=bbox_bounds,
+    )
+    max_exterior_radius = max(
+        (
+            group["radius_mm"]
+            for group in short_cylinder_groups
+            if group.get("has_exterior_face")
+        ),
+        default=0.0,
+    )
+    if max_exterior_radius <= 0:
+        return {}
+
+    radius_floor = max(
+        TURN_SHORT_SMALL_HOLE_RADIUS_MAX_MM,
+        max_exterior_radius * 0.05,
+    )
+    turned_diameter_faces = [
+        face
+        for face in turned_cylinder_faces
+        if face.get("is_exterior") is True
+        and (_turn_radius_from_face(face, primary_axis) or 0.0) >= radius_floor
+        and (
+            _axis_offset_from_primary_axis(
+                (
+                    float(face["axis_origin"][0]),
+                    float(face["axis_origin"][1]),
+                    float(face["axis_origin"][2]),
+                )
+                if isinstance(face.get("axis_origin"), (list, tuple))
+                and len(face.get("axis_origin", [])) == 3
+                else None,
+                primary_axis,
+                bbox_bounds,
+            )
+            or 0.0
+        )
+        <= max(TURN_SHORT_AXIS_CENTER_OFFSET_MM, max_exterior_radius * TURN_SHORT_AXIS_CENTER_OFFSET_RATIO)
+    ]
+
+    profile_radius_threshold = max_exterior_radius * TURN_SHORT_PROFILE_MIN_RADIUS_RATIO
+    turned_profile_faces = []
+    for face in revolved_profile_faces:
+        surface_type = str(face.get("surface_type") or "").strip().lower()
+        radius = _turn_radius_from_face(face, primary_axis) or 0.0
+        face_bounds = face.get("bbox_bounds")
+        axis_span = 0.0
+        if isinstance(face_bounds, list) and len(face_bounds) == 6:
+            face_min, face_max = _project_bounds_range(
+                tuple(float(value) for value in face_bounds),
+                primary_axis,
+            )
+            axis_span = max(0.0, face_max - face_min)
+        min_span = (
+            TURN_SHORT_TORUS_MIN_SPAN_MM
+            if surface_type == "torus"
+            else TURN_SHORT_PROFILE_MIN_SPAN_MM
+        )
+        if radius >= profile_radius_threshold and axis_span >= min_span:
+            turned_profile_faces.append(face)
+
+    part_axis_min, part_axis_max = _project_bounds_range(bbox_bounds, primary_axis)
+    outer_diameter_groove_groups: list[dict[str, Any]] = []
+    end_face_groove_groups: list[dict[str, Any]] = []
+    exterior_bore_groups: list[dict[str, Any]] = []
+    interior_bore_groups_by_radius: dict[float, dict[str, Any]] = {}
+    sorted_groups = sorted(short_cylinder_groups, key=lambda item: (item["axis_min"], item["radius_mm"]))
+    for index, group in enumerate(sorted_groups):
+        radius = float(group["radius_mm"])
+        span = float(group["span_mm"])
+        touches_part_start = abs(float(group["axis_min"]) - part_axis_min) <= TURN_END_FACE_POSITION_TOLERANCE_MM
+        touches_part_end = abs(float(group["axis_max"]) - part_axis_max) <= TURN_END_FACE_POSITION_TOLERANCE_MM
+        if group.get("has_interior_face") and radius <= max_exterior_radius * TURN_SHORT_BORE_MAX_RADIUS_RATIO:
+            if span >= TURN_SHORT_BORE_MIN_SPAN_MM:
+                radius_key = round(radius / TURN_SHORT_RADIUS_TOLERANCE_MM) * TURN_SHORT_RADIUS_TOLERANCE_MM
+                merged = interior_bore_groups_by_radius.setdefault(
+                    round(radius_key, 4),
+                    {
+                        "radius_mm": round(radius, 4),
+                        "axis_min": float(group["axis_min"]),
+                        "axis_max": float(group["axis_max"]),
+                        "face_indices": [],
+                    },
+                )
+                merged["axis_min"] = min(merged["axis_min"], float(group["axis_min"]))
+                merged["axis_max"] = max(merged["axis_max"], float(group["axis_max"]))
+                merged["face_indices"].extend(group.get("face_indices", []))
+
+        if not group.get("has_exterior_face"):
+            if (
+                span <= TURN_SHORT_END_GROOVE_MAX_SPAN_MM
+                and (touches_part_start or touches_part_end)
+                and radius >= max_exterior_radius * TURN_SHORT_BORE_MIN_RADIUS_RATIO
+            ):
+                end_face_groove_groups.append(group)
+            continue
+
+        left_neighbor = next(
+            (
+                candidate
+                for candidate in reversed(sorted_groups[:index])
+                if candidate.get("has_exterior_face")
+            ),
+            None,
+        )
+        right_neighbor = next(
+            (
+                candidate
+                for candidate in sorted_groups[index + 1 :]
+                if candidate.get("has_exterior_face")
+            ),
+            None,
+        )
+        left_radius = float(left_neighbor["radius_mm"]) if isinstance(left_neighbor, dict) else None
+        right_radius = float(right_neighbor["radius_mm"]) if isinstance(right_neighbor, dict) else None
+
+        if (
+            span <= TURN_SHORT_GROOVE_MAX_SPAN_MM
+            and not touches_part_start
+            and not touches_part_end
+            and left_radius is not None
+            and right_radius is not None
+            and left_radius >= radius + TURN_SHORT_GROOVE_MIN_DEPTH_MM
+            and right_radius >= radius + TURN_SHORT_GROOVE_MIN_DEPTH_MM
+        ):
+            outer_diameter_groove_groups.append(group)
+
+        if (
+            span >= TURN_SHORT_BORE_MIN_SPAN_MM
+            and radius >= max_exterior_radius * TURN_SHORT_BORE_MIN_RADIUS_RATIO
+            and radius <= max_exterior_radius * TURN_SHORT_BORE_MAX_RADIUS_RATIO
+            and (touches_part_start or touches_part_end)
+            and len(group.get("face_indices", [])) >= 2
+        ):
+            exterior_bore_groups.append(group)
+
+    bore_groups = [
+        {
+            "radius_mm": round(group["radius_mm"], 4),
+            "axis_min": round(group["axis_min"], 4),
+            "axis_max": round(group["axis_max"], 4),
+            "face_indices": sorted(
+                index
+                for index in group.get("face_indices", [])
+                if isinstance(index, int)
+            ),
+        }
+        for group in exterior_bore_groups
+    ]
+    for radius_key in sorted(interior_bore_groups_by_radius):
+        group = interior_bore_groups_by_radius[radius_key]
+        bore_groups.append(
+            {
+                "radius_mm": round(group["radius_mm"], 4),
+                "axis_min": round(group["axis_min"], 4),
+                "axis_max": round(group["axis_max"], 4),
+                "face_indices": sorted(set(group["face_indices"])),
+            }
+        )
+
+    face_lookup = {
+        int(face.get("face_index")): face
+        for face in face_inventory
+        if isinstance(face, dict) and isinstance(face.get("face_index"), int)
+    }
+    plane_records: list[dict[str, Any]] = []
+    end_position_tolerance = max(
+        TURN_END_FACE_POSITION_TOLERANCE_MM,
+        accepted_cluster["part_axis_span_mm"] * TURN_END_FACE_POSITION_TOLERANCE_RATIO,
+    )
+    for face in face_inventory:
+        if not isinstance(face, dict):
+            continue
+        if str(face.get("surface_type") or "").strip().lower() != "plane":
+            continue
+        normal = _normalized_face_vector(face)
+        if normal is None or abs(_dot(normal, primary_axis)) < axis_tolerance_cos:
+            continue
+        face_bounds = face.get("bbox_bounds")
+        if not isinstance(face_bounds, list) or len(face_bounds) != 6:
+            continue
+        axis_min, axis_max = _project_bounds_range(
+            tuple(float(value) for value in face_bounds),
+            primary_axis,
+        )
+        axis_position = (axis_min + axis_max) * 0.5
+        adjacent_faces = _neighbor_surface_records(face, face_lookup)
+        adjacent_radii = [
+            _turn_radius_from_face(candidate, primary_axis) or 0.0
+            for candidate in adjacent_faces
+            if str(candidate.get("surface_type") or "").strip().lower() in {"cylinder", "cone", "torus"}
+            and (
+                _axis_offset_from_primary_axis(
+                    (
+                        float(candidate["axis_origin"][0]),
+                        float(candidate["axis_origin"][1]),
+                        float(candidate["axis_origin"][2]),
+                    )
+                    if isinstance(candidate.get("axis_origin"), (list, tuple))
+                    and len(candidate.get("axis_origin", [])) == 3
+                    else None,
+                    primary_axis,
+                    bbox_bounds,
+                )
+                or 0.0
+            )
+            <= max(TURN_SHORT_AXIS_CENTER_OFFSET_MM, max_exterior_radius * TURN_SHORT_AXIS_CENTER_OFFSET_RATIO)
+        ]
+        plane_records.append(
+            {
+                "face_index": int(face.get("face_index"))
+                if isinstance(face.get("face_index"), int)
+                else None,
+                "axis_position": axis_position,
+                "touches_part_end": (
+                    abs(axis_position - part_axis_min) <= end_position_tolerance
+                    or abs(axis_position - part_axis_max) <= end_position_tolerance
+                ),
+                "max_adjacent_radius_mm": max(adjacent_radii, default=0.0),
+            }
+        )
+
+    plane_clusters: list[list[dict[str, Any]]] = []
+    for plane in sorted(plane_records, key=lambda item: item["axis_position"]):
+        if (
+            not plane_clusters
+            or plane["axis_position"] - plane_clusters[-1][-1]["axis_position"] > TURN_SHORT_END_CLUSTER_GAP_MM
+        ):
+            plane_clusters.append([plane])
+        else:
+            plane_clusters[-1].append(plane)
+
+    turned_end_clusters = []
+    min_end_radius = max_exterior_radius * TURN_SHORT_END_MIN_RADIUS_RATIO
+    for cluster in plane_clusters:
+        max_adjacent_radius = max(
+            (record["max_adjacent_radius_mm"] for record in cluster),
+            default=0.0,
+        )
+        if max_adjacent_radius < min_end_radius:
+            continue
+        turned_end_clusters.append(
+            {
+                "axis_position_mm": round(
+                    sum(record["axis_position"] for record in cluster) / len(cluster),
+                    4,
+                ),
+                "face_indices": sorted(
+                    record["face_index"]
+                    for record in cluster
+                    if isinstance(record.get("face_index"), int)
+                ),
+                "max_adjacent_radius_mm": round(max_adjacent_radius, 4),
+                "touches_part_end": any(record.get("touches_part_end") for record in cluster),
+            }
+        )
+
+    return {
+        "turned_diameter_faces_count": len(turned_diameter_faces),
+        "turned_profile_faces_count": len(turned_profile_faces),
+        "turned_end_faces_count": len(turned_end_clusters),
+        "outer_diameter_groove_count": len(outer_diameter_groove_groups),
+        "end_face_groove_count": len(end_face_groove_groups),
+        "bore_groups": bore_groups,
+        "outer_diameter_groove_groups": outer_diameter_groove_groups,
+        "end_face_groove_groups": end_face_groove_groups,
+        "turned_end_clusters": turned_end_clusters,
+    }
+
+
 def _dominant_axis_index(axis: tuple[float, float, float]) -> int:
     return max(range(3), key=lambda index: abs(axis[index]))
 
@@ -819,6 +1342,43 @@ def _axis_line_key(
     )
 
 
+def _split_axis_line_components(
+    cylinders: list[dict[str, Any]],
+    *,
+    axial_gap_tolerance_mm: float = HOLE_COMPONENT_AXIAL_GAP_TOLERANCE_MM,
+) -> list[list[dict[str, Any]]]:
+    ordered = sorted(
+        (
+            cylinder
+            for cylinder in cylinders
+            if isinstance(cylinder, dict)
+            and isinstance(cylinder.get("axis_min"), (int, float))
+            and isinstance(cylinder.get("axis_max"), (int, float))
+        ),
+        key=lambda item: (float(item["axis_min"]), float(item["axis_max"]), item.get("face_index") or 0),
+    )
+    components: list[list[dict[str, Any]]] = []
+    current_component: list[dict[str, Any]] = []
+    current_axis_max: float | None = None
+    for cylinder in ordered:
+        axis_min = float(cylinder["axis_min"])
+        axis_max = float(cylinder["axis_max"])
+        if not current_component:
+            current_component = [cylinder]
+            current_axis_max = axis_max
+            continue
+        if current_axis_max is not None and axis_min <= current_axis_max + axial_gap_tolerance_mm:
+            current_component.append(cylinder)
+            current_axis_max = max(current_axis_max, axis_max)
+            continue
+        components.append(current_component)
+        current_component = [cylinder]
+        current_axis_max = axis_max
+    if current_component:
+        components.append(current_component)
+    return components
+
+
 def detect_hole_features_from_face_inventory(
     face_inventory: list[dict[str, Any]],
     *,
@@ -849,6 +1409,7 @@ def detect_hole_features_from_face_inventory(
             continue
         axis = metrics["axis_direction"]
         axis_origin = metrics["axis_origin"]
+        axis_min, axis_max = _project_bounds_range(metrics["bbox_bounds"], axis)
         cylinders.append(
             {
                 "face_index": int(face.get("face_index"))
@@ -864,6 +1425,8 @@ def detect_hole_features_from_face_inventory(
                 "depth_to_diameter_ratio": metrics["depth_mm"] / max(metrics["diameter_mm"], 1e-9),
                 "is_exterior": face.get("is_exterior"),
                 "bbox_bounds": metrics["bbox_bounds"],
+                "axis_min": axis_min,
+                "axis_max": axis_max,
                 "perpendicular_spans_mm": metrics["perpendicular_spans_mm"],
                 "adjacent_face_indices": list(face.get("adjacent_face_indices") or []),
             }
@@ -888,13 +1451,17 @@ def detect_hole_features_from_face_inventory(
     rejected_candidates: list[dict[str, Any]] = []
     for axis_line_key, group in grouped_cylinders.items():
         ordered_group = sorted(group, key=lambda item: (item["diameter_mm"], item["face_index"] or 0))
-        eligible_group: list[dict[str, Any]] = []
+        eligible_ordered_group: list[dict[str, Any]] = []
         for cylinder in ordered_group:
             aligned_with_turn_axis = (
                 primary_axis is not None
                 and _axis_alignment_cos(cylinder["axis_direction"], primary_axis) >= axis_tolerance_cos
             )
-            if aligned_with_turn_axis and cylinder.get("is_exterior") is True:
+            if (
+                aligned_with_turn_axis
+                and cylinder.get("is_exterior") is True
+                and float(cylinder.get("diameter_mm") or 0.0) > TURN_SHORT_SMALL_HOLE_RADIUS_MAX_MM * 2.0
+            ):
                 rejected_candidates.append(
                     {
                         **cylinder,
@@ -904,121 +1471,306 @@ def detect_hole_features_from_face_inventory(
                     }
                 )
                 continue
-            eligible_group.append(cylinder)
+            eligible_ordered_group.append(cylinder)
 
-        if not eligible_group:
+        if not eligible_ordered_group:
             continue
 
-        if len(eligible_group) == 1:
-            cylinder = eligible_group[0]
-            face_index = cylinder.get("face_index")
-            face = face_lookup.get(face_index) if isinstance(face_index, int) else None
-            neighbor_faces = _neighbor_surface_records(face, face_lookup) if isinstance(face, dict) else []
-            axis_aligned_plane_neighbors = 0
-            orthogonal_plane_neighbors = 0
-            for neighbor in neighbor_faces:
-                if str(neighbor.get("surface_type") or "").strip().lower() != "plane":
-                    continue
-                alignment = _axis_alignment_cos(
-                    cylinder["axis_direction"],
-                    _normalized_face_vector(neighbor),
+        group_diameters = [
+            float(candidate["diameter_mm"])
+            for candidate in eligible_ordered_group
+            if isinstance(candidate.get("diameter_mm"), (int, float))
+        ]
+        same_diameter_group = (
+            max(group_diameters, default=0.0) - min(group_diameters, default=0.0)
+            <= HOLE_DIAMETER_BAND_TOLERANCE_MM
+        )
+        all_interior_group = all(
+            candidate.get("is_exterior") is False for candidate in eligible_ordered_group
+        )
+        if len(eligible_ordered_group) <= 2:
+            eligible_components = [eligible_ordered_group]
+            if len(eligible_ordered_group) == 2 and same_diameter_group and all_interior_group:
+                ordered_pair = sorted(
+                    eligible_ordered_group,
+                    key=lambda item: (
+                        float(item.get("axis_min") or 0.0),
+                        float(item.get("axis_max") or 0.0),
+                        item.get("face_index") or 0,
+                    ),
                 )
-                if alignment >= 0.98:
-                    axis_aligned_plane_neighbors += 1
-                elif alignment <= 0.2:
-                    orthogonal_plane_neighbors += 1
-            if (
-                cylinder.get("is_exterior") is False
-                and cylinder["completeness_ratio"] <= HOLE_SINGLE_RECESS_MAX_COMPLETENESS
-                and len(neighbor_faces) >= HOLE_SINGLE_RECESS_MIN_NEIGHBOR_COUNT
-                and axis_aligned_plane_neighbors >= 1
-                and orthogonal_plane_neighbors >= 1
-            ):
-                rejected_candidates.append(
-                    {
-                        **cylinder,
-                        "axis_line_key": axis_line_key,
-                        "selection_reason": "single_cylinder_recess_blend",
-                        "nested_group_size": len(ordered_group),
-                    }
+                pair_is_disjoint = (
+                    float(ordered_pair[1].get("axis_min") or 0.0)
+                    > float(ordered_pair[0].get("axis_max") or 0.0)
+                    + HOLE_COMPONENT_AXIAL_GAP_TOLERANCE_MM
                 )
+                if pair_is_disjoint:
+                    def _supports_split_interior_pair(cylinder: dict[str, Any]) -> bool:
+                        face_index = cylinder.get("face_index")
+                        face = face_lookup.get(face_index) if isinstance(face_index, int) else None
+                        neighbor_faces = (
+                            _neighbor_surface_records(face, face_lookup)
+                            if isinstance(face, dict)
+                            else []
+                        )
+                        has_exterior_plane_neighbor = any(
+                            str(neighbor.get("surface_type") or "").strip().lower() == "plane"
+                            and neighbor.get("is_exterior") is True
+                            for neighbor in neighbor_faces
+                        )
+                        has_cylinder_neighbor = any(
+                            str(neighbor.get("surface_type") or "").strip().lower() == "cylinder"
+                            for neighbor in neighbor_faces
+                        )
+                        return has_exterior_plane_neighbor and has_cylinder_neighbor
+
+                    if all(_supports_split_interior_pair(cylinder) for cylinder in ordered_pair):
+                        eligible_components = [[cylinder] for cylinder in ordered_pair]
+        else:
+            eligible_components = _split_axis_line_components(eligible_ordered_group)
+        for eligible_group in eligible_components:
+            if not eligible_group:
                 continue
 
-        if len(eligible_group) > 1:
-            diameters = [candidate["diameter_mm"] for candidate in eligible_group]
-            same_diameter_band = (
-                max(diameters, default=0.0) - min(diameters, default=0.0)
-                <= HOLE_DIAMETER_BAND_TOLERANCE_MM
+            eligible_group_axis_span = max(
+                (
+                    float(group_candidate.get("axis_max") or 0.0)
+                    for group_candidate in eligible_group
+                ),
+                default=0.0,
+            ) - min(
+                (
+                    float(group_candidate.get("axis_min") or 0.0)
+                    for group_candidate in eligible_group
+                ),
+                default=0.0,
             )
-            exterior_profile_band = (
-                len(eligible_group) >= 3
-                and all(candidate.get("is_exterior") is True for candidate in eligible_group)
-                and all(
-                    candidate["completeness_ratio"] < HOLE_THROUGH_COMPLETENESS_MIN
-                    for candidate in eligible_group
-                )
-            )
-            if same_diameter_band and all(candidate.get("is_exterior") is True for candidate in eligible_group):
-                exterior_profile_band = True
-            if exterior_profile_band:
-                for candidate in eligible_group:
+
+            if len(eligible_group) == 1:
+                cylinder = eligible_group[0]
+                face_index = cylinder.get("face_index")
+                face = face_lookup.get(face_index) if isinstance(face_index, int) else None
+                neighbor_faces = _neighbor_surface_records(face, face_lookup) if isinstance(face, dict) else []
+                axis_aligned_plane_neighbors = 0
+                orthogonal_plane_neighbors = 0
+                for neighbor in neighbor_faces:
+                    if str(neighbor.get("surface_type") or "").strip().lower() != "plane":
+                        continue
+                    alignment = _axis_alignment_cos(
+                        cylinder["axis_direction"],
+                        _normalized_face_vector(neighbor),
+                    )
+                    if alignment >= 0.98:
+                        axis_aligned_plane_neighbors += 1
+                    elif alignment <= 0.2:
+                        orthogonal_plane_neighbors += 1
+                if (
+                    cylinder.get("is_exterior") is False
+                    and cylinder["completeness_ratio"] <= HOLE_SINGLE_RECESS_MAX_COMPLETENESS
+                    and len(neighbor_faces) >= HOLE_SINGLE_RECESS_MIN_NEIGHBOR_COUNT
+                    and axis_aligned_plane_neighbors >= 1
+                    and orthogonal_plane_neighbors >= 1
+                ):
                     rejected_candidates.append(
                         {
-                            **candidate,
+                            **cylinder,
                             "axis_line_key": axis_line_key,
-                            "selection_reason": "exterior_profile_band",
-                            "nested_group_size": len(ordered_group),
+                            "selection_reason": "single_cylinder_recess_blend",
+                            "nested_group_size": len(eligible_group),
                         }
                     )
-                continue
+                    continue
 
-        nested = len(eligible_group) > 1
-        candidate_pool = [eligible_group[0]] if nested else eligible_group
+            if len(eligible_group) > 1:
+                diameters = [candidate["diameter_mm"] for candidate in eligible_group]
+                same_diameter_band = (
+                    max(diameters, default=0.0) - min(diameters, default=0.0)
+                    <= HOLE_DIAMETER_BAND_TOLERANCE_MM
+                )
+                exterior_candidates = [
+                    candidate
+                    for candidate in eligible_group
+                    if candidate.get("is_exterior") is True
+                ]
+                interior_candidates = [
+                    candidate
+                    for candidate in eligible_group
+                    if candidate.get("is_exterior") is False
+                ]
+                exterior_profile_band = (
+                    len(eligible_group) >= 3
+                    and all(candidate.get("is_exterior") is True for candidate in eligible_group)
+                    and all(
+                        candidate["completeness_ratio"] < HOLE_THROUGH_COMPLETENESS_MIN
+                        for candidate in eligible_group
+                    )
+                )
+                if same_diameter_band and all(candidate.get("is_exterior") is True for candidate in eligible_group):
+                    exterior_profile_band = True
+                if exterior_profile_band:
+                    for candidate in eligible_group:
+                        rejected_candidates.append(
+                            {
+                                **candidate,
+                                "axis_line_key": axis_line_key,
+                                "selection_reason": "exterior_profile_band",
+                                "nested_group_size": len(eligible_group),
+                            }
+                        )
+                    continue
 
-        for candidate in candidate_pool:
-            depth_ratio = candidate["depth_to_diameter_ratio"]
-            completeness = candidate["completeness_ratio"]
-            is_exterior = candidate.get("is_exterior")
+                exterior_plane_neighbor_counts: list[int] = []
+                for exterior_candidate in exterior_candidates:
+                    face_index = exterior_candidate.get("face_index")
+                    face = face_lookup.get(face_index) if isinstance(face_index, int) else None
+                    neighbor_faces = (
+                        _neighbor_surface_records(face, face_lookup)
+                        if isinstance(face, dict)
+                        else []
+                    )
+                    exterior_plane_neighbor_counts.append(
+                        sum(
+                            1
+                            for neighbor in neighbor_faces
+                            if str(neighbor.get("surface_type") or "").strip().lower() == "plane"
+                            and neighbor.get("is_exterior") is True
+                        )
+                    )
 
-            accept = False
-            reason = "rejected"
-            if depth_ratio < HOLE_MIN_DEPTH_TO_DIAMETER_RATIO:
-                reason = "too_shallow"
-            elif nested:
-                accept = True
-                reason = "smallest_nested_cylinder"
-            elif is_exterior is False:
-                accept = True
-                reason = "interior_cylinder"
-            elif completeness >= HOLE_THROUGH_COMPLETENESS_MIN and depth_ratio >= 0.75:
-                accept = True
-                reason = "exterior_full_cylinder"
+                slot_profile_group = (
+                    primary_axis is None
+                    and not same_diameter_band
+                    and len(exterior_candidates) >= 2
+                    and len(interior_candidates) >= 1
+                    and min(exterior_plane_neighbor_counts, default=0) >= 5
+                    and max(
+                        (float(candidate.get("depth_mm") or 0.0) for candidate in exterior_candidates),
+                        default=0.0,
+                    )
+                    >= max(
+                        (float(candidate.get("depth_mm") or 0.0) for candidate in interior_candidates),
+                        default=0.0,
+                    )
+                    * 1.2
+                    and eligible_group_axis_span > 0.0
+                    and max(
+                        (float(candidate.get("depth_mm") or 0.0) for candidate in exterior_candidates),
+                        default=0.0,
+                    )
+                    < eligible_group_axis_span * 0.95
+                )
+                if slot_profile_group:
+                    for candidate in eligible_group:
+                        rejected_candidates.append(
+                            {
+                                **candidate,
+                                "axis_line_key": axis_line_key,
+                                "selection_reason": "slot_profile_group",
+                                "nested_group_size": len(eligible_group),
+                            }
+                        )
+                    continue
+
+            nested = len(eligible_group) > 1
+            full_span_exterior_candidate: dict[str, Any] | None = None
+            if nested:
+                full_span_exterior_candidates = [
+                    group_candidate
+                    for group_candidate in eligible_group
+                    if group_candidate.get("is_exterior") is True
+                    and len(exterior_candidates) >= 4
+                    and len(eligible_group) >= 3
+                    and float(group_candidate.get("depth_mm") or 0.0)
+                    >= eligible_group_axis_span * 0.95
+                    and float(group_candidate.get("completeness_ratio") or 0.0)
+                    < HOLE_THROUGH_COMPLETENESS_MIN
+                    and sum(
+                        1
+                        for neighbor in _neighbor_surface_records(
+                            face_lookup.get(group_candidate.get("face_index"))
+                            if isinstance(group_candidate.get("face_index"), int)
+                            else None,
+                            face_lookup,
+                        )
+                        if str(neighbor.get("surface_type") or "").strip().lower() == "plane"
+                        and neighbor.get("is_exterior") is True
+                    )
+                    >= 4
+                ]
+                if full_span_exterior_candidates:
+                    full_span_exterior_candidate = max(
+                        full_span_exterior_candidates,
+                        key=lambda item: (
+                            float(item.get("diameter_mm") or 0.0),
+                            item.get("face_index") or 0,
+                        ),
+                    )
+                    candidate_pool = [full_span_exterior_candidate]
+                else:
+                    candidate_pool = [
+                        min(
+                            eligible_group,
+                            key=lambda item: (float(item["diameter_mm"]), item.get("face_index") or 0),
+                        )
+                    ]
             else:
-                reason = "exterior_segment_without_nested_support"
+                candidate_pool = eligible_group
+            group_completeness_ratio = min(
+                1.0,
+                sum(
+                    float(group_candidate.get("completeness_ratio") or 0.0)
+                    for group_candidate in eligible_group
+                ),
+            )
 
-            payload = {
-                **candidate,
-                "axis_line_key": axis_line_key,
-                "selection_reason": reason,
-                "nested_group_size": len(ordered_group),
-                "group_face_indices": [
-                    int(group_candidate["face_index"])
-                    for group_candidate in eligible_group
-                    if isinstance(group_candidate.get("face_index"), int)
-                ],
-                "group_diameters_mm": [
-                    round(float(group_candidate["diameter_mm"]), 4)
-                    for group_candidate in eligible_group
-                ],
-                "group_depths_mm": [
-                    round(float(group_candidate["depth_mm"]), 4)
-                    for group_candidate in eligible_group
-                ],
-            }
-            if accept:
-                hole_candidates.append(payload)
-            else:
-                rejected_candidates.append(payload)
+            for candidate in candidate_pool:
+                depth_ratio = candidate["depth_to_diameter_ratio"]
+                completeness = candidate["completeness_ratio"]
+                is_exterior = candidate.get("is_exterior")
+
+                accept = False
+                reason = "rejected"
+                if depth_ratio < HOLE_MIN_DEPTH_TO_DIAMETER_RATIO:
+                    reason = "too_shallow"
+                elif full_span_exterior_candidate is not None and candidate is full_span_exterior_candidate:
+                    accept = True
+                    reason = "full_span_exterior_partial"
+                elif nested:
+                    accept = True
+                    reason = "smallest_nested_cylinder"
+                elif is_exterior is False:
+                    accept = True
+                    reason = "interior_cylinder"
+                elif completeness >= HOLE_THROUGH_COMPLETENESS_MIN and depth_ratio >= 0.75:
+                    accept = True
+                    reason = "exterior_full_cylinder"
+                else:
+                    reason = "exterior_segment_without_nested_support"
+
+                payload = {
+                    **candidate,
+                    "axis_line_key": axis_line_key,
+                    "selection_reason": reason,
+                    "nested_group_size": len(eligible_group),
+                    "group_face_indices": [
+                        int(group_candidate["face_index"])
+                        for group_candidate in eligible_group
+                        if isinstance(group_candidate.get("face_index"), int)
+                    ],
+                    "group_diameters_mm": [
+                        round(float(group_candidate["diameter_mm"]), 4)
+                        for group_candidate in eligible_group
+                    ],
+                    "group_depths_mm": [
+                        round(float(group_candidate["depth_mm"]), 4)
+                        for group_candidate in eligible_group
+                    ],
+                    "group_completeness_ratio": round(group_completeness_ratio, 4),
+                }
+                if accept:
+                    hole_candidates.append(payload)
+                else:
+                    rejected_candidates.append(payload)
 
     through_hole_count = 0
     partial_hole_count = 0
@@ -1056,6 +1808,9 @@ def detect_hole_features_from_face_inventory(
             - min(group_diameters, default=candidate["diameter_mm"])
             <= HOLE_DIAMETER_BAND_TOLERANCE_MM
         )
+        group_completeness_ratio = float(
+            candidate.get("group_completeness_ratio", candidate["completeness_ratio"])
+        )
         max_group_depth = max(group_depths, default=candidate["depth_mm"])
         max_outer_group_depth = max(
             (
@@ -1068,11 +1823,19 @@ def detect_hole_features_from_face_inventory(
         full_depth_group = (
             axis_span > 0 and candidate["depth_mm"] >= axis_span * HOLE_STEPPED_FULL_DEPTH_RATIO
         )
+        all_interior_group = (
+            candidate.get("nested_group_size", 0) > 1
+            and all(
+                isinstance(face_index, int) and face_lookup.get(face_index, {}).get("is_exterior") is False
+                for face_index in candidate.get("group_face_indices", [])
+            )
+        )
+        max_group_diameter = max(group_diameters, default=candidate["diameter_mm"])
 
         subtype = "through_hole"
         if (
             aligned_with_turn_axis
-            and candidate.get("is_exterior") is False
+            and candidate.get("is_exterior") is not True
             and axis_span > 0
             and candidate["depth_mm"] >= axis_span * HOLE_BORE_DEPTH_RATIO
             and min_perpendicular_part_span > 0
@@ -1080,6 +1843,28 @@ def detect_hole_features_from_face_inventory(
         ):
             subtype = "bore"
             bore_count += 1
+        elif candidate.get("selection_reason") == "full_span_exterior_partial":
+            subtype = "partial_hole"
+            partial_hole_count += 1
+        elif (
+            candidate.get("nested_group_size", 0) > 1
+            and same_diameter_band
+            and group_completeness_ratio >= HOLE_THROUGH_COMPLETENESS_MIN
+            and candidate["depth_to_diameter_ratio"] >= 0.75
+        ):
+            subtype = "through_hole"
+            through_hole_count += 1
+        elif (
+            candidate.get("nested_group_size", 0) > 1
+            and same_diameter_band
+            and all_interior_group
+            and not aligned_with_turn_axis
+            and max_group_diameter <= HOLE_INTERIOR_MULTI_SEGMENT_MAX_DIAMETER_MM
+            and group_completeness_ratio >= HOLE_INTERIOR_MULTI_SEGMENT_THROUGH_COMPLETENESS_MIN
+            and candidate["depth_to_diameter_ratio"] >= 0.75
+        ):
+            subtype = "through_hole"
+            through_hole_count += 1
         elif (
             candidate.get("nested_group_size", 0) > 1
             and not same_diameter_band
@@ -1132,6 +1917,69 @@ def detect_hole_features_from_face_inventory(
             {
                 **candidate,
                 "subtype": subtype,
+            }
+        )
+
+    axial_bore_groups = []
+    if isinstance(turning_detection, dict):
+        raw_bore_groups = turning_detection.get("axial_bore_groups")
+        if isinstance(raw_bore_groups, list):
+            axial_bore_groups = [group for group in raw_bore_groups if isinstance(group, dict)]
+    consumed_face_indices = {
+        int(candidate["face_index"])
+        for candidate in typed_candidates
+        if isinstance(candidate.get("face_index"), int)
+    }
+    for group in axial_bore_groups:
+        group_face_indices = sorted(
+            {
+                int(face_index)
+                for face_index in group.get("face_indices", [])
+                if isinstance(face_index, int)
+            }
+        )
+        if not group_face_indices:
+            continue
+        if consumed_face_indices & set(group_face_indices):
+            continue
+        bore_count += 1
+        consumed_face_indices.update(group_face_indices)
+        typed_candidates.append(
+            {
+                "face_index": group_face_indices[0],
+                "axis_direction": list(primary_axis) if primary_axis is not None else None,
+                "axis_line_key": None,
+                "diameter_mm": round(float(group.get("radius_mm") or 0.0) * 2.0, 4),
+                "depth_mm": round(
+                    max(
+                        0.0,
+                        float(group.get("axis_max") or 0.0) - float(group.get("axis_min") or 0.0),
+                    ),
+                    4,
+                ),
+                "area_mm2": None,
+                "completeness_ratio": 1.0,
+                "depth_to_diameter_ratio": None,
+                "is_exterior": False,
+                "bbox_bounds": None,
+                "perpendicular_spans_mm": [],
+                "adjacent_face_indices": [],
+                "selection_reason": "short_turning_axis_bore",
+                "nested_group_size": len(group_face_indices),
+                "group_face_indices": group_face_indices,
+                "group_diameters_mm": [round(float(group.get("radius_mm") or 0.0) * 2.0, 4)],
+                "group_depths_mm": [
+                    round(
+                        max(
+                            0.0,
+                            float(group.get("axis_max") or 0.0)
+                            - float(group.get("axis_min") or 0.0),
+                        ),
+                        4,
+                    )
+                ],
+                "group_completeness_ratio": 1.0,
+                "subtype": "bore",
             }
         )
 
@@ -1315,6 +2163,162 @@ def _split_flat_feature_groups(
     return split_groups
 
 
+def _plane_signature(
+    face: dict[str, Any],
+    bbox_bounds: tuple[float, float, float, float, float, float],
+) -> tuple[int, int, float] | None:
+    metrics = _face_position_metrics(face, bbox_bounds)
+    if metrics is None:
+        return None
+    axis_index = int(metrics["axis_index"])
+    sign = 1 if metrics["normal"][axis_index] >= 0.0 else -1
+    position_mm = round(float(metrics["face_center_mm"]) * 2.0) / 2.0
+    return axis_index, sign, position_mm
+
+
+def _symmetric_plane_signature(
+    face: dict[str, Any],
+    bbox_bounds: tuple[float, float, float, float, float, float],
+) -> tuple[int, float, float, float] | None:
+    metrics = _face_position_metrics(face, bbox_bounds)
+    spans = _plane_perpendicular_spans(face)
+    if metrics is None or spans is None:
+        return None
+    axis_index = int(metrics["axis_index"])
+    position_mm = round(abs(float(metrics["face_center_mm"])) * 2.0) / 2.0
+    return (
+        axis_index,
+        position_mm,
+        round(float(spans[0]), 1),
+        round(float(spans[1]), 1),
+    )
+
+
+def _plane_perpendicular_spans(
+    face: dict[str, Any],
+) -> tuple[float, float] | None:
+    bounds = face.get("bbox_bounds")
+    normal = _normalized_face_vector(face)
+    if not isinstance(bounds, list) or len(bounds) != 6 or normal is None:
+        return None
+    axis_index = _dominant_axis_index(normal)
+    spans = [
+        float(bounds[index + 3]) - float(bounds[index])
+        for index in range(3)
+    ]
+    perpendicular = sorted(
+        spans[index]
+        for index in range(3)
+        if index != axis_index
+    )
+    if len(perpendicular) != 2:
+        return None
+    return float(perpendicular[0]), float(perpendicular[1])
+
+
+def _group_flat_planar_features_for_simple_parts(
+    face_indices: list[int],
+    face_lookup: dict[int, dict[str, Any]],
+    bbox_bounds: tuple[float, float, float, float, float, float],
+) -> list[list[int]]:
+    buckets: dict[tuple[int, int, float], list[int]] = {}
+    for face_index in face_indices:
+        face = face_lookup.get(face_index)
+        if not isinstance(face, dict):
+            continue
+        signature = _plane_signature(face, bbox_bounds)
+        if signature is None:
+            continue
+        buckets.setdefault(signature, []).append(face_index)
+
+    grouped: list[list[int]] = []
+    for bucket_indices in buckets.values():
+        grouped.extend(_connected_face_components(bucket_indices, face_lookup))
+
+    singleton_groups: list[dict[str, Any]] = []
+    retained_groups: list[list[int]] = []
+    for group in grouped:
+        if len(group) != 1:
+            retained_groups.append(sorted(group))
+            continue
+        face = face_lookup.get(group[0])
+        if not isinstance(face, dict):
+            retained_groups.append(sorted(group))
+            continue
+        signature = _plane_signature(face, bbox_bounds)
+        spans = _plane_perpendicular_spans(face)
+        area_mm2 = float(face.get("area_mm2") or 0.0)
+        if signature is None or spans is None or area_mm2 > FLAT_TWIN_FACE_MAX_AREA_MM2:
+            retained_groups.append(sorted(group))
+            continue
+        singleton_groups.append(
+            {
+                "face_index": group[0],
+                "signature": signature,
+                "area_mm2": area_mm2,
+                "spans": spans,
+            }
+        )
+
+    used_indices: set[int] = set()
+    merged_groups: list[list[int]] = []
+    for index, record in enumerate(singleton_groups):
+        if index in used_indices:
+            continue
+        best_match_index: int | None = None
+        best_match_score: tuple[float, float, float] | None = None
+        for candidate_index in range(index + 1, len(singleton_groups)):
+            if candidate_index in used_indices:
+                continue
+            candidate = singleton_groups[candidate_index]
+            if record["signature"][:2] != candidate["signature"][:2]:
+                continue
+            if (
+                abs(record["signature"][2] - candidate["signature"][2])
+                > FLAT_TWIN_FACE_POSITION_GAP_MM
+            ):
+                continue
+            if (
+                abs(record["spans"][0] - candidate["spans"][0])
+                > FLAT_TWIN_FACE_SPAN_TOLERANCE_MM
+                or abs(record["spans"][1] - candidate["spans"][1])
+                > FLAT_TWIN_FACE_SPAN_TOLERANCE_MM
+            ):
+                continue
+            area_ratio = max(record["area_mm2"], candidate["area_mm2"]) / max(
+                min(record["area_mm2"], candidate["area_mm2"]),
+                1e-9,
+            )
+            if area_ratio > 1.15:
+                continue
+            score = (
+                abs(record["signature"][2] - candidate["signature"][2]),
+                area_ratio,
+                abs(record["spans"][0] - candidate["spans"][0])
+                + abs(record["spans"][1] - candidate["spans"][1]),
+            )
+            if best_match_score is None or score < best_match_score:
+                best_match_score = score
+                best_match_index = candidate_index
+        if best_match_index is None:
+            merged_groups.append([record["face_index"]])
+            used_indices.add(index)
+            continue
+        used_indices.add(index)
+        used_indices.add(best_match_index)
+        merged_groups.append(
+            sorted(
+                [
+                    record["face_index"],
+                    singleton_groups[best_match_index]["face_index"],
+                ]
+            )
+        )
+
+    all_groups = retained_groups + merged_groups
+    return sorted(all_groups, key=lambda group: (group[0], len(group)))
+
+
 def _median_area(face_indices: list[int], face_lookup: dict[int, dict[str, Any]]) -> float | None:
     values = sorted(
         float(face_lookup[index].get("area_mm2") or 0.0)
@@ -1418,6 +2422,12 @@ def detect_pocket_features_from_face_inventory(
     open_candidates: list[dict[str, Any]] = []
     closed_candidates: list[dict[str, Any]] = []
     rejected_candidates: list[dict[str, Any]] = []
+    simple_planar_cylinder_part = not any(
+        str(face.get("surface_type") or "").strip().lower()
+        in {"cone", "torus", "bspline", "surface_of_revolution"}
+        for face in face_inventory
+        if isinstance(face, dict)
+    )
 
     for face in face_inventory:
         if not isinstance(face, dict):
@@ -1461,6 +2471,11 @@ def detect_pocket_features_from_face_inventory(
             for neighbor in wall_neighbors
             if str(neighbor.get("surface_type") or "").strip().lower() != "plane"
             and neighbor.get("is_exterior") is False
+        ]
+        planar_wall_neighbors = [
+            neighbor
+            for neighbor in wall_neighbors
+            if str(neighbor.get("surface_type") or "").strip().lower() == "plane"
         ]
         curved_wall_neighbors = [
             neighbor
@@ -1506,6 +2521,18 @@ def detect_pocket_features_from_face_inventory(
             and len(interior_plane_neighbors) >= POCKET_OPEN_EXTERIOR_INTERIOR_PLANE_MIN
             and len(interior_curved_neighbors) >= POCKET_OPEN_EXTERIOR_INTERIOR_CURVED_MIN
         )
+        supports_exterior_open_recess_relaxed = (
+            simple_planar_cylinder_part
+            and face.get("is_exterior") is True
+            and POCKET_OPEN_WALL_COUNT_MIN
+            <= len(wall_neighbors)
+            <= max(8, POCKET_OPEN_EXTERIOR_WALL_COUNT_MAX)
+            and metrics["recess_ratio"] >= POCKET_OPEN_EXTERIOR_RECESS_RATIO_RELAXED
+            and metrics["nearest_boundary_offset_mm"] >= POCKET_OPEN_EXTERIOR_RECESS_MM
+            and len(interior_plane_neighbors) == 0
+            and len(interior_curved_neighbors) >= 1
+            and len(planar_wall_neighbors) >= 2
+        )
 
         if metrics["axis_alignment"] < POCKET_AXIS_ALIGNMENT_MIN:
             candidate_payload["selection_reason"] = "non_axis_aligned_plane"
@@ -1542,6 +2569,15 @@ def detect_pocket_features_from_face_inventory(
                 }
             )
             continue
+        if supports_exterior_open_recess_relaxed:
+            open_candidates.append(
+                {
+                    **candidate_payload,
+                    "selection_reason": "exterior_open_recessed_floor_relaxed",
+                    "subtype": "open_pocket",
+                }
+            )
+            continue
         if (
             face.get("is_exterior") is True
             and all_nonplanar_wall_neighbors
@@ -1573,11 +2609,46 @@ def detect_pocket_features_from_face_inventory(
         candidate_payload["selection_reason"] = "insufficient_wall_support"
         rejected_candidates.append(candidate_payload)
 
+    open_feature_groups: list[list[int]] = []
+    standard_open_faces = [
+        int(candidate["face_index"])
+        for candidate in open_candidates
+        if candidate.get("selection_reason") != "exterior_open_recessed_floor_relaxed"
+        and isinstance(candidate.get("face_index"), int)
+    ]
+    if standard_open_faces:
+        open_feature_groups.extend(_connected_face_components(standard_open_faces, face_lookup))
+
+    relaxed_buckets: dict[tuple[Any, ...], set[int]] = {}
+    for candidate in open_candidates:
+        if candidate.get("selection_reason") != "exterior_open_recessed_floor_relaxed":
+            continue
+        face_index = candidate.get("face_index")
+        face = face_lookup.get(face_index) if isinstance(face_index, int) else None
+        if not isinstance(face, dict):
+            continue
+        signature = _symmetric_plane_signature(face, bbox_bounds)
+        if signature is None:
+            signature = _plane_signature(face, bbox_bounds)
+        if signature is None:
+            continue
+        relaxed_buckets.setdefault(signature, set()).add(int(face_index))
+    open_feature_groups.extend(sorted(indices) for indices in relaxed_buckets.values())
+    open_feature_groups = sorted(open_feature_groups, key=lambda group: (group[0], len(group)))
+
+    closed_feature_groups = [
+        [int(candidate["face_index"])]
+        for candidate in closed_candidates
+        if isinstance(candidate.get("face_index"), int)
+    ]
+
     return {
-        "pocket_count": len(open_candidates) + len(closed_candidates),
-        "open_pocket_count": len(open_candidates),
-        "closed_pocket_count": len(closed_candidates),
+        "pocket_count": len(open_feature_groups) + len(closed_feature_groups),
+        "open_pocket_count": len(open_feature_groups),
+        "closed_pocket_count": len(closed_feature_groups),
         "candidates": open_candidates + closed_candidates,
+        "open_pocket_feature_groups": open_feature_groups,
+        "closed_pocket_feature_groups": closed_feature_groups,
         "rejected_candidates": rejected_candidates,
         "thresholds": {
             "min_recess_ratio": POCKET_MIN_RECESS_RATIO,
@@ -1586,6 +2657,7 @@ def detect_pocket_features_from_face_inventory(
             "open_wall_count_min": POCKET_OPEN_WALL_COUNT_MIN,
             "open_exterior_wall_count_max": POCKET_OPEN_EXTERIOR_WALL_COUNT_MAX,
             "open_exterior_recess_ratio": POCKET_OPEN_EXTERIOR_RECESS_RATIO,
+            "open_exterior_recess_ratio_relaxed": POCKET_OPEN_EXTERIOR_RECESS_RATIO_RELAXED,
             "open_exterior_recess_mm": POCKET_OPEN_EXTERIOR_RECESS_MM,
             "curved_enclosed_recess_ratio": POCKET_CURVED_ENCLOSED_RECESS_RATIO,
             "curved_enclosed_recess_mm": POCKET_CURVED_ENCLOSED_RECESS_MM,
@@ -1807,6 +2879,8 @@ def detect_milled_faces_from_face_inventory(
     }
     turned_face_indices: set[int] = set()
     primary_axis = None
+    short_turning_part = False
+    max_turn_radius_mm = 0.0
     if isinstance(turning_detection, dict):
         axis_payload = turning_detection.get("primary_axis")
         if isinstance(axis_payload, (list, tuple)) and len(axis_payload) == 3:
@@ -1818,6 +2892,19 @@ def detect_milled_faces_from_face_inventory(
             for face_index in primary_cluster.get("face_indices", []):
                 if isinstance(face_index, int):
                     turned_face_indices.add(face_index)
+            short_turning_part = (
+                float(primary_cluster.get("dominant_axis_ratio") or 0.0)
+                < TURN_AXIS_DOMINANT_DIMENSION_RATIO
+                and float(primary_cluster.get("exterior_revolved_area_ratio") or 0.0)
+                >= TURN_AXIS_MIN_REVOLVED_FRACTION
+            )
+        for group in turning_detection.get("turned_diameter_groups", []):
+            if not isinstance(group, dict):
+                continue
+            max_turn_radius_mm = max(
+                max_turn_radius_mm,
+                float(group.get("radius_mm") or 0.0),
+            )
     boss_face_indices: set[int] = set()
     if isinstance(boss_detection, dict):
         for candidate in boss_detection.get("candidates", []):
@@ -1857,6 +2944,18 @@ def detect_milled_faces_from_face_inventory(
                     exterior_open_pocket_face_indices.add(face_index)
                 else:
                     excluded_pocket_face_indices.add(face_index)
+    simple_planar_cylinder_part = (
+        primary_axis is None
+        and isinstance(pocket_detection, dict)
+        and int(pocket_detection.get("closed_pocket_count") or 0) == 0
+        and int(pocket_detection.get("open_pocket_count") or 0) <= 2
+        and not any(
+            str(face.get("surface_type") or "").strip().lower()
+            in {"cone", "torus", "bspline", "surface_of_revolution"}
+            for face in face_inventory
+            if isinstance(face, dict)
+        )
+    )
 
     bbox_spans = (
         bbox_bounds[3] - bbox_bounds[0],
@@ -1872,8 +2971,9 @@ def detect_milled_faces_from_face_inventory(
     flat_face_candidates: list[int] = []
     flat_side_candidates: list[int] = []
     curved_face_candidates: list[int] = []
+    circular_milled_candidates: list[int] = []
     convex_profile_edge_candidates: list[int] = []
-    concave_fillet_edge_candidates: list[int] = []
+    concave_fillet_edge_candidate_groups: dict[tuple[Any, ...], set[int]] = {}
     turning_moderate_flat_candidates: list[int] = []
     excluded_turning_deck_faces: list[int] = []
 
@@ -1883,9 +2983,11 @@ def detect_milled_faces_from_face_inventory(
         face_index = face.get("face_index")
         if not isinstance(face_index, int):
             continue
-        if face_index in turned_face_indices:
-            continue
         surface_type = str(face.get("surface_type") or "").strip().lower()
+        if face_index in turned_face_indices and not (
+            short_turning_part and surface_type in {"cone", "torus"}
+        ):
+            continue
 
         if surface_type == "plane":
             metrics = _face_position_metrics(face, bbox_bounds)
@@ -1991,6 +3093,30 @@ def detect_milled_faces_from_face_inventory(
                     flat_side_candidates.append(face_index)
                 else:
                     flat_face_candidates.append(face_index)
+                if (
+                    simple_planar_cylinder_part
+                    and face.get("is_exterior") is True
+                    and metrics["axis_alignment"] >= 0.95
+                ):
+                    if (
+                        axis_index != smallest_axis_index
+                        and metrics["nearest_boundary_offset_mm"] > 0.0
+                        and float(face.get("area_mm2") or 0.0) <= FLAT_TWIN_FACE_MAX_AREA_MM2
+                    ):
+                        flat_side_candidates.append(face_index)
+                    elif (
+                        axis_index == smallest_axis_index
+                        and metrics["nearest_boundary_offset_mm"] > 0.0
+                        and float(face.get("area_mm2") or 0.0) <= FLAT_TWIN_FACE_MAX_AREA_MM2
+                    ):
+                        flat_side_candidates.append(face_index)
+                    elif (
+                        axis_index == smallest_axis_index
+                        and 0.0 < metrics["nearest_boundary_offset_mm"] <= 6.0
+                        and len(plane_neighbors) >= 7
+                        and 3 <= len(cylinder_neighbors) <= 5
+                    ):
+                        flat_side_candidates.append(face_index)
             else:
                 if face.get("is_exterior") is not True:
                     continue
@@ -2029,12 +3155,30 @@ def detect_milled_faces_from_face_inventory(
             surface_axis = _surface_axis_direction(face)
             axis_index = _dominant_axis_index(surface_axis) if surface_axis is not None else None
             if (
+                short_turning_part
+                and primary_axis is not None
+                and surface_axis is not None
+                and _axis_alignment_cos(surface_axis, primary_axis) >= 0.996
+            ):
+                radius = _turn_radius_from_face(face, primary_axis) or 0.0
+                if (
+                    surface_type == "cone"
+                    and radius > 0.0
+                    and radius <= max_turn_radius_mm * TURN_SHORT_CIRCULAR_MILLED_MAX_RADIUS_RATIO
+                ):
+                    circular_milled_candidates.append(face_index)
+                    continue
+                if surface_type == "torus":
+                    curved_face_candidates.append(face_index)
+                    continue
+                continue
+            if (
                 primary_axis is None
                 and surface_type == "torus"
                 and axis_index == smallest_axis_index
                 and exterior_planar_neighbors
             ):
-                concave_fillet_edge_candidates.append(face_index)
+                concave_fillet_edge_candidate_groups.setdefault(("torus", face_index), set()).add(face_index)
                 continue
             if (
                 primary_axis is None
@@ -2059,8 +3203,6 @@ def detect_milled_faces_from_face_inventory(
             axis = metrics["axis_direction"]
             if primary_axis is not None and _axis_alignment_cos(axis, primary_axis) >= 0.996:
                 continue
-            if face_index in boss_face_indices or face_index in hole_face_indices:
-                continue
             neighbor_faces = _neighbor_surface_records(face, face_lookup)
             exterior_planar_neighbors = [
                 neighbor
@@ -2079,17 +3221,44 @@ def detect_milled_faces_from_face_inventory(
                 for neighbor in neighbor_faces
                 if str(neighbor.get("surface_type") or "").strip().lower() == "torus"
             ]
+            exterior_cylinder_neighbors = [
+                neighbor
+                for neighbor in neighbor_faces
+                if str(neighbor.get("surface_type") or "").strip().lower() == "cylinder"
+                and neighbor.get("is_exterior") is True
+            ]
             axis_index = _dominant_axis_index(axis)
             axis_span_ratio = metrics["depth_mm"] / max(bbox_spans[axis_index], 1e-9)
             principal_axis_aligned = max(abs(component) for component in axis) >= 0.98
+            face_axis_key = _face_axis_line_key(face)
+            large_exterior_cylinder_neighbors = [
+                neighbor
+                for neighbor in exterior_cylinder_neighbors
+                if ((_cylindrical_face_metrics(neighbor) or {}).get("diameter_mm") or 0.0)
+                >= metrics["diameter_mm"] + 5.0
+            ]
             is_large_profile_edge = (
                 primary_axis is None
                 and principal_axis_aligned
                 and CONVEX_PROFILE_MIN_DIAMETER_MM
                 <= metrics["diameter_mm"]
-                <= CONVEX_PROFILE_MAX_DIAMETER_MM
+                <= (
+                    max(CONVEX_PROFILE_MAX_DIAMETER_MM, 45.0)
+                    if simple_planar_cylinder_part
+                    else CONVEX_PROFILE_MAX_DIAMETER_MM
+                )
                 and axis_span_ratio >= CONVEX_PROFILE_AXIS_SPAN_RATIO_MIN
-                and len(exterior_planar_neighbors) >= 2
+                and (
+                    (
+                        not simple_planar_cylinder_part
+                        and len(exterior_planar_neighbors) >= 2
+                    )
+                    or (
+                        simple_planar_cylinder_part
+                        and axis_span_ratio < 0.98
+                        and len(exterior_planar_neighbors) >= 4
+                    )
+                )
             )
             if is_large_profile_edge:
                 convex_profile_edge_candidates.append(face_index)
@@ -2106,7 +3275,66 @@ def detect_milled_faces_from_face_inventory(
                 and len(exterior_planar_neighbors) >= 1
             )
             if is_short_concave_blend:
-                concave_fillet_edge_candidates.append(face_index)
+                concave_fillet_edge_candidate_groups.setdefault(("short_blend", face_index), set()).add(face_index)
+                continue
+            if (
+                simple_planar_cylinder_part
+                and primary_axis is None
+                and (
+                    (
+                        metrics["diameter_mm"] <= 10.0
+                        and metrics["completeness_ratio"] >= 0.45
+                        and len(exterior_planar_neighbors) >= 4
+                        and axis_span_ratio >= 0.6
+                    )
+                    or (
+                        len(large_exterior_cylinder_neighbors) >= 1
+                        and len(exterior_planar_neighbors) >= 2
+                        and metrics["completeness_ratio"] <= 0.55
+                        and axis_span_ratio <= 0.45
+                        and (
+                            len(interior_planar_neighbors) >= 1
+                            or face_axis_key in interior_cylinder_keys
+                        )
+                    )
+                )
+            ):
+                if large_exterior_cylinder_neighbors and metrics["diameter_mm"] > 10.0:
+                    largest_neighbor = max(
+                        large_exterior_cylinder_neighbors,
+                        key=lambda neighbor: float(
+                            (_cylindrical_face_metrics(neighbor) or {}).get("diameter_mm") or 0.0
+                        ),
+                    )
+                    merge_key = (
+                        "neighbor",
+                        int(largest_neighbor.get("face_index"))
+                        if isinstance(largest_neighbor.get("face_index"), int)
+                        else face_index,
+                    )
+                else:
+                    merge_key = ("face", face_index)
+                concave_fillet_edge_candidate_groups.setdefault(merge_key, set()).add(face_index)
+
+            simple_partial_curved_cylinder = (
+                simple_planar_cylinder_part
+                and primary_axis is None
+                and 0.2 <= metrics["completeness_ratio"] <= 0.6
+                and len(exterior_planar_neighbors) >= 2
+                and axis_index != dominant_axis_index
+                and (
+                    face_index in hole_face_indices
+                    or face_axis_key in interior_cylinder_keys
+                    or len(interior_planar_neighbors) >= 1
+                    or len(exterior_cylinder_neighbors) >= 1
+                    or (
+                        is_large_profile_edge
+                        and len(exterior_planar_neighbors) >= 6
+                        and metrics["completeness_ratio"] <= 0.35
+                    )
+                )
+            )
+            if face_index in boss_face_indices:
                 continue
             is_off_axis_half_cylinder = (
                 primary_axis is None
@@ -2118,6 +3346,9 @@ def detect_milled_faces_from_face_inventory(
                 and len(exterior_planar_neighbors) + len(interior_planar_neighbors) >= 2
             )
             if is_off_axis_half_cylinder:
+                curved_face_candidates.append(face_index)
+                continue
+            if simple_partial_curved_cylinder:
                 curved_face_candidates.append(face_index)
                 continue
             if (
@@ -2134,12 +3365,15 @@ def detect_milled_faces_from_face_inventory(
                 and axis_span_ratio <= CONCAVE_FILLET_SHORT_CYLINDER_SPAN_RATIO_MAX
             ):
                 continue
-            if _face_axis_line_key(face) in interior_cylinder_keys:
+            if face_index in hole_face_indices:
+                continue
+            if face_axis_key in interior_cylinder_keys:
                 continue
             if axis_index == smallest_axis_index:
                 curved_face_candidates.append(face_index)
 
     curved_face_candidates = sorted(set(curved_face_candidates))
+    circular_milled_candidates = sorted(set(circular_milled_candidates))
     if primary_axis is not None:
         bspline_candidates = [
             face_index
@@ -2166,19 +3400,102 @@ def detect_milled_faces_from_face_inventory(
     turning_moderate_flat_candidates = sorted(set(turning_moderate_flat_candidates))
     curved_face_candidates = sorted(set(curved_face_candidates))
     convex_profile_edge_candidates = sorted(set(convex_profile_edge_candidates))
-    concave_fillet_edge_candidates = sorted(set(concave_fillet_edge_candidates))
-
-    flat_feature_groups = _split_flat_feature_groups(
-        _connected_face_components(flat_face_candidates, face_lookup),
-        face_lookup,
-        bbox_bounds,
+    concave_fillet_edge_feature_groups = sorted(
+        (
+            sorted(indices)
+            for indices in concave_fillet_edge_candidate_groups.values()
+            if indices
+        ),
+        key=lambda group: (group[0], len(group)),
     )
+    concave_fillet_edge_candidates = sorted(
+        {
+            face_index
+            for group in concave_fillet_edge_feature_groups
+            for face_index in group
+        }
+    )
+
+    if simple_planar_cylinder_part and primary_axis is None:
+        flat_feature_groups = _group_flat_planar_features_for_simple_parts(
+            flat_face_candidates,
+            face_lookup,
+            bbox_bounds,
+        )
+    else:
+        flat_feature_groups = _split_flat_feature_groups(
+            _connected_face_components(flat_face_candidates, face_lookup),
+            face_lookup,
+            bbox_bounds,
+        )
     flat_side_feature_groups = _connected_face_components(flat_side_candidates, face_lookup)
     curved_feature_groups = _merge_groups_by_axis_key(
         _connected_face_components(curved_face_candidates, face_lookup),
         face_lookup,
     )
     curved_feature_groups = _split_curved_feature_groups(curved_feature_groups, face_lookup)
+    if (
+        simple_planar_cylinder_part
+        and primary_axis is None
+        and isinstance(pocket_detection, dict)
+        and int(pocket_detection.get("open_pocket_count") or 0) > 0
+    ):
+        partial_hole_face_indices = {
+            int(candidate["face_index"])
+            for candidate in (hole_detection or {}).get("candidates", [])
+            if isinstance(candidate, dict)
+            and candidate.get("subtype") == "partial_hole"
+            and isinstance(candidate.get("face_index"), int)
+        }
+        curved_feature_groups = [
+            [face_index]
+            for face_index in curved_face_candidates
+            if face_index not in partial_hole_face_indices
+        ]
+    elif (
+        simple_planar_cylinder_part
+        and primary_axis is None
+        and isinstance(pocket_detection, dict)
+        and int(pocket_detection.get("open_pocket_count") or 0) == 0
+    ):
+        refined_curved_feature_groups: list[list[int]] = []
+        for group in curved_feature_groups:
+            if len(group) == 3:
+                records = [
+                    face_lookup.get(face_index)
+                    for face_index in group
+                ]
+                if all(
+                    isinstance(record, dict)
+                    and str(record.get("surface_type") or "").strip().lower() == "cylinder"
+                    for record in records
+                ):
+                    ordered = sorted(
+                        (
+                            (
+                                float(record.get("area_mm2") or 0.0),
+                                int(record.get("face_index")),
+                            )
+                            for record in records
+                            if isinstance(record.get("face_index"), int)
+                        ),
+                        reverse=True,
+                    )
+                    if (
+                        len(ordered) == 3
+                        and ordered[0][0] > max(ordered[1][0], 1e-9) * 2.5
+                    ):
+                        dominant_face = ordered[0][1]
+                        residual_faces = sorted(
+                            face_index
+                            for face_index in group
+                            if face_index != dominant_face
+                        )
+                        refined_curved_feature_groups.append([dominant_face])
+                        refined_curved_feature_groups.append(residual_faces)
+                        continue
+            refined_curved_feature_groups.append(group)
+        curved_feature_groups = refined_curved_feature_groups
     turning_moderate_flat_groups = _connected_face_components(
         turning_moderate_flat_candidates,
         face_lookup,
@@ -2188,50 +3505,64 @@ def detect_milled_faces_from_face_inventory(
         flat_milled_face_count = len(flat_feature_groups)
         flat_side_milled_face_count = len(flat_side_candidates)
         curved_milled_face_count = len(curved_feature_groups)
+        circular_milled_face_count = len(circular_milled_candidates)
         count_strategy = {
             "flat": "connected_groups",
             "flat_side": "raw_faces",
             "curved": "connected_groups",
+            "circular": "raw_faces",
         }
     else:
         flat_milled_face_count = len(flat_face_candidates) + len(turning_moderate_flat_groups)
         flat_side_milled_face_count = 0
         curved_milled_face_count = len(curved_face_candidates)
+        circular_milled_face_count = len(circular_milled_candidates)
         count_strategy = {
             "flat": "raw_faces_plus_moderate_groups",
             "flat_side": "disabled_for_turning_part",
             "curved": "filtered_raw_faces",
+            "circular": "raw_faces",
         }
 
     all_face_indices = sorted(
-        set(flat_face_candidates) | set(flat_side_candidates) | set(curved_face_candidates)
+        set(flat_face_candidates)
+        | set(flat_side_candidates)
+        | set(curved_face_candidates)
+        | set(circular_milled_candidates)
     )
     return {
         "milled_face_count": (
-            flat_milled_face_count + flat_side_milled_face_count + curved_milled_face_count
+            flat_milled_face_count
+            + flat_side_milled_face_count
+            + curved_milled_face_count
+            + circular_milled_face_count
         ),
         "flat_milled_face_count": flat_milled_face_count,
         "flat_side_milled_face_count": flat_side_milled_face_count,
         "curved_milled_face_count": curved_milled_face_count,
+        "circular_milled_face_count": circular_milled_face_count,
         "convex_profile_edge_milled_face_count": len(convex_profile_edge_candidates),
-        "concave_fillet_edge_milled_face_count": len(concave_fillet_edge_candidates),
+        "concave_fillet_edge_milled_face_count": len(concave_fillet_edge_feature_groups),
         "face_indices": all_face_indices,
         "flat_milled_face_indices": flat_face_candidates,
         "flat_side_milled_face_indices": flat_side_candidates,
         "curved_milled_face_indices": curved_face_candidates,
+        "circular_milled_face_indices": circular_milled_candidates,
         "convex_profile_edge_milled_face_indices": convex_profile_edge_candidates,
         "concave_fillet_edge_milled_face_indices": concave_fillet_edge_candidates,
         "flat_milled_feature_groups": flat_feature_groups,
         "flat_side_milled_feature_groups": flat_side_feature_groups,
         "curved_milled_feature_groups": curved_feature_groups,
+        "circular_milled_feature_groups": [[face_index] for face_index in circular_milled_candidates],
         "convex_profile_edge_milled_feature_groups": [[face_index] for face_index in convex_profile_edge_candidates],
-        "concave_fillet_edge_milled_feature_groups": [[face_index] for face_index in concave_fillet_edge_candidates],
+        "concave_fillet_edge_milled_feature_groups": concave_fillet_edge_feature_groups,
         "turning_moderate_flat_face_indices": turning_moderate_flat_candidates,
         "turning_moderate_flat_groups": turning_moderate_flat_groups,
         "excluded_turning_deck_faces": excluded_turning_deck_faces,
         "count_strategy": count_strategy,
         "dominant_axis_index": dominant_axis_index,
         "smallest_axis_index": smallest_axis_index,
+        "simple_planar_cylinder_part": simple_planar_cylinder_part,
     }
 
 

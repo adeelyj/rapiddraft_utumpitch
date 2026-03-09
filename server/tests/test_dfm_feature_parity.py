@@ -86,6 +86,36 @@ def test_assess_feature_group_marks_bores_from_specific_count():
     assert assessment["count_comparison"]["alignment"] == "exact_match"
 
 
+def test_assess_feature_group_marks_outer_diameter_grooves_from_specific_count():
+    assessment = assess_feature_group(
+        {
+            "name": "Outer Diameter Groove(s)",
+            "feature_count": 1,
+            "categories": ["outer_diameter_groove_features"],
+        },
+        {"outer_diameter_groove_count": 1, "turned_faces_present": True},
+    )
+
+    assert assessment["status"] == "matched"
+    assert "outer-diameter groove geometry" in assessment["note"].lower()
+    assert assessment["count_comparison"]["alignment"] == "exact_match"
+
+
+def test_assess_feature_group_marks_end_face_grooves_from_specific_count():
+    assessment = assess_feature_group(
+        {
+            "name": "End Face Groove(s)",
+            "feature_count": 1,
+            "categories": ["end_face_groove_features"],
+        },
+        {"end_face_groove_count": 1, "turned_faces_present": True},
+    )
+
+    assert assessment["status"] == "matched"
+    assert "end-face groove geometry" in assessment["note"].lower()
+    assert assessment["count_comparison"]["alignment"] == "exact_match"
+
+
 def test_assess_feature_group_marks_stepped_holes_from_specific_count():
     assessment = assess_feature_group(
         {
