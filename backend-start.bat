@@ -2,7 +2,12 @@
 REM Activate conda env and start backend from project root
 
 REM 1) Activate conda environment
-call conda activate "C:\Users\adeel\OneDrive\100_Knowledge\203_TextCAD\Code\09_SimpltPrompt_Codex_mesh_n_shape2d_occ_mid_iso_drawwithzones_dimension_final"
+set "CONDA_ENV_NAME=textcad"
+call conda activate "%CONDA_ENV_NAME%"
+if errorlevel 1 (
+  echo Failed to activate conda environment "%CONDA_ENV_NAME%".
+  exit /b 1
+)
 
 REM 2) Set FreeCAD environment
 set "FREECAD_LIB=C:\Program Files\FreeCAD 1.0\lib"

@@ -44,6 +44,12 @@ def build_extracted_facts_from_part_facts(
             _merge_fact_value(facts, key, _metric_fact_value(metric))
 
     _derive_hole_features(facts=facts, sections=sections, not_applicable_inputs=not_applicable_inputs)
+    _derive_pocket_features(facts=facts, sections=sections, not_applicable_inputs=not_applicable_inputs)
+    _derive_milled_and_boss_features(
+        facts=facts,
+        sections=sections,
+        not_applicable_inputs=not_applicable_inputs,
+    )
     _derive_wall_thickness_signals(facts=facts, sections=sections, not_applicable_inputs=not_applicable_inputs)
     _derive_pilot_geometry_signals(facts=facts, sections=sections, not_applicable_inputs=not_applicable_inputs)
     _apply_profile_defaults(facts=facts, component_profile=component_profile or {})
@@ -113,6 +119,10 @@ def _derive_hole_features(
     threaded_count = _known_numeric_metric(sections, "manufacturing_signals", "threaded_holes_count")
     if threaded_count is None:
         threaded_count = _known_numeric_metric(sections, "process_inputs", "threaded_holes_count")
+    through_hole_count = _known_numeric_metric(sections, "manufacturing_signals", "through_hole_count")
+    partial_hole_count = _known_numeric_metric(sections, "manufacturing_signals", "partial_hole_count")
+    stepped_hole_count = _known_numeric_metric(sections, "manufacturing_signals", "stepped_hole_count")
+    bore_count = _known_numeric_metric(sections, "manufacturing_signals", "bore_count")
 
     hole_depth_available = _known_truthy_metric(sections, "rule_inputs", "hole_depth")
     hole_diameter_available = _known_truthy_metric(sections, "rule_inputs", "hole_diameter")
@@ -121,12 +131,129 @@ def _derive_hole_features(
         [
             hole_count is not None and hole_count > 0,
             threaded_count is not None and threaded_count > 0,
+            through_hole_count is not None and through_hole_count > 0,
+            partial_hole_count is not None and partial_hole_count > 0,
+            stepped_hole_count is not None and stepped_hole_count > 0,
+            bore_count is not None and bore_count > 0,
             hole_depth_available,
             hole_diameter_available,
         ]
     )
     if has_hole_signals:
         facts.setdefault("hole_features", True)
+    if through_hole_count is not None and through_hole_count > 0:
+        facts.setdefault("through_hole_features", True)
+    if partial_hole_count is not None and partial_hole_count > 0:
+        facts.setdefault("partial_hole_features", True)
+    if stepped_hole_count is not None and stepped_hole_count > 0:
+        facts.setdefault("stepped_hole_features", True)
+    if bore_count is not None and bore_count > 0:
+        facts.setdefault("bore_features", True)
+
+
+def _derive_pocket_features(
+    *,
+    facts: dict[str, Any],
+    sections: dict[str, Any],
+    not_applicable_inputs: set[str],
+) -> None:
+    if "pockets_present" in not_applicable_inputs:
+        return
+
+    pocket_count = _known_numeric_metric(sections, "manufacturing_signals", "pocket_count")
+    open_pocket_count = _known_numeric_metric(sections, "manufacturing_signals", "open_pocket_count")
+    closed_pocket_count = _known_numeric_metric(sections, "manufacturing_signals", "closed_pocket_count")
+    pockets_present = _known_truthy_metric(sections, "manufacturing_signals", "pockets_present")
+
+    if any(
+        [
+            pockets_present,
+            pocket_count is not None and pocket_count > 0,
+            open_pocket_count is not None and open_pocket_count > 0,
+            closed_pocket_count is not None and closed_pocket_count > 0,
+        ]
+    ):
+        facts.setdefault("pockets_present", True)
+    if open_pocket_count is not None and open_pocket_count > 0:
+        facts.setdefault("open_pocket_features", True)
+    if closed_pocket_count is not None and closed_pocket_count > 0:
+        facts.setdefault("closed_pocket_features", True)
+
+
+def _derive_milled_and_boss_features(
+    *,
+    facts: dict[str, Any],
+    sections: dict[str, Any],
+    not_applicable_inputs: set[str],
+) -> None:
+    if "milled_faces_present" not in not_applicable_inputs:
+        milled_face_count = _known_numeric_metric(sections, "manufacturing_signals", "milled_face_count")
+        flat_milled_face_count = _known_numeric_metric(
+            sections,
+            "manufacturing_signals",
+            "flat_milled_face_count",
+        )
+        flat_side_milled_face_count = _known_numeric_metric(
+            sections,
+            "manufacturing_signals",
+            "flat_side_milled_face_count",
+        )
+        curved_milled_face_count = _known_numeric_metric(
+            sections,
+            "manufacturing_signals",
+            "curved_milled_face_count",
+        )
+        convex_profile_edge_milled_face_count = _known_numeric_metric(
+            sections,
+            "manufacturing_signals",
+            "convex_profile_edge_milled_face_count",
+        )
+        concave_fillet_edge_milled_face_count = _known_numeric_metric(
+            sections,
+            "manufacturing_signals",
+            "concave_fillet_edge_milled_face_count",
+        )
+        milled_faces_present = _known_truthy_metric(
+            sections,
+            "manufacturing_signals",
+            "milled_faces_present",
+        )
+        if any(
+            [
+                milled_faces_present,
+                milled_face_count is not None and milled_face_count > 0,
+                flat_milled_face_count is not None and flat_milled_face_count > 0,
+                flat_side_milled_face_count is not None and flat_side_milled_face_count > 0,
+                curved_milled_face_count is not None and curved_milled_face_count > 0,
+                convex_profile_edge_milled_face_count is not None
+                and convex_profile_edge_milled_face_count > 0,
+                concave_fillet_edge_milled_face_count is not None
+                and concave_fillet_edge_milled_face_count > 0,
+            ]
+        ):
+            facts.setdefault("milled_faces_present", True)
+        if flat_milled_face_count is not None and flat_milled_face_count > 0:
+            facts.setdefault("flat_milled_faces_present", True)
+        if flat_side_milled_face_count is not None and flat_side_milled_face_count > 0:
+            facts.setdefault("flat_side_milled_faces_present", True)
+        if curved_milled_face_count is not None and curved_milled_face_count > 0:
+            facts.setdefault("curved_milled_faces_present", True)
+        if (
+            convex_profile_edge_milled_face_count is not None
+            and convex_profile_edge_milled_face_count > 0
+        ):
+            facts.setdefault("convex_profile_edge_milled_faces_present", True)
+        if (
+            concave_fillet_edge_milled_face_count is not None
+            and concave_fillet_edge_milled_face_count > 0
+        ):
+            facts.setdefault("concave_fillet_edge_milled_faces_present", True)
+
+    if "boss_features" in not_applicable_inputs:
+        return
+    boss_count = _known_numeric_metric(sections, "manufacturing_signals", "boss_count")
+    if boss_count is not None and boss_count > 0:
+        facts.setdefault("boss_features", True)
 
 
 def _derive_wall_thickness_signals(

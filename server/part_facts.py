@@ -71,7 +71,7 @@ def _safe_optional_int(value: Any) -> int | None:
 
 
 class PartFactsService:
-    SCHEMA_VERSION = "1.2.0"
+    SCHEMA_VERSION = "1.7.0"
 
     def __init__(
         self,
@@ -381,6 +381,209 @@ class PartFactsService:
             )
 
         try:
+            feature_inventory_payload = self.geometry_analyzer.inspect_feature_inventory(
+                step_path=step_path,
+                component_node_name=component_node_name,
+            )
+        except Exception:
+            feature_inventory_payload = {}
+
+        turning_detection = (
+            feature_inventory_payload.get("turning_detection", {})
+            if isinstance(feature_inventory_payload, dict)
+            else {}
+        )
+        hole_detection = (
+            feature_inventory_payload.get("hole_detection", {})
+            if isinstance(feature_inventory_payload, dict)
+            else {}
+        )
+        pocket_detection = (
+            feature_inventory_payload.get("pocket_detection", {})
+            if isinstance(feature_inventory_payload, dict)
+            else {}
+        )
+        boss_detection = (
+            feature_inventory_payload.get("boss_detection", {})
+            if isinstance(feature_inventory_payload, dict)
+            else {}
+        )
+        milled_face_detection = (
+            feature_inventory_payload.get("milled_face_detection", {})
+            if isinstance(feature_inventory_payload, dict)
+            else {}
+        )
+
+        if isinstance(turning_detection, dict) and turning_detection:
+            rotational_symmetry = bool(turning_detection.get("rotational_symmetry"))
+            turned_faces_present = bool(turning_detection.get("turned_faces_present"))
+            turned_face_count = _safe_optional_int(turning_detection.get("turned_face_count")) or 0
+            turned_diameter_faces_count = (
+                _safe_optional_int(turning_detection.get("turned_diameter_faces_count")) or 0
+            )
+            turned_end_faces_count = (
+                _safe_optional_int(turning_detection.get("turned_end_faces_count")) or 0
+            )
+            turned_profile_faces_count = (
+                _safe_optional_int(turning_detection.get("turned_profile_faces_count")) or 0
+            )
+            sections["manufacturing_signals"]["rotational_symmetry"] = _metric(
+                label="Rotational symmetry detected",
+                value=rotational_symmetry,
+                unit=None,
+                state="inferred",
+                confidence=0.8 if rotational_symmetry else 0.65,
+                source="occ.face_inventory.turning_detection",
+            )
+            sections["manufacturing_signals"]["turned_faces_present"] = _metric(
+                label="Turned faces present",
+                value=turned_faces_present,
+                unit=None,
+                state="inferred",
+                confidence=0.8 if turned_faces_present else 0.65,
+                source="occ.face_inventory.turning_detection",
+            )
+            sections["manufacturing_signals"]["turned_face_count"] = _metric(
+                label="Turned face count",
+                value=turned_face_count,
+                unit=None,
+                state="inferred",
+                confidence=0.8 if turned_face_count > 0 else 0.65,
+                source="occ.face_inventory.turning_detection",
+            )
+            sections["manufacturing_signals"]["turned_diameter_faces_count"] = _metric(
+                label="Turned diameter face count",
+                value=turned_diameter_faces_count,
+                unit=None,
+                state="inferred",
+                confidence=0.8 if turned_diameter_faces_count > 0 else 0.65,
+                source="occ.face_inventory.turning_detection",
+            )
+            sections["manufacturing_signals"]["turned_end_faces_count"] = _metric(
+                label="Turned end face count",
+                value=turned_end_faces_count,
+                unit=None,
+                state="inferred",
+                confidence=0.8 if turned_end_faces_count > 0 else 0.65,
+                source="occ.face_inventory.turning_detection",
+            )
+            sections["manufacturing_signals"]["turned_profile_faces_count"] = _metric(
+                label="Turned profile face count",
+                value=turned_profile_faces_count,
+                unit=None,
+                state="inferred",
+                confidence=0.8 if turned_profile_faces_count > 0 else 0.65,
+                source="occ.face_inventory.turning_detection",
+            )
+            sections["process_inputs"]["rotational_symmetry"] = _metric(
+                label="Rotational symmetry",
+                value=rotational_symmetry,
+                unit=None,
+                state="inferred",
+                confidence=0.8 if rotational_symmetry else 0.65,
+                source="occ.face_inventory.turning_detection",
+            )
+            sections["process_inputs"]["turned_faces_present"] = _metric(
+                label="Turned faces present",
+                value=turned_faces_present,
+                unit=None,
+                state="inferred",
+                confidence=0.8 if turned_faces_present else 0.65,
+                source="occ.face_inventory.turning_detection",
+            )
+
+        if isinstance(boss_detection, dict) and boss_detection:
+            boss_count = _safe_optional_int(boss_detection.get("boss_count")) or 0
+            sections["manufacturing_signals"]["boss_count"] = _metric(
+                label="Boss count",
+                value=boss_count,
+                unit=None,
+                state="inferred",
+                confidence=0.75 if boss_count > 0 else 0.6,
+                source="occ.face_inventory.boss_detection",
+            )
+
+        if isinstance(milled_face_detection, dict) and milled_face_detection:
+            milled_face_count = _safe_optional_int(milled_face_detection.get("milled_face_count")) or 0
+            flat_milled_face_count = (
+                _safe_optional_int(milled_face_detection.get("flat_milled_face_count")) or 0
+            )
+            flat_side_milled_face_count = (
+                _safe_optional_int(milled_face_detection.get("flat_side_milled_face_count")) or 0
+            )
+            curved_milled_face_count = (
+                _safe_optional_int(milled_face_detection.get("curved_milled_face_count")) or 0
+            )
+            convex_profile_edge_milled_face_count = (
+                _safe_optional_int(
+                    milled_face_detection.get("convex_profile_edge_milled_face_count")
+                )
+                or 0
+            )
+            concave_fillet_edge_milled_face_count = (
+                _safe_optional_int(
+                    milled_face_detection.get("concave_fillet_edge_milled_face_count")
+                )
+                or 0
+            )
+            sections["manufacturing_signals"]["milled_faces_present"] = _metric(
+                label="Milled faces present",
+                value=milled_face_count > 0,
+                unit=None,
+                state="inferred",
+                confidence=0.75 if milled_face_count > 0 else 0.6,
+                source="occ.face_inventory.milled_face_detection",
+            )
+            sections["manufacturing_signals"]["milled_face_count"] = _metric(
+                label="Milled face count",
+                value=milled_face_count,
+                unit=None,
+                state="inferred",
+                confidence=0.75 if milled_face_count > 0 else 0.6,
+                source="occ.face_inventory.milled_face_detection",
+            )
+            sections["manufacturing_signals"]["flat_milled_face_count"] = _metric(
+                label="Flat milled face count",
+                value=flat_milled_face_count,
+                unit=None,
+                state="inferred",
+                confidence=0.75 if flat_milled_face_count > 0 else 0.6,
+                source="occ.face_inventory.milled_face_detection",
+            )
+            sections["manufacturing_signals"]["flat_side_milled_face_count"] = _metric(
+                label="Flat side milled face count",
+                value=flat_side_milled_face_count,
+                unit=None,
+                state="inferred",
+                confidence=0.75 if flat_side_milled_face_count > 0 else 0.6,
+                source="occ.face_inventory.milled_face_detection",
+            )
+            sections["manufacturing_signals"]["curved_milled_face_count"] = _metric(
+                label="Curved milled face count",
+                value=curved_milled_face_count,
+                unit=None,
+                state="inferred",
+                confidence=0.75 if curved_milled_face_count > 0 else 0.6,
+                source="occ.face_inventory.milled_face_detection",
+            )
+            sections["manufacturing_signals"]["convex_profile_edge_milled_face_count"] = _metric(
+                label="Convex profile edge milled face count",
+                value=convex_profile_edge_milled_face_count,
+                unit=None,
+                state="inferred",
+                confidence=0.75 if convex_profile_edge_milled_face_count > 0 else 0.6,
+                source="occ.face_inventory.milled_face_detection",
+            )
+            sections["manufacturing_signals"]["concave_fillet_edge_milled_face_count"] = _metric(
+                label="Concave fillet edge milled face count",
+                value=concave_fillet_edge_milled_face_count,
+                unit=None,
+                state="inferred",
+                confidence=0.75 if concave_fillet_edge_milled_face_count > 0 else 0.6,
+                source="occ.face_inventory.milled_face_detection",
+            )
+
+        try:
             cnc_payload = analyzer.analyze(
                 step_path=step_path,
                 component_node_name=component_node_name,
@@ -425,6 +628,14 @@ class PartFactsService:
         ok_count = _safe_optional_int(summary.get("ok_count")) or 0
         corner_count = len(corners)
         feature_complexity = min(100, critical_count * 3 + warning_count * 2 + caution_count)
+        pocket_count = 0
+        open_pocket_count = 0
+        closed_pocket_count = 0
+        if isinstance(pocket_detection, dict) and pocket_detection:
+            pocket_count = _safe_optional_int(pocket_detection.get("pocket_count")) or 0
+            open_pocket_count = _safe_optional_int(pocket_detection.get("open_pocket_count")) or 0
+            closed_pocket_count = _safe_optional_int(pocket_detection.get("closed_pocket_count")) or 0
+        pockets_present = corner_count > 0 or pocket_count > 0
 
         sections["manufacturing_signals"]["corner_count"] = _metric(
             label="Detected corner count",
@@ -476,11 +687,35 @@ class PartFactsService:
         )
         sections["manufacturing_signals"]["pockets_present"] = _metric(
             label="Pockets/slotted corners detected",
-            value=corner_count > 0,
+            value=pockets_present,
             unit=None,
             state="inferred",
-            confidence=0.7,
-            source="cnc_geometry_occ",
+            confidence=0.78 if pocket_count > 0 else 0.7,
+            source="occ.face_inventory.pocket_detection" if pocket_count > 0 else "cnc_geometry_occ",
+        )
+        sections["manufacturing_signals"]["pocket_count"] = _metric(
+            label="Pocket count",
+            value=pocket_count if pocket_count > 0 else (1 if corner_count > 0 else 0),
+            unit=None,
+            state="inferred",
+            confidence=0.75 if pocket_count > 0 else 0.6,
+            source="occ.face_inventory.pocket_detection" if pocket_count > 0 else "cnc_geometry_occ",
+        )
+        sections["manufacturing_signals"]["open_pocket_count"] = _metric(
+            label="Open pocket count",
+            value=open_pocket_count,
+            unit=None,
+            state="inferred",
+            confidence=0.78 if open_pocket_count > 0 else 0.6,
+            source="occ.face_inventory.pocket_detection",
+        )
+        sections["manufacturing_signals"]["closed_pocket_count"] = _metric(
+            label="Closed pocket count",
+            value=closed_pocket_count,
+            unit=None,
+            state="inferred",
+            confidence=0.78 if closed_pocket_count > 0 else 0.6,
+            source="occ.face_inventory.pocket_detection",
         )
         sections["manufacturing_signals"]["feature_complexity_score"] = _metric(
             label="Feature complexity score",
@@ -583,11 +818,11 @@ class PartFactsService:
 
         sections["rule_inputs"]["geometry_features"] = _metric(
             label="Geometry feature map available",
-            value=corner_count > 0,
+            value=pockets_present,
             unit=None,
             state="inferred",
-            confidence=0.7,
-            source="cnc_geometry_occ",
+            confidence=0.75 if pocket_count > 0 else 0.7,
+            source="occ.face_inventory.pocket_detection" if pocket_count > 0 else "cnc_geometry_occ",
         )
         sections["rule_inputs"]["part_bounding_box"] = _metric(
             label="Part bounding box available",
@@ -600,11 +835,11 @@ class PartFactsService:
 
         sections["process_inputs"]["pockets_present"] = _metric(
             label="Pockets present",
-            value=corner_count > 0,
+            value=pockets_present,
             unit=None,
             state="inferred",
-            confidence=0.7,
-            source="cnc_geometry_occ",
+            confidence=0.78 if pocket_count > 0 else 0.7,
+            source="occ.face_inventory.pocket_detection" if pocket_count > 0 else "cnc_geometry_occ",
         )
         sections["process_inputs"]["bbox_dimensions"] = _metric(
             label="Bounding-box dimensions available",
@@ -623,10 +858,14 @@ class PartFactsService:
             source="cnc_geometry_occ.summary",
         )
 
-        cylindrical_metrics = self._extract_cylindrical_feature_metrics(
-            occ=occ,
-            shape=analysis_shape,
-            bbox_dims=(dx, dy, dz),
+        cylindrical_metrics = (
+            hole_detection
+            if isinstance(hole_detection, dict) and hole_detection
+            else self._extract_cylindrical_feature_metrics(
+                occ=occ,
+                shape=analysis_shape,
+                bbox_dims=(dx, dy, dz),
+            )
         )
         if cylindrical_metrics:
             hole_count = cylindrical_metrics.get("hole_count")
@@ -637,7 +876,7 @@ class PartFactsService:
                     unit=None,
                     state="measured",
                     confidence=0.65,
-                    source="occ.cylindrical_faces",
+                    source="occ.face_inventory.hole_detection",
                 )
                 sections["rule_inputs"]["hole_features"] = _metric(
                     label="Hole features available",
@@ -645,7 +884,51 @@ class PartFactsService:
                     unit=None,
                     state="measured",
                     confidence=0.65,
-                    source="occ.cylindrical_faces",
+                    source="occ.face_inventory.hole_detection",
+                )
+
+            through_hole_count = cylindrical_metrics.get("through_hole_count")
+            if isinstance(through_hole_count, int) and through_hole_count >= 0:
+                sections["manufacturing_signals"]["through_hole_count"] = _metric(
+                    label="Through-hole count",
+                    value=through_hole_count,
+                    unit=None,
+                    state="measured",
+                    confidence=0.7,
+                    source="occ.face_inventory.hole_detection",
+                )
+
+            partial_hole_count = cylindrical_metrics.get("partial_hole_count")
+            if isinstance(partial_hole_count, int) and partial_hole_count >= 0:
+                sections["manufacturing_signals"]["partial_hole_count"] = _metric(
+                    label="Partial-hole count",
+                    value=partial_hole_count,
+                    unit=None,
+                    state="measured",
+                    confidence=0.7,
+                    source="occ.face_inventory.hole_detection",
+                )
+
+            stepped_hole_count = cylindrical_metrics.get("stepped_hole_count")
+            if isinstance(stepped_hole_count, int) and stepped_hole_count >= 0:
+                sections["manufacturing_signals"]["stepped_hole_count"] = _metric(
+                    label="Stepped-hole count",
+                    value=stepped_hole_count,
+                    unit=None,
+                    state="measured",
+                    confidence=0.72,
+                    source="occ.face_inventory.hole_detection",
+                )
+
+            bore_count = cylindrical_metrics.get("bore_count")
+            if isinstance(bore_count, int) and bore_count >= 0:
+                sections["manufacturing_signals"]["bore_count"] = _metric(
+                    label="Bore count",
+                    value=bore_count,
+                    unit=None,
+                    state="measured",
+                    confidence=0.72,
+                    source="occ.face_inventory.hole_detection",
                 )
 
             min_hole_diameter = cylindrical_metrics.get("min_hole_diameter_mm")
@@ -656,7 +939,7 @@ class PartFactsService:
                     unit="mm",
                     state="measured",
                     confidence=0.65,
-                    source="occ.cylindrical_faces",
+                    source="occ.face_inventory.hole_detection",
                 )
                 sections["rule_inputs"]["hole_diameter"] = _metric(
                     label="Hole diameter",
@@ -664,7 +947,7 @@ class PartFactsService:
                     unit="mm",
                     state="measured",
                     confidence=0.65,
-                    source="occ.cylindrical_faces",
+                    source="occ.face_inventory.hole_detection",
                 )
 
             max_hole_depth = cylindrical_metrics.get("max_hole_depth_mm")
@@ -675,7 +958,7 @@ class PartFactsService:
                     unit="mm",
                     state="measured",
                     confidence=0.6,
-                    source="occ.cylindrical_faces",
+                    source="occ.face_inventory.hole_detection",
                 )
                 sections["rule_inputs"]["hole_depth"] = _metric(
                     label="Hole depth",
@@ -683,7 +966,7 @@ class PartFactsService:
                     unit="mm",
                     state="measured",
                     confidence=0.6,
-                    source="occ.cylindrical_faces",
+                    source="occ.face_inventory.hole_detection",
                 )
 
             threaded_holes_count = cylindrical_metrics.get("threaded_holes_count")
@@ -694,7 +977,7 @@ class PartFactsService:
                     unit=None,
                     state="inferred",
                     confidence=0.45,
-                    source="occ.cylindrical_faces.heuristic",
+                    source="occ.face_inventory.hole_detection",
                     reason="heuristic from hole geometry; validate via drawing callouts for release.",
                 )
                 sections["process_inputs"]["threaded_holes_count"] = _metric(
@@ -703,7 +986,7 @@ class PartFactsService:
                     unit=None,
                     state="inferred",
                     confidence=0.45,
-                    source="occ.cylindrical_faces.heuristic",
+                    source="occ.face_inventory.hole_detection",
                 )
 
         wall_thickness = self._estimate_min_wall_thickness_mm(
@@ -739,15 +1022,15 @@ class PartFactsService:
 
     def _mass_properties(self, shape) -> tuple[float | None, float | None]:
         try:
-            from OCC.Core.BRepGProp import brepgprop_SurfaceProperties, brepgprop_VolumeProperties
+            from OCC.Core.BRepGProp import brepgprop
             from OCC.Core.GProp import GProp_GProps
 
             volume_props = GProp_GProps()
-            brepgprop_VolumeProperties(shape, volume_props)
+            brepgprop.VolumeProperties(shape, volume_props)
             volume = float(volume_props.Mass())
 
             surface_props = GProp_GProps()
-            brepgprop_SurfaceProperties(shape, surface_props)
+            brepgprop.SurfaceProperties(shape, surface_props)
             surface_area = float(surface_props.Mass())
             return volume, surface_area
         except Exception:
@@ -934,13 +1217,38 @@ class PartFactsService:
             "max_pocket_depth_mm": _metric(label="Maximum pocket depth", unit="mm"),
             "max_depth_to_radius_ratio": _metric(label="Maximum depth/radius ratio"),
             "long_reach_tool_risk_count": _metric(label="Long-reach risk count"),
+            "pocket_count": _metric(label="Pocket count"),
+            "open_pocket_count": _metric(label="Open pocket count"),
+            "closed_pocket_count": _metric(label="Closed pocket count"),
             "pockets_present": _metric(label="Pockets/slotted corners detected"),
             "feature_complexity_score": _metric(label="Feature complexity score"),
             "min_wall_thickness_mm": _metric(label="Minimum wall thickness", unit="mm"),
             "hole_count": _metric(label="Hole count"),
+            "through_hole_count": _metric(label="Through-hole count"),
+            "partial_hole_count": _metric(label="Partial-hole count"),
+            "stepped_hole_count": _metric(label="Stepped-hole count"),
+            "bore_count": _metric(label="Bore count"),
             "threaded_holes_count": _metric(label="Threaded hole count"),
             "min_hole_diameter_mm": _metric(label="Minimum hole diameter", unit="mm"),
             "max_hole_depth_mm": _metric(label="Maximum hole depth", unit="mm"),
+            "rotational_symmetry": _metric(label="Rotational symmetry detected"),
+            "turned_faces_present": _metric(label="Turned faces present"),
+            "turned_face_count": _metric(label="Turned face count"),
+            "turned_diameter_faces_count": _metric(label="Turned diameter face count"),
+            "turned_end_faces_count": _metric(label="Turned end face count"),
+            "turned_profile_faces_count": _metric(label="Turned profile face count"),
+            "boss_count": _metric(label="Boss count"),
+            "milled_faces_present": _metric(label="Milled faces present"),
+            "milled_face_count": _metric(label="Milled face count"),
+            "flat_milled_face_count": _metric(label="Flat milled face count"),
+            "flat_side_milled_face_count": _metric(label="Flat side milled face count"),
+            "curved_milled_face_count": _metric(label="Curved milled face count"),
+            "convex_profile_edge_milled_face_count": _metric(
+                label="Convex profile edge milled face count"
+            ),
+            "concave_fillet_edge_milled_face_count": _metric(
+                label="Concave fillet edge milled face count"
+            ),
             "unique_internal_radius_count": _metric(label="Unique internal radius count"),
             "radius_variation_ratio": _metric(label="Internal radius variation ratio"),
         }

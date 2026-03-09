@@ -1,0 +1,43 @@
+{
+  "benchmark_name": "dfm_mtk_benchmark",
+  "benchmark_version": "1.0",
+  "created_utc": "2026-03-04T00:00:00Z",
+  "dataset_root": "benchmark_data/dfm_mtk",
+  "cases_root": "benchmark_data/dfm_mtk/cases",
+  "output_root": "output/dfm_mtk_benchmark",
+  "defaults": {
+    "selected_role": "general_dfm",
+    "selected_template": "executive_1page",
+    "selected_overlay": null,
+    "run_both_if_mismatch": true,
+    "analysis_mode_for_logic_only": "full",
+    "analysis_mode_for_end_to_end": "full"
+  },
+  "modes": {
+    "run_logic_only": true,
+    "run_end_to_end": true
+  },
+  "normalization": {
+    "severity_map": {
+      "critical": ["critical", "blocker", "fatal"],
+      "major": ["major", "high"],
+      "minor": ["minor", "medium", "low", "info"]
+    }
+  },
+  "cases": [
+    {
+      "case_id": "case_001",
+      "label": "replace_with_part_name",
+      "step_file": "benchmark_data/dfm_mtk/cases/case_001/part.step",
+      "cadex_features_file": "benchmark_data/dfm_mtk/cases/case_001/cadex_features.json",
+      "cadex_dfm_file": "benchmark_data/dfm_mtk/cases/case_001/cadex_dfm.json",
+      "component_node_name": null,
+      "component_profile": {
+        "material": "",
+        "manufacturingProcess": "",
+        "industry": ""
+      },
+      "context_overrides": {}
+    }
+  ]
+}
