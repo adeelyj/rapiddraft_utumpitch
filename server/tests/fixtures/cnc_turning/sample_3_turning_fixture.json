@@ -1,0 +1,875 @@
+﻿{
+    "case_id":  "sample_3",
+    "source_step":  "benchmark_data/dfm_mtk/cases/sample 3/sample 3.stp",
+    "bbox_bounds":  [
+                        -132.0000001,
+                        -1.0000000251214793E-07,
+                        -30.00000009999999,
+                        1.0000001977033039E-07,
+                        20.0000001,
+                        30.00000009999999
+                    ],
+    "face_inventory":  [
+                           {
+                               "face_index":  8,
+                               "surface_type":  "cylinder",
+                               "area_mm2":  117.841,
+                               "bbox_bounds":  [
+                                                   -32.3941,
+                                                   5.0,
+                                                   -7.0,
+                                                   -25.0,
+                                                   15.0,
+                                                   7.0
+                                               ],
+                               "centroid_mm":  [
+                                                   -27.855,
+                                                   12.3327,
+                                                   0.0
+                                               ],
+                               "sample_point_mm":  [
+                                                       -25.0,
+                                                       12.5,
+                                                       0.0
+                                                   ],
+                               "sample_normal":  [
+                                                     1.0,
+                                                     0.0,
+                                                     0.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  [
+                                                      0.0,
+                                                      1.0,
+                                                      0.0
+                                                  ],
+                               "axis_origin":  [
+                                                   -32.0,
+                                                   20.0,
+                                                   0.0
+                                               ],
+                               "axial_span_mm":  10.0,
+                               "adjacent_face_indices":  [
+                                                             10,
+                                                             11,
+                                                             14,
+                                                             16,
+                                                             25,
+                                                             26,
+                                                             27,
+                                                             32
+                                                         ]
+                           },
+                           {
+                               "face_index":  12,
+                               "surface_type":  "plane",
+                               "area_mm2":  275.6748,
+                               "bbox_bounds":  [
+                                                   -132.0,
+                                                   0.0,
+                                                   -12.0,
+                                                   -108.0,
+                                                   0.0,
+                                                   12.0
+                                               ],
+                               "centroid_mm":  [
+                                                   -120.0,
+                                                   0.0,
+                                                   0.0
+                                               ],
+                               "sample_point_mm":  [
+                                                       -126.0,
+                                                       0.0,
+                                                       -6.0
+                                                   ],
+                               "sample_normal":  [
+                                                     0.0,
+                                                     1.0,
+                                                     0.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  null,
+                               "axis_origin":  null,
+                               "axial_span_mm":  null,
+                               "adjacent_face_indices":  [
+                                                             17,
+                                                             22
+                                                         ]
+                           },
+                           {
+                               "face_index":  13,
+                               "surface_type":  "plane",
+                               "area_mm2":  275.6748,
+                               "bbox_bounds":  [
+                                                   -132.0,
+                                                   20.0,
+                                                   -12.0,
+                                                   -108.0,
+                                                   20.0,
+                                                   12.0
+                                               ],
+                               "centroid_mm":  [
+                                                   -120.0,
+                                                   20.0,
+                                                   0.0
+                                               ],
+                               "sample_point_mm":  [
+                                                       -126.0,
+                                                       20.0,
+                                                       -6.0
+                                                   ],
+                               "sample_normal":  [
+                                                     0.0,
+                                                     1.0,
+                                                     0.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  null,
+                               "axis_origin":  null,
+                               "axial_span_mm":  null,
+                               "adjacent_face_indices":  [
+                                                             17,
+                                                             22
+                                                         ]
+                           },
+                           {
+                               "face_index":  15,
+                               "surface_type":  "cylinder",
+                               "area_mm2":  78.5398,
+                               "bbox_bounds":  [
+                                                   -108.0,
+                                                   10.0,
+                                                   -5.0,
+                                                   -103.0,
+                                                   15.0,
+                                                   5.0
+                                               ],
+                               "centroid_mm":  [
+                                                   -106.1831,
+                                                   12.5,
+                                                   0.0
+                                               ],
+                               "sample_point_mm":  [
+                                                       -108.0,
+                                                       12.5,
+                                                       0.0
+                                                   ],
+                               "sample_normal":  [
+                                                     -1.0,
+                                                     0.0,
+                                                     0.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  [
+                                                      0.0,
+                                                      1.0,
+                                                      0.0
+                                                  ],
+                               "axis_origin":  [
+                                                   -103.0,
+                                                   10.0,
+                                                   0.0
+                                               ],
+                               "axial_span_mm":  5.0,
+                               "adjacent_face_indices":  [
+                                                             14,
+                                                             16,
+                                                             25,
+                                                             26,
+                                                             27
+                                                         ]
+                           },
+                           {
+                               "face_index":  17,
+                               "surface_type":  "cylinder",
+                               "area_mm2":  1343.2163,
+                               "bbox_bounds":  [
+                                                   -132.0,
+                                                   0.0,
+                                                   -12.0,
+                                                   -108.0,
+                                                   20.0,
+                                                   12.0
+                                               ],
+                               "centroid_mm":  [
+                                                   -121.3589,
+                                                   10.0,
+                                                   0.0
+                                               ],
+                               "sample_point_mm":  [
+                                                       -120.0,
+                                                       10.0,
+                                                       -12.0
+                                                   ],
+                               "sample_normal":  [
+                                                     0.0,
+                                                     0.0,
+                                                     -1.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  [
+                                                      0.0,
+                                                      1.0,
+                                                      0.0
+                                                  ],
+                               "axis_origin":  [
+                                                   -120.0,
+                                                   20.0,
+                                                   0.0
+                                               ],
+                               "axial_span_mm":  20.0,
+                               "adjacent_face_indices":  [
+                                                             1,
+                                                             2,
+                                                             12,
+                                                             13,
+                                                             26,
+                                                             27,
+                                                             32
+                                                         ]
+                           },
+                           {
+                               "face_index":  19,
+                               "surface_type":  "cylinder",
+                               "area_mm2":  773.5725,
+                               "bbox_bounds":  [
+                                                   -13.6798,
+                                                   1.0,
+                                                   -13.6798,
+                                                   0.0,
+                                                   19.0,
+                                                   13.6798
+                                               ],
+                               "centroid_mm":  [
+                                                   -8.7088,
+                                                   10.0,
+                                                   0.0
+                                               ],
+                               "sample_point_mm":  [
+                                                       -13.6798,
+                                                       10.0,
+                                                       0.0
+                                                   ],
+                               "sample_normal":  [
+                                                     -1.0,
+                                                     0.0,
+                                                     0.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  [
+                                                      0.0,
+                                                      1.0,
+                                                      0.0
+                                                  ],
+                               "axis_origin":  [
+                                                   0.0,
+                                                   20.0,
+                                                   0.0
+                                               ],
+                               "axial_span_mm":  18.0,
+                               "adjacent_face_indices":  [
+                                                             18,
+                                                             20,
+                                                             35,
+                                                             36
+                                                         ]
+                           },
+                           {
+                               "face_index":  21,
+                               "surface_type":  "cylinder",
+                               "area_mm2":  1003.1317,
+                               "bbox_bounds":  [
+                                                   -25.0,
+                                                   0.0,
+                                                   -25.0,
+                                                   0.0,
+                                                   20.0,
+                                                   25.0
+                                               ],
+                               "centroid_mm":  [
+                                                   -15.9443,
+                                                   10.0,
+                                                   -0.0002
+                                               ],
+                               "sample_point_mm":  [
+                                                       -25.0,
+                                                       15.0,
+                                                       0.0
+                                                   ],
+                               "sample_normal":  [
+                                                     -1.0,
+                                                     0.0,
+                                                     0.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  [
+                                                      0.0,
+                                                      1.0,
+                                                      0.0
+                                                  ],
+                               "axis_origin":  [
+                                                   0.0,
+                                                   20.0,
+                                                   0.0
+                                               ],
+                               "axial_span_mm":  20.0,
+                               "adjacent_face_indices":  [
+                                                             3,
+                                                             4,
+                                                             7,
+                                                             9,
+                                                             18,
+                                                             20,
+                                                             23,
+                                                             24,
+                                                             26,
+                                                             27,
+                                                             28,
+                                                             29,
+                                                             30,
+                                                             31,
+                                                             32,
+                                                             33,
+                                                             34
+                                                         ]
+                           },
+                           {
+                               "face_index":  23,
+                               "surface_type":  "plane",
+                               "area_mm2":  643.2482,
+                               "bbox_bounds":  [
+                                                   -25.0,
+                                                   20.0,
+                                                   -25.0,
+                                                   0.0,
+                                                   20.0,
+                                                   25.0
+                                               ],
+                               "centroid_mm":  [
+                                                   -12.9153,
+                                                   20.0,
+                                                   0.0
+                                               ],
+                               "sample_point_mm":  [
+                                                       -18.75,
+                                                       20.0,
+                                                       0.0
+                                                   ],
+                               "sample_normal":  [
+                                                     0.0,
+                                                     1.0,
+                                                     0.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  null,
+                               "axis_origin":  null,
+                               "axial_span_mm":  null,
+                               "adjacent_face_indices":  [
+                                                             18,
+                                                             20,
+                                                             21,
+                                                             36
+                                                         ]
+                           },
+                           {
+                               "face_index":  24,
+                               "surface_type":  "plane",
+                               "area_mm2":  643.2482,
+                               "bbox_bounds":  [
+                                                   -25.0,
+                                                   0.0,
+                                                   -25.0,
+                                                   0.0,
+                                                   0.0,
+                                                   25.0
+                                               ],
+                               "centroid_mm":  [
+                                                   -12.9153,
+                                                   0.0,
+                                                   0.0
+                                               ],
+                               "sample_point_mm":  [
+                                                       -18.75,
+                                                       0.0,
+                                                       0.0
+                                                   ],
+                               "sample_normal":  [
+                                                     0.0,
+                                                     1.0,
+                                                     0.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  null,
+                               "axis_origin":  null,
+                               "axial_span_mm":  null,
+                               "adjacent_face_indices":  [
+                                                             18,
+                                                             20,
+                                                             21,
+                                                             35
+                                                         ]
+                           },
+                           {
+                               "face_index":  25,
+                               "surface_type":  "plane",
+                               "area_mm2":  968.2389,
+                               "bbox_bounds":  [
+                                                   -108.0,
+                                                   10.0,
+                                                   -7.0,
+                                                   -25.0,
+                                                   10.0,
+                                                   7.0
+                                               ],
+                               "centroid_mm":  [
+                                                   -64.2322,
+                                                   10.0,
+                                                   0.0
+                                               ],
+                               "sample_point_mm":  [
+                                                       -66.5,
+                                                       10.0,
+                                                       0.0
+                                                   ],
+                               "sample_normal":  [
+                                                     0.0,
+                                                     1.0,
+                                                     0.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  null,
+                               "axis_origin":  null,
+                               "axial_span_mm":  null,
+                               "adjacent_face_indices":  [
+                                                             8,
+                                                             10,
+                                                             11,
+                                                             14,
+                                                             15,
+                                                             16
+                                                         ]
+                           },
+                           {
+                               "face_index":  26,
+                               "surface_type":  "plane",
+                               "area_mm2":  279.8657,
+                               "bbox_bounds":  [
+                                                   -110.718,
+                                                   15.0,
+                                                   0.0,
+                                                   -20.0,
+                                                   15.0,
+                                                   15.0
+                                               ],
+                               "centroid_mm":  [
+                                                   -63.1275,
+                                                   15.0,
+                                                   7.504
+                                               ],
+                               "sample_point_mm":  [
+                                                       -65.359,
+                                                       15.0,
+                                                       7.5
+                                                   ],
+                               "sample_normal":  [
+                                                     0.0,
+                                                     1.0,
+                                                     0.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  null,
+                               "axis_origin":  null,
+                               "axial_span_mm":  null,
+                               "adjacent_face_indices":  [
+                                                             2,
+                                                             3,
+                                                             8,
+                                                             14,
+                                                             15,
+                                                             17,
+                                                             21
+                                                         ]
+                           },
+                           {
+                               "face_index":  27,
+                               "surface_type":  "plane",
+                               "area_mm2":  349.7662,
+                               "bbox_bounds":  [
+                                                   -110.718,
+                                                   15.0,
+                                                   -15.0,
+                                                   -20.0,
+                                                   15.0,
+                                                   0.0
+                                               ],
+                               "centroid_mm":  [
+                                                   -61.218,
+                                                   15.0,
+                                                   -7.9817
+                                               ],
+                               "sample_point_mm":  [
+                                                       -65.359,
+                                                       15.0,
+                                                       -7.5
+                                                   ],
+                               "sample_normal":  [
+                                                     0.0,
+                                                     1.0,
+                                                     0.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  null,
+                               "axis_origin":  null,
+                               "axial_span_mm":  null,
+                               "adjacent_face_indices":  [
+                                                             1,
+                                                             8,
+                                                             9,
+                                                             15,
+                                                             16,
+                                                             17,
+                                                             21
+                                                         ]
+                           },
+                           {
+                               "face_index":  28,
+                               "surface_type":  "plane",
+                               "area_mm2":  56.8366,
+                               "bbox_bounds":  [
+                                                   -10.0,
+                                                   15.0,
+                                                   22.9129,
+                                                   0.0,
+                                                   15.0,
+                                                   30.0
+                                               ],
+                               "centroid_mm":  [
+                                                   -5.3033,
+                                                   15.0,
+                                                   27.1245
+                                               ],
+                               "sample_point_mm":  [
+                                                       -5.0,
+                                                       15.0,
+                                                       26.4564
+                                                   ],
+                               "sample_normal":  [
+                                                     0.0,
+                                                     1.0,
+                                                     0.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  null,
+                               "axis_origin":  null,
+                               "axial_span_mm":  null,
+                               "adjacent_face_indices":  [
+                                                             4,
+                                                             5,
+                                                             18,
+                                                             21
+                                                         ]
+                           },
+                           {
+                               "face_index":  29,
+                               "surface_type":  "plane",
+                               "area_mm2":  56.8366,
+                               "bbox_bounds":  [
+                                                   -10.0,
+                                                   15.0,
+                                                   -30.0,
+                                                   0.0,
+                                                   15.0,
+                                                   -22.9129
+                                               ],
+                               "centroid_mm":  [
+                                                   -5.3033,
+                                                   15.0,
+                                                   -27.1245
+                                               ],
+                               "sample_point_mm":  [
+                                                       -5.0,
+                                                       15.0,
+                                                       -26.4564
+                                                   ],
+                               "sample_normal":  [
+                                                     0.0,
+                                                     1.0,
+                                                     0.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  null,
+                               "axis_origin":  null,
+                               "axial_span_mm":  null,
+                               "adjacent_face_indices":  [
+                                                             6,
+                                                             7,
+                                                             20,
+                                                             21
+                                                         ]
+                           },
+                           {
+                               "face_index":  30,
+                               "surface_type":  "plane",
+                               "area_mm2":  56.8366,
+                               "bbox_bounds":  [
+                                                   -10.0,
+                                                   5.0,
+                                                   22.9129,
+                                                   0.0,
+                                                   5.0,
+                                                   30.0
+                                               ],
+                               "centroid_mm":  [
+                                                   -5.3033,
+                                                   5.0,
+                                                   27.1245
+                                               ],
+                               "sample_point_mm":  [
+                                                       -5.0,
+                                                       5.0,
+                                                       26.4564
+                                                   ],
+                               "sample_normal":  [
+                                                     0.0,
+                                                     -1.0,
+                                                     0.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  null,
+                               "axis_origin":  null,
+                               "axial_span_mm":  null,
+                               "adjacent_face_indices":  [
+                                                             4,
+                                                             5,
+                                                             18,
+                                                             21
+                                                         ]
+                           },
+                           {
+                               "face_index":  31,
+                               "surface_type":  "plane",
+                               "area_mm2":  56.8366,
+                               "bbox_bounds":  [
+                                                   -10.0,
+                                                   5.0,
+                                                   -30.0,
+                                                   0.0,
+                                                   5.0,
+                                                   -22.9129
+                                               ],
+                               "centroid_mm":  [
+                                                   -5.3033,
+                                                   5.0,
+                                                   -27.1245
+                                               ],
+                               "sample_point_mm":  [
+                                                       -5.0,
+                                                       5.0,
+                                                       -26.4564
+                                                   ],
+                               "sample_normal":  [
+                                                     0.0,
+                                                     -1.0,
+                                                     0.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  null,
+                               "axis_origin":  null,
+                               "axial_span_mm":  null,
+                               "adjacent_face_indices":  [
+                                                             6,
+                                                             7,
+                                                             20,
+                                                             21
+                                                         ]
+                           },
+                           {
+                               "face_index":  32,
+                               "surface_type":  "plane",
+                               "area_mm2":  1597.8708,
+                               "bbox_bounds":  [
+                                                   -110.718,
+                                                   5.0,
+                                                   -15.0,
+                                                   -20.0,
+                                                   5.0,
+                                                   15.0
+                                               ],
+                               "centroid_mm":  [
+                                                   -63.3789,
+                                                   5.0,
+                                                   -0.4328
+                                               ],
+                               "sample_point_mm":  [
+                                                       -65.359,
+                                                       5.0,
+                                                       0.0
+                                                   ],
+                               "sample_normal":  [
+                                                     0.0,
+                                                     -1.0,
+                                                     0.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  null,
+                               "axis_origin":  null,
+                               "axial_span_mm":  null,
+                               "adjacent_face_indices":  [
+                                                             1,
+                                                             2,
+                                                             3,
+                                                             8,
+                                                             9,
+                                                             10,
+                                                             11,
+                                                             17,
+                                                             21
+                                                         ]
+                           },
+                           {
+                               "face_index":  33,
+                               "surface_type":  "cylinder",
+                               "area_mm2":  271.1544,
+                               "bbox_bounds":  [
+                                                   -13.5657,
+                                                   6.0,
+                                                   -29.0,
+                                                   0.0,
+                                                   14.0,
+                                                   -21.0
+                                               ],
+                               "centroid_mm":  [
+                                                   -5.4707,
+                                                   10.0,
+                                                   -24.7377
+                                               ],
+                               "sample_point_mm":  [
+                                                       -6.7829,
+                                                       10.0,
+                                                       -21.0
+                                                   ],
+                               "sample_normal":  [
+                                                     0.0,
+                                                     0.0,
+                                                     1.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  [
+                                                      1.0,
+                                                      0.0,
+                                                      0.0
+                                                  ],
+                               "axis_origin":  [
+                                                   -20.0,
+                                                   10.0,
+                                                   -25.0
+                                               ],
+                               "axial_span_mm":  13.5657,
+                               "adjacent_face_indices":  [
+                                                             7,
+                                                             20,
+                                                             21
+                                                         ]
+                           },
+                           {
+                               "face_index":  35,
+                               "surface_type":  "cone",
+                               "area_mm2":  62.999,
+                               "bbox_bounds":  [
+                                                   -14.6798,
+                                                   0.0,
+                                                   -14.6798,
+                                                   0.0,
+                                                   1.0,
+                                                   14.6798
+                                               ],
+                               "centroid_mm":  [
+                                                   -9.0309,
+                                                   0.4941,
+                                                   0.0
+                                               ],
+                               "sample_point_mm":  [
+                                                       -14.1798,
+                                                       0.5,
+                                                       0.0
+                                                   ],
+                               "sample_normal":  [
+                                                     -0.707107,
+                                                     0.707107,
+                                                     0.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  [
+                                                      0.0,
+                                                      1.0,
+                                                      0.0
+                                                  ],
+                               "axis_origin":  [
+                                                   0.0,
+                                                   0.0,
+                                                   0.0
+                                               ],
+                               "axial_span_mm":  1.0,
+                               "adjacent_face_indices":  [
+                                                             18,
+                                                             19,
+                                                             20,
+                                                             24
+                                                         ]
+                           },
+                           {
+                               "face_index":  36,
+                               "surface_type":  "cone",
+                               "area_mm2":  62.999,
+                               "bbox_bounds":  [
+                                                   -14.6798,
+                                                   19.0,
+                                                   -14.6798,
+                                                   0.0,
+                                                   20.0,
+                                                   14.6798
+                                               ],
+                               "centroid_mm":  [
+                                                   -9.0309,
+                                                   19.5059,
+                                                   0.0
+                                               ],
+                               "sample_point_mm":  [
+                                                       -14.1798,
+                                                       19.5,
+                                                       0.0
+                                                   ],
+                               "sample_normal":  [
+                                                     -0.707107,
+                                                     -0.707107,
+                                                     0.0
+                                                 ],
+                               "is_exterior":  true,
+                               "axis_direction":  [
+                                                      0.0,
+                                                      1.0,
+                                                      0.0
+                                                  ],
+                               "axis_origin":  [
+                                                   0.0,
+                                                   19.0,
+                                                   0.0
+                                               ],
+                               "axial_span_mm":  1.0,
+                               "adjacent_face_indices":  [
+                                                             18,
+                                                             19,
+                                                             20,
+                                                             23
+                                                         ]
+                           }
+                       ],
+    "expected_turning_detection":  {
+                                       "rotational_symmetry":  false,
+                                       "turned_faces_present":  false,
+                                       "turned_face_count":  0,
+                                       "turned_diameter_faces_count":  0,
+                                       "turned_end_faces_count":  0,
+                                       "turned_profile_faces_count":  0
+                                   }
+}

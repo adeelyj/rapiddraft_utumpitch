@@ -1,0 +1,142 @@
+{
+  "benchmark_name": "dfm_mtk_benchmark",
+  "benchmark_version": "1.0",
+  "created_utc": "2026-03-08T00:00:00Z",
+  "dataset_root": "benchmark_data/dfm_mtk",
+  "cases_root": "benchmark_data/dfm_mtk/cases",
+  "output_root": "output/dfm_mtk_benchmark",
+  "defaults": {
+    "selected_role": "general_dfm",
+    "selected_template": "executive_1page",
+    "selected_overlay": null,
+    "run_both_if_mismatch": true,
+    "analysis_mode_for_logic_only": "full",
+    "analysis_mode_for_end_to_end": "full"
+  },
+  "modes": {
+    "run_logic_only": true,
+    "run_end_to_end": true
+  },
+  "normalization": {
+    "severity_map": {
+      "critical": ["critical", "blocker", "fatal"],
+      "major": ["major", "high"],
+      "minor": ["minor", "medium", "low", "info"]
+    }
+  },
+  "cases": [
+    {
+      "case_id": "sample_2",
+      "label": "sample 2 - beval gear",
+      "step_file": "benchmark_data/dfm_mtk/cases/sample 2/sample 2.stp",
+      "cadex_features_file": "benchmark_data/dfm_mtk/cases/sample 2/sample2_features.json",
+      "cadex_dfm_file": "benchmark_data/dfm_mtk/cases/sample 2/sample2_dfm.json",
+      "component_node_name": null,
+      "component_profile": {
+        "material": "",
+        "manufacturingProcess": "CNC Machining",
+        "industry": ""
+      },
+      "context_overrides": {
+        "cadex_process_label": "CNC Machining Lathe+Milling"
+      }
+    },
+    {
+      "case_id": "sample_3",
+      "label": "sample 3 - Part113",
+      "step_file": "benchmark_data/dfm_mtk/cases/sample 3/sample 3.stp",
+      "cadex_features_file": "benchmark_data/dfm_mtk/cases/sample 3/sample3_features.json",
+      "cadex_dfm_file": "benchmark_data/dfm_mtk/cases/sample 3/sample3_dfm.json",
+      "component_node_name": null,
+      "component_profile": {
+        "material": "",
+        "manufacturingProcess": "CNC Machining",
+        "industry": ""
+      },
+      "context_overrides": {
+        "cadex_process_label": "CNC Machining Milling"
+      }
+    },
+    {
+      "case_id": "sample_4",
+      "label": "sample 4 - Part43",
+      "step_file": "benchmark_data/dfm_mtk/cases/sample 4/sample 4.stp",
+      "cadex_features_file": "benchmark_data/dfm_mtk/cases/sample 4/sample4_features.json",
+      "cadex_dfm_file": "benchmark_data/dfm_mtk/cases/sample 4/sample4_dfm.json",
+      "component_node_name": null,
+      "component_profile": {
+        "material": "",
+        "manufacturingProcess": "CNC Machining",
+        "industry": ""
+      },
+      "context_overrides": {
+        "cadex_process_label": "CNC Machining Milling"
+      }
+    },
+    {
+      "case_id": "sample_8",
+      "label": "sample 8 - Fresamento_CAM1",
+      "step_file": "benchmark_data/dfm_mtk/cases/sample 8/sample 8.stp",
+      "cadex_features_file": "benchmark_data/dfm_mtk/cases/sample 8/sample8_features.json",
+      "cadex_dfm_file": "benchmark_data/dfm_mtk/cases/sample 8/sample8_dfm.json",
+      "component_node_name": null,
+      "component_profile": {
+        "material": "",
+        "manufacturingProcess": "CNC Machining",
+        "industry": ""
+      },
+      "context_overrides": {
+        "cadex_process_label": "CNC Machining Milling"
+      }
+    },
+    {
+      "case_id": "sample_5",
+      "label": "sample 5 - Part77",
+      "step_file": "benchmark_data/dfm_mtk/cases/sample 5/sample 5.stp",
+      "cadex_features_file": "benchmark_data/dfm_mtk/cases/sample 5/sample5_features.json",
+      "cadex_dfm_file": "benchmark_data/dfm_mtk/cases/sample 5/sample5_dfm.json",
+      "component_node_name": null,
+      "component_profile": {
+        "material": "",
+        "manufacturingProcess": "CNC Machining",
+        "industry": ""
+      },
+      "context_overrides": {
+        "cadex_process_label": "CNC Machining Milling"
+      }
+    },
+    {
+      "case_id": "sample_6",
+      "label": "sample 6 - P0010092",
+      "step_file": "benchmark_data/dfm_mtk/cases/sample 6/sample 6.stp",
+      "cadex_features_file": "benchmark_data/dfm_mtk/cases/sample 6/sample6_features.json",
+      "cadex_dfm_file": "benchmark_data/dfm_mtk/cases/sample 6/sample6_dfm.json",
+      "component_node_name": null,
+      "component_profile": {
+        "material": "",
+        "manufacturingProcess": "CNC Machining",
+        "industry": ""
+      },
+      "context_overrides": {
+        "cadex_process_label": "CNC Machining Lathe+Milling"
+      }
+    },
+    {
+      "case_id": "sample_7",
+      "label": "sample 7 - Part1T",
+      "step_file": "benchmark_data/dfm_mtk/cases/sample 7/sample 7.stp",
+      "cadex_features_file": "benchmark_data/dfm_mtk/cases/sample 7/sample7_features.json",
+      "cadex_dfm_file": "benchmark_data/dfm_mtk/cases/sample 7/sample7_dfm.json",
+      "component_node_name": null,
+      "component_profile": {
+        "material": "",
+        "manufacturingProcess": "CNC Machining",
+        "industry": ""
+      },
+      "context_overrides": {
+        "cadex_process_label": "CNC Machining Milling",
+        "cadex_features_file_note": "sample7_features.json mirrors the combined Cadex export in sample7_dfm.json"
+      }
+    }
+  ]
+}

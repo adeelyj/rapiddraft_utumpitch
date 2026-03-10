@@ -1,0 +1,7 @@
+# Keep benchmark datasets local by default.
+*
+!.gitignore
+!dfm_mtk/
+!dfm_mtk/README.md
+!dfm_mtk/cases/
+!dfm_mtk/cases/.gitkeep

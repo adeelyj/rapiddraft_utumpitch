@@ -27,6 +27,22 @@ def test_bridge_maps_known_metrics_derives_fields_and_tracks_not_applicable():
                     "state": "measured",
                     "value": 3,
                 },
+                "open_pocket_count": {
+                    "state": "inferred",
+                    "value": 2,
+                },
+                "boss_count": {
+                    "state": "inferred",
+                    "value": 1,
+                },
+                "flat_milled_face_count": {
+                    "state": "inferred",
+                    "value": 4,
+                },
+                "curved_milled_face_count": {
+                    "state": "inferred",
+                    "value": 1,
+                },
                 "critical_corner_count": {
                     "state": "measured",
                     "value": 2,
@@ -98,6 +114,10 @@ def test_bridge_maps_known_metrics_derives_fields_and_tracks_not_applicable():
     assert facts["bbox_x_mm"] == 42.5
     assert facts["hole_count"] == 3
     assert facts["hole_features"] is True
+    assert facts["open_pocket_features"] is True
+    assert facts["boss_features"] is True
+    assert facts["flat_milled_faces_present"] is True
+    assert facts["curved_milled_faces_present"] is True
     assert facts["min_wall_thickness"] == 1.2
     assert facts["wall_thickness_map"] is True
 
