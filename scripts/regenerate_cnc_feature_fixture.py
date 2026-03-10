@@ -15,6 +15,8 @@ EXPECTED_DETECTION_KEYS: dict[str, tuple[str, ...]] = {
         "turned_diameter_faces_count",
         "turned_end_faces_count",
         "turned_profile_faces_count",
+        "outer_diameter_groove_count",
+        "end_face_groove_count",
     ),
     "hole_detection": (
         "hole_count",
@@ -34,6 +36,7 @@ EXPECTED_DETECTION_KEYS: dict[str, tuple[str, ...]] = {
         "flat_milled_face_count",
         "flat_side_milled_face_count",
         "curved_milled_face_count",
+        "circular_milled_face_count",
         "convex_profile_edge_milled_face_count",
         "concave_fillet_edge_milled_face_count",
     ),
