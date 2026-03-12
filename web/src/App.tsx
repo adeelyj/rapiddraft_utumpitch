@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Toolbar from "./components/Toolbar";
+import ModeLauncher from "./components/ModeLauncher";
+import ModePlaceholder from "./components/ModePlaceholder";
 import ModelViewer from "./components/ModelViewer";
 import ViewsPanel, {
   type VisionPastedScreenshotSlot,
@@ -25,6 +27,7 @@ import {
   type LeftRailTab,
   type RightRailTab,
 } from "./config/railIcons";
+import { isAppMode, isPlaceholderMode, type AppMode } from "./modes";
 import type { AnalysisFocusPayload } from "./types/analysis";
 import type { DraftLintReportResponse } from "./types/draftlint";
 import type {
@@ -158,7 +161,53 @@ const resolveApiBase = (): string => {
   return "http://localhost:8000";
 };
 
+const shouldAutoOpenDraftLint = (): boolean => {
+  if (typeof window === "undefined") return false;
+  const params = new URLSearchParams(window.location.search);
+  const draftLintFlag = params.get("draftlint")?.trim().toLowerCase();
+  const modeFlag = params.get("mode")?.trim().toLowerCase();
+  const panelFlag = params.get("panel")?.trim().toLowerCase();
+  return (
+    modeFlag === "draftlint" ||
+    panelFlag === "draftlint" ||
+    draftLintFlag === "1" ||
+    draftLintFlag === "true" ||
+    draftLintFlag === "open"
+  );
+};
+
+const readModeFromLocation = (): AppMode => {
+  if (typeof window === "undefined") return "launcher";
+  const mode = new URLSearchParams(window.location.search).get("mode")?.trim().toLowerCase();
+  return isAppMode(mode) ? mode : "launcher";
+};
+
+const syncLocationForMode = (mode: AppMode, historyMode: "push" | "replace" = "push"): void => {
+  if (typeof window === "undefined") return;
+
+  const url = new URL(window.location.href);
+  if (mode === "launcher") {
+    url.searchParams.delete("mode");
+    url.searchParams.delete("panel");
+    url.searchParams.delete("draftlint");
+  } else {
+    url.searchParams.set("mode", mode);
+    if (mode !== "expert") {
+      url.searchParams.delete("panel");
+      url.searchParams.delete("draftlint");
+    }
+  }
+
+  const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+  if (historyMode === "replace") {
+    window.history.replaceState({ mode }, "", nextUrl);
+    return;
+  }
+  window.history.pushState({ mode }, "", nextUrl);
+};
+
 const apiBase = resolveApiBase();
+const START_IN_DRAFTLINT_MODE = shouldAutoOpenDraftLint();
 const DRAWING_STORAGE_KEY = "drawingState";
 const WORKSPACE_SESSION_STORAGE_KEY = "workspace_session_v1";
 const WORKSPACE_SESSION_FILE_FORMAT = "rapiddraft_workspace_session";
@@ -389,6 +438,7 @@ const normalizeProfileOptions = (raw: unknown): DfmProfileOptions | null => {
 };
 
 const App = () => {
+  const [appMode, setAppMode] = useState<AppMode>(() => readModeFromLocation());
   const [model, setModel] = useState<ModelState | null>(null);
   const [views, setViews] = useState<Record<string, string>>({});
   const [viewMetadata, setViewMetadata] = useState<Record<string, string>>({});
@@ -425,8 +475,10 @@ const App = () => {
   const [globalPaneOpen, setGlobalPaneOpen] = useState(false);
   const [leftOpen, setLeftOpen] = useState(false);
   const [leftTab, setLeftTab] = useState<LeftRailTab>("reviews");
-  const [rightOpen, setRightOpen] = useState(false);
-  const [rightTab, setRightTab] = useState<RightRailTab | null>(null);
+  const [rightOpen, setRightOpen] = useState(START_IN_DRAFTLINT_MODE);
+  const [rightTab, setRightTab] = useState<RightRailTab | null>(
+    START_IN_DRAFTLINT_MODE ? "draftlint" : null,
+  );
   const [pinMode, setPinMode] = useState<"none" | "comment" | "review">("none");
   const [visionViewCatalog, setVisionViewCatalog] = useState<VisionSelectableView[]>([]);
   const [visionViewSelection, setVisionViewSelection] = useState<Record<string, boolean>>({});
@@ -438,6 +490,30 @@ const App = () => {
   const [draftLintSourceMimeType, setDraftLintSourceMimeType] = useState<string | null>(null);
   const [draftLintSourceName, setDraftLintSourceName] = useState<string | null>(null);
   const restoredWorkspaceRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const rawMode = new URLSearchParams(window.location.search).get("mode")?.trim().toLowerCase();
+    if (!rawMode || rawMode === "expert") {
+      // Expert URLs may carry extra query flags such as panel=draftlint.
+    } else if (!isAppMode(rawMode) || rawMode === "launcher") {
+      syncLocationForMode("launcher", "replace");
+      setAppMode("launcher");
+    } else {
+      syncLocationForMode(rawMode, "replace");
+      setAppMode(rawMode);
+    }
+
+    const handlePopState = () => {
+      setGlobalPaneOpen(false);
+      setInfoDialog(null);
+      setAppMode(readModeFromLocation());
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   const buildWorkspaceSnapshot = (): WorkspaceSessionSnapshot | null => {
     if (!model) return null;
@@ -1993,6 +2069,27 @@ const App = () => {
     }
   };
 
+  const navigateToMode = (mode: AppMode, historyMode: "push" | "replace" = "push") => {
+    setGlobalPaneOpen(false);
+    setInfoDialog(null);
+    setAppMode(mode);
+    syncLocationForMode(mode, historyMode);
+  };
+
+  if (appMode === "launcher") {
+    return <ModeLauncher onSelectMode={navigateToMode} />;
+  }
+
+  if (isPlaceholderMode(appMode)) {
+    return (
+      <ModePlaceholder
+        mode={appMode}
+        onBack={() => navigateToMode("launcher")}
+        onEnterExpert={() => navigateToMode("expert")}
+      />
+    );
+  }
+
   return (
     <div className="app-shell">
       <Toolbar
@@ -2027,6 +2124,9 @@ const App = () => {
             className="sr-only"
             onChange={handleSessionImportFileChange}
           />
+          <button type="button" className="toolbar__button toolbar__button--secondary global-pane__button" onClick={() => navigateToMode("launcher")}>
+            Choose Start Mode
+          </button>
           <button className="toolbar__button global-pane__button" onClick={handleImportClick} disabled={Boolean(busyAction)}>
             Import STEP
           </button>
