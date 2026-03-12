@@ -170,12 +170,19 @@ def generate_dfm_review_v2(
             mismatch=mismatch,
             context_payload=context_payload,
         )
+    geometry_evidence = _build_geometry_evidence(
+        review_facts=review_facts,
+        route_outputs=route_outputs,
+        effective_context=effective_context,
+        ai_recommendation=ai_recommendation,
+    )
 
     return {
         "model_id": model_id,
         "component_context": component_context,
         "effective_context": effective_context,
         "ai_recommendation": ai_recommendation,
+        "geometry_evidence": geometry_evidence,
         "mismatch": mismatch,
         "route_count": len(route_outputs),
         "finding_count_total": total_findings,
@@ -186,6 +193,474 @@ def generate_dfm_review_v2(
         "cost_compare_routes": cost_outputs["cost_compare_routes"],
         "routes": route_outputs,
     }
+
+
+def _build_geometry_evidence(
+    *,
+    review_facts: dict[str, Any],
+    route_outputs: list[dict[str, Any]],
+    effective_context: dict[str, Any] | None,
+    ai_recommendation: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    effective_process_label = ""
+    if isinstance(effective_context, dict):
+        process_context = effective_context.get("process")
+        if isinstance(process_context, dict):
+            effective_process_label = _clean_optional_string(
+                process_context.get("effective_process_label")
+            )
+    if not effective_process_label and route_outputs:
+        effective_process_label = _clean_optional_string(
+            route_outputs[0].get("process_label")
+        )
+
+    ai_process_label = ""
+    if isinstance(ai_recommendation, dict):
+        ai_process_label = _clean_optional_string(ai_recommendation.get("process_label"))
+
+    turning_metrics: list[dict[str, Any]] = []
+    turning_detail_metrics: list[dict[str, Any]] = []
+    hole_metrics: list[dict[str, Any]] = []
+    hole_detail_metrics: list[dict[str, Any]] = []
+    pocket_metrics: list[dict[str, Any]] = []
+    pocket_detail_metrics: list[dict[str, Any]] = []
+    groove_metrics: list[dict[str, Any]] = []
+    milled_metrics: list[dict[str, Any]] = []
+    milled_detail_metrics: list[dict[str, Any]] = []
+    boss_metrics: list[dict[str, Any]] = []
+
+    rotational_symmetry = _bool_fact(review_facts, "rotational_symmetry")
+    if rotational_symmetry:
+        turning_metrics.append(
+            _geometry_metric("rotational_symmetry", "Rotational symmetry", True)
+        )
+
+    turned_face_count = _geometry_count_fact(review_facts, "turned_face_count")
+    turned_diameter_faces_count = _geometry_count_fact(
+        review_facts, "turned_diameter_faces_count"
+    )
+    turned_end_faces_count = _geometry_count_fact(
+        review_facts, "turned_end_faces_count"
+    )
+    turned_profile_faces_count = _geometry_count_fact(
+        review_facts, "turned_profile_faces_count"
+    )
+    if turned_face_count > 0:
+        turning_metrics.append(
+            _geometry_metric("turned_face_count", "Turned faces", turned_face_count)
+        )
+    if turned_diameter_faces_count > 0:
+        turning_detail_metrics.append(
+            _geometry_metric(
+                "turned_diameter_faces_count",
+                "Turned diameter faces",
+                turned_diameter_faces_count,
+            )
+        )
+    if turned_end_faces_count > 0:
+        turning_detail_metrics.append(
+            _geometry_metric(
+                "turned_end_faces_count",
+                "Turned end faces",
+                turned_end_faces_count,
+            )
+        )
+    if turned_profile_faces_count > 0:
+        turning_detail_metrics.append(
+            _geometry_metric(
+                "turned_profile_faces_count",
+                "Turned profile faces",
+                turned_profile_faces_count,
+            )
+        )
+
+    outer_diameter_groove_count = _geometry_count_fact(
+        review_facts, "outer_diameter_groove_count"
+    )
+    end_face_groove_count = _geometry_count_fact(
+        review_facts, "end_face_groove_count"
+    )
+    if outer_diameter_groove_count > 0:
+        groove_metrics.append(
+            _geometry_metric(
+                "outer_diameter_groove_count",
+                "Outer diameter grooves",
+                outer_diameter_groove_count,
+            )
+        )
+    if end_face_groove_count > 0:
+        groove_metrics.append(
+            _geometry_metric(
+                "end_face_groove_count",
+                "End-face grooves",
+                end_face_groove_count,
+            )
+        )
+
+    hole_count = _geometry_count_fact(review_facts, "hole_count")
+    through_hole_count = _geometry_count_fact(review_facts, "through_hole_count")
+    partial_hole_count = _geometry_count_fact(review_facts, "partial_hole_count")
+    stepped_hole_count = _geometry_count_fact(review_facts, "stepped_hole_count")
+    bore_count = _geometry_count_fact(review_facts, "bore_count")
+    if hole_count > 0:
+        hole_metrics.append(_geometry_metric("hole_count", "Hole features", hole_count))
+    if through_hole_count > 0:
+        hole_metrics.append(
+            _geometry_metric("through_hole_count", "Through holes", through_hole_count)
+        )
+    if bore_count > 0:
+        hole_metrics.append(_geometry_metric("bore_count", "Bores", bore_count))
+    if partial_hole_count > 0:
+        hole_detail_metrics.append(
+            _geometry_metric("partial_hole_count", "Partial holes", partial_hole_count)
+        )
+    if stepped_hole_count > 0:
+        hole_detail_metrics.append(
+            _geometry_metric("stepped_hole_count", "Stepped holes", stepped_hole_count)
+        )
+
+    pocket_count = _geometry_count_fact(review_facts, "pocket_count")
+    open_pocket_count = _geometry_count_fact(review_facts, "open_pocket_count")
+    closed_pocket_count = _geometry_count_fact(review_facts, "closed_pocket_count")
+    if pocket_count > 0:
+        pocket_metrics.append(
+            _geometry_metric("pocket_count", "Pocket features", pocket_count)
+        )
+    if open_pocket_count > 0:
+        pocket_metrics.append(
+            _geometry_metric("open_pocket_count", "Open pockets", open_pocket_count)
+        )
+    if closed_pocket_count > 0:
+        pocket_metrics.append(
+            _geometry_metric(
+                "closed_pocket_count", "Closed pockets", closed_pocket_count
+            )
+        )
+
+    milled_face_count = _geometry_count_fact(review_facts, "milled_face_count")
+    circular_milled_face_count = _geometry_count_fact(
+        review_facts, "circular_milled_face_count"
+    )
+    flat_milled_face_count = _geometry_count_fact(
+        review_facts, "flat_milled_face_count"
+    )
+    flat_side_milled_face_count = _geometry_count_fact(
+        review_facts, "flat_side_milled_face_count"
+    )
+    curved_milled_face_count = _geometry_count_fact(
+        review_facts, "curved_milled_face_count"
+    )
+    convex_profile_edge_milled_face_count = _geometry_count_fact(
+        review_facts, "convex_profile_edge_milled_face_count"
+    )
+    concave_fillet_edge_milled_face_count = _geometry_count_fact(
+        review_facts, "concave_fillet_edge_milled_face_count"
+    )
+    if milled_face_count > 0:
+        milled_metrics.append(
+            _geometry_metric("milled_face_count", "Milled faces", milled_face_count)
+        )
+    if circular_milled_face_count > 0:
+        milled_metrics.append(
+            _geometry_metric(
+                "circular_milled_face_count",
+                "Circular milled faces",
+                circular_milled_face_count,
+            )
+        )
+    if flat_milled_face_count > 0:
+        milled_detail_metrics.append(
+            _geometry_metric(
+                "flat_milled_face_count", "Flat milled faces", flat_milled_face_count
+            )
+        )
+    if flat_side_milled_face_count > 0:
+        milled_detail_metrics.append(
+            _geometry_metric(
+                "flat_side_milled_face_count",
+                "Flat-side milled faces",
+                flat_side_milled_face_count,
+            )
+        )
+    if curved_milled_face_count > 0:
+        milled_detail_metrics.append(
+            _geometry_metric(
+                "curved_milled_face_count",
+                "Curved milled faces",
+                curved_milled_face_count,
+            )
+        )
+    if convex_profile_edge_milled_face_count > 0:
+        milled_detail_metrics.append(
+            _geometry_metric(
+                "convex_profile_edge_milled_face_count",
+                "Convex profile-edge milled faces",
+                convex_profile_edge_milled_face_count,
+            )
+        )
+    if concave_fillet_edge_milled_face_count > 0:
+        milled_detail_metrics.append(
+            _geometry_metric(
+                "concave_fillet_edge_milled_face_count",
+                "Concave fillet-edge milled faces",
+                concave_fillet_edge_milled_face_count,
+            )
+        )
+
+    boss_count = _geometry_count_fact(review_facts, "boss_count")
+    if boss_count > 0:
+        boss_metrics.append(_geometry_metric("boss_count", "Bosses", boss_count))
+
+    feature_groups: list[dict[str, Any]] = []
+    if turning_metrics:
+        feature_groups.append(
+            {
+                "group_id": "turning",
+                "label": "Turning features",
+                "summary": _turning_summary(
+                    rotational_symmetry=bool(rotational_symmetry),
+                    turned_face_count=turned_face_count,
+                ),
+                "metrics": turning_metrics,
+            }
+        )
+    if hole_metrics:
+        feature_groups.append(
+            {
+                "group_id": "holes",
+                "label": "Hole features",
+                "summary": _hole_summary(
+                    hole_count=hole_count,
+                    through_hole_count=through_hole_count,
+                    bore_count=bore_count,
+                ),
+                "metrics": hole_metrics,
+            }
+        )
+    if pocket_metrics:
+        feature_groups.append(
+            {
+                "group_id": "pockets",
+                "label": "Pocket features",
+                "summary": _pocket_summary(
+                    pocket_count=pocket_count,
+                    open_pocket_count=open_pocket_count,
+                    closed_pocket_count=closed_pocket_count,
+                ),
+                "metrics": pocket_metrics,
+            }
+        )
+    if groove_metrics:
+        feature_groups.append(
+            {
+                "group_id": "grooves",
+                "label": "Groove features",
+                "summary": _groove_summary(
+                    outer_diameter_groove_count=outer_diameter_groove_count,
+                    end_face_groove_count=end_face_groove_count,
+                ),
+                "metrics": groove_metrics,
+            }
+        )
+    if milled_metrics:
+        feature_groups.append(
+            {
+                "group_id": "milled_faces",
+                "label": "Milled-face features",
+                "summary": _milled_summary(
+                    milled_face_count=milled_face_count,
+                    circular_milled_face_count=circular_milled_face_count,
+                ),
+                "metrics": milled_metrics,
+            }
+        )
+    if boss_metrics:
+        feature_groups.append(
+            {
+                "group_id": "bosses",
+                "label": "Boss features",
+                "summary": _boss_summary(boss_count=boss_count),
+                "metrics": boss_metrics,
+            }
+        )
+
+    detail_metrics = [
+        *turning_detail_metrics,
+        *hole_detail_metrics,
+        *pocket_detail_metrics,
+        *milled_detail_metrics,
+    ]
+
+    reason_tags = _geometry_reason_tags(
+        rotational_symmetry=bool(rotational_symmetry),
+        turned_face_count=turned_face_count,
+        hole_count=hole_count,
+        pocket_count=pocket_count,
+        groove_count=outer_diameter_groove_count + end_face_groove_count,
+        circular_milled_face_count=circular_milled_face_count,
+    )
+
+    if (
+        not effective_process_label
+        and not ai_process_label
+        and not reason_tags
+        and not feature_groups
+        and not detail_metrics
+    ):
+        return None
+
+    return {
+        "process_summary": {
+            "effective_process_label": effective_process_label or None,
+            "ai_process_label": ai_process_label or None,
+            "reason_tags": reason_tags,
+        },
+        "feature_groups": feature_groups,
+        "detail_metrics": detail_metrics,
+    }
+
+
+def _geometry_metric(
+    key: str,
+    label: str,
+    value: str | int | float | bool,
+    *,
+    unit: str | None = None,
+) -> dict[str, Any]:
+    return {
+        "key": key,
+        "label": label,
+        "value": _normalize_geometry_metric_value(value),
+        "unit": unit,
+    }
+
+
+def _normalize_geometry_metric_value(value: str | int | float | bool) -> str | int | float | bool:
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    return value
+
+
+def _geometry_count_fact(review_facts: dict[str, Any], *keys: str) -> int:
+    value = _numeric_fact(review_facts, *keys)
+    if value is None:
+        return 0
+    return max(0, int(round(value)))
+
+
+def _geometry_reason_tags(
+    *,
+    rotational_symmetry: bool,
+    turned_face_count: int,
+    hole_count: int,
+    pocket_count: int,
+    groove_count: int,
+    circular_milled_face_count: int,
+) -> list[str]:
+    tags: list[str] = []
+    if rotational_symmetry:
+        tags.append("Rotational symmetry detected")
+    if turned_face_count > 0:
+        tags.append(f"{turned_face_count} turned faces detected")
+    if groove_count > 0:
+        tags.append(
+            f"{groove_count} groove feature{'s' if groove_count != 1 else ''} detected"
+        )
+    if circular_milled_face_count > 0:
+        tags.append(
+            f"{circular_milled_face_count} circular milled face{'s' if circular_milled_face_count != 1 else ''} detected"
+        )
+    if hole_count > 0:
+        tags.append(f"{hole_count} hole feature{'s' if hole_count != 1 else ''} detected")
+    elif pocket_count > 0:
+        tags.append(
+            f"{pocket_count} pocket feature{'s' if pocket_count != 1 else ''} detected"
+        )
+    return tags[:4]
+
+
+def _turning_summary(*, rotational_symmetry: bool, turned_face_count: int) -> str:
+    if rotational_symmetry and turned_face_count > 0:
+        return (
+            f"Rotational symmetry and {turned_face_count} turned faces suggest turning-dominant geometry."
+        )
+    if turned_face_count > 0:
+        return f"{turned_face_count} turned faces were detected in the part geometry."
+    if rotational_symmetry:
+        return "Rotational symmetry suggests turning compatibility."
+    return "Turning-style geometry evidence detected."
+
+
+def _hole_summary(*, hole_count: int, through_hole_count: int, bore_count: int) -> str:
+    fragments: list[str] = []
+    if hole_count > 0:
+        fragments.append(
+            f"{hole_count} hole feature{'s' if hole_count != 1 else ''}"
+        )
+    if through_hole_count > 0:
+        fragments.append(
+            f"{through_hole_count} through hole{'s' if through_hole_count != 1 else ''}"
+        )
+    if bore_count > 0:
+        fragments.append(f"{bore_count} bore{'s' if bore_count != 1 else ''}")
+    if not fragments:
+        return "Hole-style geometry evidence detected."
+    return f"Detected {', '.join(fragments)}."
+
+
+def _pocket_summary(*, pocket_count: int, open_pocket_count: int, closed_pocket_count: int) -> str:
+    fragments: list[str] = []
+    if pocket_count > 0:
+        fragments.append(
+            f"{pocket_count} pocket feature{'s' if pocket_count != 1 else ''}"
+        )
+    if open_pocket_count > 0:
+        fragments.append(
+            f"{open_pocket_count} open pocket{'s' if open_pocket_count != 1 else ''}"
+        )
+    if closed_pocket_count > 0:
+        fragments.append(
+            f"{closed_pocket_count} closed pocket{'s' if closed_pocket_count != 1 else ''}"
+        )
+    if not fragments:
+        return "Pocket-style geometry evidence detected."
+    return f"Detected {', '.join(fragments)}."
+
+
+def _groove_summary(*, outer_diameter_groove_count: int, end_face_groove_count: int) -> str:
+    fragments: list[str] = []
+    if outer_diameter_groove_count > 0:
+        fragments.append(
+            f"{outer_diameter_groove_count} outer diameter groove{'s' if outer_diameter_groove_count != 1 else ''}"
+        )
+    if end_face_groove_count > 0:
+        fragments.append(
+            f"{end_face_groove_count} end-face groove{'s' if end_face_groove_count != 1 else ''}"
+        )
+    if not fragments:
+        return "Groove-style geometry evidence detected."
+    return f"Detected {', '.join(fragments)}."
+
+
+def _milled_summary(*, milled_face_count: int, circular_milled_face_count: int) -> str:
+    fragments: list[str] = []
+    if milled_face_count > 0:
+        fragments.append(
+            f"{milled_face_count} milled face{'s' if milled_face_count != 1 else ''}"
+        )
+    if circular_milled_face_count > 0:
+        fragments.append(
+            f"{circular_milled_face_count} circular milled face{'s' if circular_milled_face_count != 1 else ''}"
+        )
+    if not fragments:
+        return "Milled-face evidence detected."
+    return f"Detected {', '.join(fragments)}."
+
+
+def _boss_summary(*, boss_count: int) -> str:
+    if boss_count > 0:
+        return f"Detected {boss_count} boss feature{'s' if boss_count != 1 else ''}."
+    return "Boss-style geometry evidence detected."
 
 
 def _resolve_plan_payload(

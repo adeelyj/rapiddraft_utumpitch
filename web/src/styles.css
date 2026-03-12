@@ -1116,6 +1116,98 @@ h4 {
   line-height: 1.3;
 }
 
+.dfm-sidebar__evidence {
+  border: 1px solid rgba(130, 156, 230, 0.28);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.88);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dfm-sidebar__evidence h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-1);
+}
+
+.dfm-sidebar__evidence-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+.dfm-sidebar__evidence-card,
+.dfm-sidebar__feature-group {
+  border: 1px solid rgba(130, 156, 230, 0.24);
+  border-radius: 8px;
+  background: rgba(246, 248, 252, 0.7);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dfm-sidebar__evidence-card-header,
+.dfm-sidebar__feature-group-header {
+  color: var(--text-1);
+  font-size: 0.82rem;
+}
+
+.dfm-sidebar__feature-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dfm-sidebar__feature-group-summary {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.dfm-sidebar__metric-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dfm-sidebar__metric-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.78rem;
+}
+
+.dfm-sidebar__metric-label {
+  color: var(--text-2);
+}
+
+.dfm-sidebar__metric-value {
+  color: var(--text-1);
+  text-align: right;
+}
+
+.dfm-sidebar__chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.dfm-sidebar__chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #8a4e10;
+  background: rgba(239, 101, 26, 0.12);
+  border: 1px solid rgba(239, 101, 26, 0.2);
+}
+
 .rep-sidebar {
   height: 100%;
   overflow-y: auto;

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -7,6 +8,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from server.dfm_benchmark import adapt_cadex_features_to_facts
 from server.dfm_bundle import load_dfm_bundle
 from server.dfm_part_facts_bridge import NOT_APPLICABLE_INPUTS_KEY
 from server.dfm_review_v2 import (
@@ -19,6 +21,10 @@ from server.dfm_review_v2 import (
 
 def _bundle():
     return load_dfm_bundle(bundle_dir=REPO_ROOT / "server" / "dfm", repo_root=REPO_ROOT)
+
+
+def _load_json(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def _all_required_facts(bundle, pack_ids: list[str]) -> dict[str, object]:
@@ -152,6 +158,9 @@ def test_review_v2_empty_findings_response_shape_is_stable():
     assert response["route_count"] == 1
     assert response["finding_count_total"] == 0
     assert response["standards_used_auto_union"] == []
+    assert response["geometry_evidence"]["process_summary"]["effective_process_label"] == "CNC Milling"
+    assert response["geometry_evidence"]["feature_groups"] == []
+    assert response["geometry_evidence"]["detail_metrics"] == []
 
     route = response["routes"][0]
     assert route["finding_count"] == 0
@@ -250,6 +259,121 @@ def test_review_v2_can_emit_rule_violation_findings():
     assert any("evaluation" in finding.get("evidence", {}) for finding in rule_violations)
     assert all(isinstance(finding.get("recommended_action"), str) and finding.get("recommended_action") for finding in rule_violations)
     assert all(isinstance(finding.get("expected_impact"), dict) for finding in rule_violations)
+
+
+def test_review_v2_geometry_evidence_surfaces_sample_2_turning_signals():
+    bundle = _bundle()
+    adapted = adapt_cadex_features_to_facts(
+        _load_json(
+            REPO_ROOT / "benchmark_data" / "dfm_mtk" / "cases" / "sample 2" / "sample2_features.json"
+        ),
+        component_profile={"material": "Aluminum", "manufacturingProcess": "", "industry": ""},
+    )
+
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="sample-2-geometry-evidence",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Sample 2",
+            "profile": {
+                "material": "Aluminum",
+                "manufacturingProcess": "CNC Machining",
+                "industry": "All standards (non-pilot)",
+            },
+        },
+        planning_inputs={
+            "extracted_part_facts": adapted["extracted_part_facts"],
+            "analysis_mode": "geometry_dfm",
+            "selected_process_override": None,
+            "selected_overlay": None,
+            "process_selection_mode": "auto",
+            "overlay_selection_mode": "none",
+            "selected_role": "general_dfm",
+            "selected_template": "executive_1page",
+            "run_both_if_mismatch": False,
+        },
+        context_payload={},
+    )
+
+    geometry_evidence = response["geometry_evidence"]
+    assert geometry_evidence["process_summary"]["ai_process_label"] == "CNC Turning"
+    assert "Rotational symmetry detected" in geometry_evidence["process_summary"]["reason_tags"]
+    assert "25 turned faces detected" in geometry_evidence["process_summary"]["reason_tags"]
+
+    groups = {entry["group_id"]: entry for entry in geometry_evidence["feature_groups"]}
+    turning_metrics = {metric["key"]: metric["value"] for metric in groups["turning"]["metrics"]}
+    hole_metrics = {metric["key"]: metric["value"] for metric in groups["holes"]["metrics"]}
+    pocket_metrics = {metric["key"]: metric["value"] for metric in groups["pockets"]["metrics"]}
+    milled_metrics = {metric["key"]: metric["value"] for metric in groups["milled_faces"]["metrics"]}
+
+    assert turning_metrics["rotational_symmetry"] is True
+    assert turning_metrics["turned_face_count"] == 25
+    assert hole_metrics["hole_count"] == 1
+    assert hole_metrics["bore_count"] == 1
+    assert pocket_metrics["pocket_count"] == 13
+    assert milled_metrics["milled_face_count"] == 45
+
+    detail_metrics = {metric["key"]: metric["value"] for metric in geometry_evidence["detail_metrics"]}
+    assert detail_metrics["turned_diameter_faces_count"] == 4
+    assert detail_metrics["turned_end_faces_count"] == 20
+    assert detail_metrics["turned_profile_faces_count"] == 1
+
+
+def test_review_v2_geometry_evidence_surfaces_sample_6_turning_and_groove_signals():
+    bundle = _bundle()
+    adapted = adapt_cadex_features_to_facts(
+        _load_json(
+            REPO_ROOT / "benchmark_data" / "dfm_mtk" / "cases" / "sample 6" / "sample6_features.json"
+        ),
+        component_profile={"material": "Aluminum", "manufacturingProcess": "", "industry": ""},
+    )
+
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="sample-6-geometry-evidence",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Sample 6",
+            "profile": {
+                "material": "Aluminum",
+                "manufacturingProcess": "CNC Machining",
+                "industry": "All standards (non-pilot)",
+            },
+        },
+        planning_inputs={
+            "extracted_part_facts": adapted["extracted_part_facts"],
+            "analysis_mode": "geometry_dfm",
+            "selected_process_override": None,
+            "selected_overlay": None,
+            "process_selection_mode": "auto",
+            "overlay_selection_mode": "none",
+            "selected_role": "general_dfm",
+            "selected_template": "executive_1page",
+            "run_both_if_mismatch": False,
+        },
+        context_payload={},
+    )
+
+    geometry_evidence = response["geometry_evidence"]
+    assert geometry_evidence["process_summary"]["ai_process_label"] == "CNC Turning"
+    assert "Rotational symmetry detected" in geometry_evidence["process_summary"]["reason_tags"]
+    assert "26 turned faces detected" in geometry_evidence["process_summary"]["reason_tags"]
+
+    groups = {entry["group_id"]: entry for entry in geometry_evidence["feature_groups"]}
+    groove_metrics = {metric["key"]: metric["value"] for metric in groups["grooves"]["metrics"]}
+    milled_metrics = {metric["key"]: metric["value"] for metric in groups["milled_faces"]["metrics"]}
+    hole_metrics = {metric["key"]: metric["value"] for metric in groups["holes"]["metrics"]}
+
+    assert groove_metrics["outer_diameter_groove_count"] == 1
+    assert groove_metrics["end_face_groove_count"] == 1
+    assert milled_metrics["circular_milled_face_count"] == 4
+    assert hole_metrics["bore_count"] == 3
+
+    detail_metrics = {metric["key"]: metric["value"] for metric in geometry_evidence["detail_metrics"]}
+    assert detail_metrics["turned_diameter_faces_count"] == 18
+    assert detail_metrics["turned_end_faces_count"] == 4
+    assert detail_metrics["turned_profile_faces_count"] == 4
 
 
 def test_review_v2_response_includes_effective_context_when_provided():

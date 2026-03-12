@@ -10,6 +10,7 @@ import CommentForm, { CreateTicketPayload } from "./components/CommentForm";
 import ReviewPanel from "./components/ReviewPanel";
 import ReviewStartForm, { CreateReviewPayload } from "./components/ReviewStartForm";
 import DfmReviewSidebar from "./components/DfmReviewSidebar";
+import DfmBenchmarkSidebar from "./components/DfmBenchmarkSidebar";
 import ReportTemplateBuilderSidebar from "./components/ReportTemplateBuilderSidebar";
 import CncAnalysisSidebar from "./components/CncAnalysisSidebar";
 import VisionAnalysisSidebar from "./components/VisionAnalysisSidebar";
@@ -2267,6 +2268,22 @@ const App = () => {
         </aside>
         <DfmReviewSidebar
           open={rightOpen && rightTab === "dfm"}
+          apiBase={apiBase}
+          modelId={model?.id ?? null}
+          selectedComponent={
+            selectedComponent
+              ? { nodeName: selectedComponent.nodeName, displayName: selectedComponent.displayName }
+              : null
+          }
+          selectedProfile={selectedComponentProfile}
+          profileComplete={isSelectedProfileComplete}
+          onClose={() => {
+            setRightOpen(false);
+            setRightTab(null);
+          }}
+        />
+        <DfmBenchmarkSidebar
+          open={rightOpen && rightTab === "dfmEvidence"}
           apiBase={apiBase}
           modelId={model?.id ?? null}
           selectedComponent={
