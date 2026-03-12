@@ -5,6 +5,7 @@ import logging
 import os
 import shutil
 import zipfile
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -498,6 +499,42 @@ def _generate_dfm_review_v2_payload(
     except (DfmReviewV2Error, DfmPlanningError) as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
+def _persist_dfm_review_analysis_run(
+    *,
+    model_id: str,
+    component_node_name: str | None,
+    dfm_review: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    payload = dict(dfm_review)
+    payload.setdefault(
+        "created_at",
+        datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+    )
+
+    try:
+        analysis_run_id = analysis_run_store.next_analysis_run_id(model_id)
+    except AnalysisRunStoreError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    try:
+        manifest = analysis_run_store.create_manifest(
+            model_id=model_id,
+            analysis_run_id=analysis_run_id,
+            component_node_name=component_node_name,
+            dfm_review=payload,
+            vision_report_id=None,
+            vision_report=None,
+            fusion_report={},
+        )
+    except AnalysisRunStoreError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    payload["analysis_run_id"] = analysis_run_id
+    payload["analysis_run_api_link"] = manifest.get("api_links", {}).get("analysis_run")
+    payload["analysis_run_manifest"] = manifest
+    return payload, manifest
+
+
 
 @app.get("/health")
 async def health():
@@ -769,7 +806,13 @@ async def refresh_component_part_facts(model_id: str, node_name: str):
 
 @app.post("/api/models/{model_id}/dfm/review-v2")
 async def create_component_dfm_review_v2(model_id: str, body: DfmReviewV2Body):
-    return _generate_dfm_review_v2_payload(model_id=model_id, body=body)
+    payload = _generate_dfm_review_v2_payload(model_id=model_id, body=body)
+    persisted_payload, _manifest = _persist_dfm_review_analysis_run(
+        model_id=model_id,
+        component_node_name=body.component_node_name,
+        dfm_review=payload,
+    )
+    return persisted_payload
 
 
 @app.post("/api/models/{model_id}/cnc/geometry-report")
