@@ -352,6 +352,14 @@ def test_review_v2_small_radius_findings_can_emit_violating_instances():
         "depth_to_radius_ratio_above_6.0",
     ]
     assert cnc_006_instances[0]["bbox_bounds_mm"] == [9.0, 19.0, 29.0, 11.0, 21.0, 31.0]
+    assert cnc_006["blame_map"]["localization_status"] == "multi"
+    assert cnc_006["blame_map"]["primary_anchor"]["anchor_id"] == "CNC-006-C1"
+    assert cnc_006["blame_map"]["primary_anchor"]["bbox_bounds_mm"] == [9.0, 19.0, 29.0, 11.0, 21.0, 31.0]
+    assert cnc_006["blame_map"]["source_fact_keys"] == [
+        "min_internal_radius_mm",
+        "max_pocket_depth_mm",
+    ]
+    assert cnc_006["blame_map"]["source_feature_refs"] == ["C1", "C2"]
     assert cnc_006_instances[1]["violation_reasons"] == [
         "radius_below_3.0_mm",
         "depth_to_radius_ratio_above_6.0",
@@ -566,6 +574,8 @@ def test_review_v2_radius_consistency_findings_can_emit_violating_instances():
     cnc_010_instances = violations["CNC-010"]["evidence"]["violating_instances"]
 
     assert [instance["instance_id"] for instance in cnc_010_instances] == ["R2", "R3"]
+    assert violations["CNC-010"]["blame_map"]["localization_status"] == "multi"
+    assert violations["CNC-010"]["blame_map"]["primary_anchor"]["anchor_id"] == "CNC-010-R2"
     assert cnc_010_instances[0]["violation_reasons"] == [
         "non_dominant_corner_radius",
         "radius_variation_ratio_above_3.0",
@@ -645,6 +655,8 @@ def test_review_v2_hole_findings_can_emit_violating_instances():
     cnc_003_instances = violations["CNC-003"]["evidence"]["violating_instances"]
 
     assert [instance["instance_id"] for instance in cnc_002_instances] == ["H1"]
+    assert violations["CNC-002"]["blame_map"]["localization_status"] == "region"
+    assert violations["CNC-002"]["blame_map"]["primary_anchor"]["anchor_id"] == "CNC-002-H1"
     assert cnc_002_instances[0]["violation_reasons"] == ["depth_to_diameter_ratio_above_10.0"]
     assert cnc_002_instances[0]["bbox_bounds_mm"] == [14.0, 24.0, 34.0, 16.0, 26.0, 36.0]
 
@@ -709,6 +721,57 @@ def test_review_v2_wall_findings_can_emit_violating_instances():
 
     assert [instance["instance_id"] for instance in cnc_020_instances] == ["W1"]
     assert cnc_020_instances[0]["violation_reasons"] == ["wall_thickness_below_1.2_mm"]
+
+
+def test_review_v2_global_geometry_findings_can_emit_part_level_blame_map():
+    bundle = _bundle()
+    context_payload = _all_required_facts(bundle, ["A_DRAWING", "B_CNC"])
+    context_payload.update(
+        {
+            "bbox_x_mm": 1250.0,
+            "bbox_y_mm": 720.0,
+            "bbox_z_mm": 540.0,
+        }
+    )
+
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="model-global-geometry-blame-map",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Large Part",
+            "profile": {},
+        },
+        execution_plans=[
+            {
+                "plan_id": "plan_1",
+                "route_source": "selected",
+                "process_id": "cnc_milling",
+                "pack_ids": ["A_DRAWING", "B_CNC"],
+                "overlay_id": None,
+                "role_id": "general_dfm",
+                "template_id": "executive_1page",
+            }
+        ],
+        context_payload=context_payload,
+    )
+
+    violations = {
+        finding["rule_id"]: finding
+        for finding in response["routes"][0]["findings"]
+        if finding.get("finding_type") == "rule_violation"
+    }
+    cnc_025 = violations["CNC-025"]
+
+    assert cnc_025["blame_map"]["localization_status"] == "part_level"
+    assert cnc_025["blame_map"]["primary_anchor"]["anchor_id"] == "CNC-025-part-level"
+    assert cnc_025["blame_map"]["primary_anchor"]["anchor_kind"] == "part"
+    assert cnc_025["blame_map"]["primary_anchor"]["component_node_name"] == "component_1"
+    assert cnc_025["blame_map"]["source_fact_keys"] == [
+        "bbox_x_mm",
+        "bbox_y_mm",
+        "bbox_z_mm",
+    ]
 
 
 def test_review_v2_geometry_evidence_surfaces_sample_2_turning_signals():
@@ -1159,6 +1222,9 @@ def test_review_v2_pilot_geometry_rules_emit_rule_violations_when_inputs_present
     assert {"PSTD-001", "PSTD-004", "PSTD-008", "PSTD-009", "PSTD-012", "PSTD-019"}.issubset(
         violation_ids
     )
+    violation_map = {finding["rule_id"]: finding for finding in violations}
+    assert violation_map["PSTD-009"]["blame_map"]["localization_status"] == "part_level"
+    assert violation_map["PSTD-012"]["blame_map"]["localization_status"] == "part_level"
 
 
 def test_review_v2_pstd_019_can_emit_violating_instances():
@@ -1227,8 +1293,52 @@ def test_review_v2_pstd_019_can_emit_violating_instances():
     pstd_019_instances = violations["PSTD-019"]["evidence"]["violating_instances"]
 
     assert [instance["instance_id"] for instance in pstd_019_instances] == ["HC1", "HC2"]
+    assert violations["PSTD-019"]["blame_map"]["localization_status"] == "multi"
+    assert violations["PSTD-019"]["blame_map"]["primary_anchor"]["anchor_id"] == "PSTD-019-HC1"
     assert pstd_019_instances[0]["violation_reasons"] == ["critical_corner_crevice"]
     assert pstd_019_instances[0]["bbox_bounds_mm"] == [10.5, 20.5, 30.5, 13.5, 23.5, 33.5]
+
+
+def test_review_v2_material_spec_violation_can_emit_part_level_blame_map():
+    bundle = _bundle()
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="model-material-spec-part-level",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Part 1",
+            "profile": {
+                "material": "Stainless steel 316L",
+                "manufacturingProcess": "CNC Milling",
+                "industry": "Food Machinery and Hygienic Design",
+            },
+        },
+        planning_inputs={
+            "extracted_part_facts": {},
+            "analysis_mode": "geometry_dfm",
+            "selected_process_override": "cnc_milling",
+            "selected_overlay": "pilot_prototype",
+            "process_selection_mode": "override",
+            "overlay_selection_mode": "override",
+            "selected_role": "general_dfm",
+            "selected_template": "executive_1page",
+            "run_both_if_mismatch": False,
+        },
+        context_payload={
+            "material_spec": "Stainless steel 316L",
+        },
+    )
+
+    violations = {
+        finding["rule_id"]: finding
+        for finding in response["routes"][0]["findings"]
+        if finding.get("finding_type") == "rule_violation"
+    }
+    pstd_016 = violations["PSTD-016"]
+
+    assert pstd_016["blame_map"]["localization_status"] == "part_level"
+    assert pstd_016["blame_map"]["primary_anchor"]["anchor_id"] == "PSTD-016-part-level"
+    assert pstd_016["blame_map"]["source_fact_keys"] == ["material_spec"]
 
 
 def test_review_v2_evaluator_registry_includes_phase2_targets():

@@ -38,6 +38,17 @@ type GeometryAnchor = {
   label?: string | null;
 };
 
+type DfmFindingAnchor = GeometryAnchor;
+
+type DfmFindingBlameMap = {
+  localization_status?: "exact_feature" | "region" | "multi" | "part_level" | "unlocalized";
+  primary_anchor?: DfmFindingAnchor | null;
+  secondary_anchors?: DfmFindingAnchor[];
+  source_fact_keys?: string[];
+  source_feature_refs?: string[];
+  explanation?: string | null;
+};
+
 type DfmViolatingInstance = {
   instance_id: string;
   edge_index?: number | null;
@@ -157,6 +168,21 @@ const instanceMetricFragments = (instance: DfmViolatingInstance): string[] =>
       ? `D/D ${formatCompactNumber(instance.depth_to_diameter_ratio, 2)}`
       : null,
   ].filter((value): value is string => Boolean(value && value.trim()));
+
+const blameMapLabel = (blameMap: DfmFindingBlameMap | undefined): string | null => {
+  switch (blameMap?.localization_status) {
+    case "multi":
+      return "Multi-location focus";
+    case "region":
+      return "Regional focus";
+    case "exact_feature":
+      return "Feature focus";
+    case "part_level":
+      return "Whole-part focus";
+    default:
+      return null;
+  }
+};
 
 const DfmBenchmarkSidebar = ({
   open,
@@ -465,12 +491,44 @@ const DfmBenchmarkSidebar = ({
     const violatingInstances = Array.isArray(finding.evidence?.violating_instances)
       ? (finding.evidence.violating_instances as DfmViolatingInstance[])
       : [];
+    const blameMap = finding.blame_map as DfmFindingBlameMap | undefined;
+    const blameMapHint = blameMapLabel(blameMap);
+    const primaryFindingAnchor =
+      blameMap?.primary_anchor &&
+      (((blameMap.primary_anchor.position_mm && blameMap.primary_anchor.position_mm.length === 3) ||
+        (blameMap.primary_anchor.bbox_bounds_mm && blameMap.primary_anchor.bbox_bounds_mm.length === 6)) ||
+        Boolean(blameMap.primary_anchor.component_node_name))
+        ? blameMap.primary_anchor
+        : null;
     const primaryFindingInstance = violatingInstances.find(
       (instance) =>
         (instance.position_mm && instance.position_mm.length === 3) ||
         (instance.bbox_bounds_mm && instance.bbox_bounds_mm.length === 6),
     );
     const previewInstances = violatingInstances.slice(0, violatingInstances.length > 6 ? 3 : 4);
+
+    const focusFindingAnchor = (anchor: DfmFindingAnchor, explanation?: string | null) => {
+      if (!onFocusInModel) return;
+      const details = [
+        route.process_label ?? route.process_id ?? "Unknown route",
+        explanation || null,
+        anchor.label || null,
+      ].filter((value): value is string => Boolean(value && value.trim()));
+
+      onFocusInModel({
+        id: `dfm-benchmark-${finding.rule_id ?? "issue"}-${anchor.anchor_id || "primary"}`,
+        source: "dfm_benchmark",
+        title: finding.title ?? finding.rule_id ?? "DFM issue",
+        details: details.join(" | "),
+        severity: finding.severity ?? "info",
+        component_node_name: anchor.component_node_name ?? selectedComponent?.nodeName ?? null,
+        anchor_kind: anchor.anchor_kind,
+        position_mm: anchor.position_mm ?? null,
+        normal: anchor.normal ?? null,
+        bbox_bounds_mm: anchor.bbox_bounds_mm ?? null,
+        face_indices: anchor.face_indices ?? [],
+      });
+    };
 
     const focusFindingInstance = (instance: DfmViolatingInstance) => {
       if (!onFocusInModel) return;
@@ -517,11 +575,17 @@ const DfmBenchmarkSidebar = ({
         <div className="dfm-sidebar__issue-card-header">
           <strong>{finding.title ?? finding.rule_id ?? "Untitled issue"}</strong>
           <div className="dfm-sidebar__issue-actions">
-            {primaryFindingInstance ? (
+            {primaryFindingAnchor || primaryFindingInstance ? (
               <button
                 type="button"
                 className="dfm-sidebar__issue-focus-button"
-                onClick={() => focusFindingInstance(primaryFindingInstance)}
+                onClick={() =>
+                  primaryFindingAnchor
+                    ? focusFindingAnchor(primaryFindingAnchor, blameMap?.explanation)
+                    : primaryFindingInstance
+                      ? focusFindingInstance(primaryFindingInstance)
+                      : undefined
+                }
                 title="Show primary mapped location in model"
               >
                 Show in model
@@ -535,6 +599,7 @@ const DfmBenchmarkSidebar = ({
         </p>
         {finding.description ? <p className="dfm-sidebar__issue-description">{finding.description}</p> : null}
         {finding.recommended_action ? <div className="dfm-sidebar__finding-action">{finding.recommended_action}</div> : null}
+        {blameMapHint ? <div className="dfm-sidebar__issue-focus-hint">{blameMapHint}</div> : null}
         {violatingInstances.length ? (
           <>
             <div className="dfm-sidebar__issue-location-preview">

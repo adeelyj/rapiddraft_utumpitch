@@ -1383,6 +1383,10 @@ def _build_review_facts(
     if _truthy(context_payload.get("manual_context")):
         facts["manual_context"] = True
 
+    component_node_name = _clean_optional_string(component_context.get("component_node_name"))
+    if component_node_name:
+        facts.setdefault("component_node_name", component_node_name)
+
     profile = component_context.get("profile")
     if isinstance(profile, dict):
         if profile.get("material"):
@@ -1490,6 +1494,14 @@ def _evaluate_plan(
             violating_instances = violation.get("violating_instances")
             if isinstance(violating_instances, list) and violating_instances:
                 evidence["violating_instances"] = violating_instances
+            blame_map = _build_finding_blame_map(
+                rule_id=_clean_optional_string(rule.get("rule_id")) or None,
+                review_facts=review_facts,
+                violation=violation,
+                violating_instances=violating_instances
+                if isinstance(violating_instances, list)
+                else [],
+            )
             finding = {
                 "rule_id": rule.get("rule_id"),
                 "pack_id": rule.get("pack_id"),
@@ -1503,6 +1515,8 @@ def _evaluate_plan(
                 "expected_impact": guidance["expected_impact"],
                 "evidence": evidence,
             }
+            if blame_map:
+                finding["blame_map"] = blame_map
             findings.append(finding)
             continue
         coverage_summary["blocked_by_missing_inputs"] = int(
@@ -2792,6 +2806,185 @@ def _matching_wall_thickness_instances(
         enriched["violation_reasons"] = [f"wall_thickness_below_{threshold:.1f}_mm"]
         matches.append(enriched)
     return matches
+
+
+def _build_finding_blame_map(
+    *,
+    rule_id: str | None,
+    review_facts: dict[str, Any],
+    violation: dict[str, Any],
+    violating_instances: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    component_node_name = _clean_optional_string(review_facts.get("component_node_name")) or None
+    evaluation = violation.get("evaluation")
+    source_fact_keys: list[str] = []
+    if isinstance(evaluation, dict):
+        fact_key = _clean_optional_string(evaluation.get("fact_key"))
+        if fact_key:
+            source_fact_keys.append(fact_key)
+        fact_keys = evaluation.get("fact_keys")
+        if isinstance(fact_keys, list):
+            for candidate in fact_keys:
+                cleaned = _clean_optional_string(candidate)
+                if cleaned and cleaned not in source_fact_keys:
+                    source_fact_keys.append(cleaned)
+
+    if not violating_instances:
+        if not component_node_name:
+            return None
+        return {
+            "localization_status": "part_level",
+            "primary_anchor": {
+                "anchor_id": f"{rule_id or 'dfm'}-part-level",
+                "component_node_name": component_node_name,
+                "anchor_kind": "part",
+                "position_mm": None,
+                "normal": None,
+                "bbox_bounds_mm": None,
+                "face_indices": [],
+                "label": "Whole part focus",
+            },
+            "secondary_anchors": [],
+            "source_fact_keys": source_fact_keys,
+            "source_feature_refs": [],
+            "explanation": f"Whole-part focus for {rule_id or 'DFM finding'}; no exact local region is preserved yet.",
+        }
+
+    anchor_entries: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    for instance in violating_instances:
+        if not isinstance(instance, dict):
+            continue
+        anchor = _anchor_from_violating_instance(
+            instance=instance,
+            component_node_name=component_node_name,
+            rule_id=rule_id,
+        )
+        if anchor:
+            anchor_entries.append((instance, anchor))
+
+    if not anchor_entries:
+        if not component_node_name:
+            return None
+        return {
+            "localization_status": "part_level",
+            "primary_anchor": {
+                "anchor_id": f"{rule_id or 'dfm'}-part-level",
+                "component_node_name": component_node_name,
+                "anchor_kind": "part",
+                "position_mm": None,
+                "normal": None,
+                "bbox_bounds_mm": None,
+                "face_indices": [],
+                "label": "Whole part focus",
+            },
+            "secondary_anchors": [],
+            "source_fact_keys": source_fact_keys,
+            "source_feature_refs": [],
+            "explanation": f"Whole-part focus for {rule_id or 'DFM finding'}; no exact local region is preserved yet.",
+        }
+
+    primary_index = _select_primary_blame_anchor_index(anchor_entries)
+    primary_instance, primary_anchor = anchor_entries[primary_index]
+    secondary_anchors = [
+        anchor
+        for index, (_, anchor) in enumerate(anchor_entries)
+        if index != primary_index
+    ]
+
+    source_feature_refs = [
+        _clean_optional_string(instance.get("instance_id"))
+        for instance, _ in anchor_entries
+        if _clean_optional_string(instance.get("instance_id"))
+    ]
+
+    if len(anchor_entries) > 1:
+        localization_status = "multi"
+    elif primary_anchor.get("anchor_kind") == "region":
+        localization_status = "region"
+    else:
+        localization_status = "exact_feature"
+
+    return {
+        "localization_status": localization_status,
+        "primary_anchor": primary_anchor,
+        "secondary_anchors": secondary_anchors,
+        "source_fact_keys": source_fact_keys,
+        "source_feature_refs": source_feature_refs,
+        "explanation": _build_blame_map_explanation(
+            rule_id=rule_id,
+            primary_instance=primary_instance,
+            anchor_count=len(anchor_entries),
+        ),
+    }
+
+
+def _anchor_from_violating_instance(
+    *,
+    instance: dict[str, Any],
+    component_node_name: str | None,
+    rule_id: str | None,
+) -> dict[str, Any] | None:
+    bbox_bounds = _rounded_bbox_bounds(instance.get("bbox_bounds_mm"))
+    position = _rounded_point(instance.get("position_mm"))
+    if bbox_bounds is None and position is None:
+        return None
+
+    instance_id = _clean_optional_string(instance.get("instance_id")) or "instance"
+    label = _clean_optional_string(instance.get("location_description")) or instance_id
+    face_indices = [
+        int(face_index)
+        for face_index in instance.get("face_indices", [])
+        if isinstance(face_index, int)
+    ]
+
+    return {
+        "anchor_id": f"{rule_id or 'dfm'}-{instance_id}",
+        "component_node_name": component_node_name,
+        "anchor_kind": "region" if bbox_bounds is not None else "point",
+        "position_mm": position,
+        "normal": None,
+        "bbox_bounds_mm": bbox_bounds,
+        "face_indices": face_indices,
+        "label": label,
+    }
+
+
+def _select_primary_blame_anchor_index(
+    anchor_entries: list[tuple[dict[str, Any], dict[str, Any]]],
+) -> int:
+    best_index = 0
+    best_score = -1
+    for index, (instance, anchor) in enumerate(anchor_entries):
+        reason_count = (
+            len(instance.get("violation_reasons", []))
+            if isinstance(instance.get("violation_reasons"), list)
+            else 0
+        )
+        score = reason_count * 100
+        if anchor.get("bbox_bounds_mm") is not None:
+            score += 10
+        if bool(instance.get("aggravating_factor")):
+            score += 5
+        if score > best_score:
+            best_score = score
+            best_index = index
+    return best_index
+
+
+def _build_blame_map_explanation(
+    *,
+    rule_id: str | None,
+    primary_instance: dict[str, Any],
+    anchor_count: int,
+) -> str:
+    label = _clean_optional_string(primary_instance.get("location_description")) or _clean_optional_string(
+        primary_instance.get("instance_id")
+    )
+    if anchor_count > 1 and label:
+        return f"Primary mapped region for {rule_id or 'DFM finding'} chosen from {anchor_count} localized locations: {label}."
+    if label:
+        return f"Mapped region for {rule_id or 'DFM finding'}: {label}."
+    return f"Primary mapped region for {rule_id or 'DFM finding'}."
 
 
 def _normalized_internal_radius_instances(review_facts: dict[str, Any]) -> list[dict[str, Any]]:
