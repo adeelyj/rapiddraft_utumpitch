@@ -2276,7 +2276,7 @@ def _evaluate_cnc_010(review_facts: dict[str, Any]) -> dict[str, Any] | None:
     if radius_variation_ratio is not None and radius_variation_ratio > ratio_threshold:
         violated = True
 
-    return {
+    result = {
         "violated": violated,
         "evaluation": {
             "operator": "or",
@@ -2292,6 +2292,13 @@ def _evaluate_cnc_010(review_facts: dict[str, Any]) -> dict[str, Any] | None:
             "rule_expression": "unique_radius_count <= 4 and radius_variation_ratio <= 3.0",
         },
     }
+    if violated:
+        result["violating_instances"] = _matching_internal_radius_consistency_instances(
+            review_facts,
+            unique_threshold=unique_threshold,
+            ratio_threshold=ratio_threshold,
+        )
+    return result
 
 
 def _evaluate_cnc_013(review_facts: dict[str, Any]) -> dict[str, Any] | None:
@@ -2345,7 +2352,7 @@ def _evaluate_food_002(review_facts: dict[str, Any]) -> dict[str, Any] | None:
         return None
 
     violated = critical_corner_count > 0
-    return {
+    result = {
         "violated": violated,
         "evaluation": {
             "operator": "==",
@@ -2355,6 +2362,9 @@ def _evaluate_food_002(review_facts: dict[str, Any]) -> dict[str, Any] | None:
             "rule_expression": "critical_corner_count == 0",
         },
     }
+    if violated:
+        result["violating_instances"] = _matching_critical_corner_instances(review_facts)
+    return result
 
 
 def _evaluate_food_004(review_facts: dict[str, Any]) -> dict[str, Any] | None:
@@ -2576,7 +2586,7 @@ def _evaluate_pstd_019(review_facts: dict[str, Any]) -> dict[str, Any] | None:
     )
     if count is None:
         return None
-    return {
+    result = {
         "violated": count > 0,
         "evaluation": {
             "operator": "==",
@@ -2586,6 +2596,9 @@ def _evaluate_pstd_019(review_facts: dict[str, Any]) -> dict[str, Any] | None:
             "rule_expression": "cad.hygienic_design.crevice_count == 0",
         },
     }
+    if count > 0:
+        result["violating_instances"] = _matching_critical_corner_instances(review_facts)
+    return result
 
 
 RULE_VIOLATION_EVALUATORS: dict[str, Any] = {
@@ -2649,6 +2662,81 @@ def _matching_internal_radius_instances(
             continue
         enriched = dict(instance)
         enriched["violation_reasons"] = reasons
+        matches.append(enriched)
+    return matches
+
+
+def _matching_internal_radius_consistency_instances(
+    review_facts: dict[str, Any],
+    *,
+    unique_threshold: float,
+    ratio_threshold: float,
+) -> list[dict[str, Any]]:
+    instances = _normalized_internal_radius_instances(review_facts)
+    if not instances:
+        return []
+
+    rounded_radius_buckets: dict[float, int] = {}
+    for instance in instances:
+        radius_mm = instance.get("radius_mm")
+        if isinstance(radius_mm, (int, float)):
+            rounded_radius = round(float(radius_mm), 3)
+            rounded_radius_buckets[rounded_radius] = rounded_radius_buckets.get(rounded_radius, 0) + 1
+
+    dominant_radius = None
+    if rounded_radius_buckets:
+        dominant_radius = max(
+            rounded_radius_buckets.items(),
+            key=lambda item: (item[1], -abs(item[0])),
+        )[0]
+
+    numeric_radii = [
+        float(instance["radius_mm"])
+        for instance in instances
+        if isinstance(instance.get("radius_mm"), (int, float))
+    ]
+    min_radius = min(numeric_radii) if numeric_radii else None
+    max_radius = max(numeric_radii) if numeric_radii else None
+    aggregate_unique_count = _numeric_fact(review_facts, "unique_internal_radius_count")
+    unique_count = max(float(len(rounded_radius_buckets)), float(aggregate_unique_count or 0.0))
+    aggregate_ratio = _numeric_fact(review_facts, "radius_variation_ratio")
+    ratio = None
+    if min_radius is not None and min_radius > 0 and max_radius is not None:
+        ratio = max_radius / min_radius
+    if aggregate_ratio is not None:
+        ratio = max(ratio or 0.0, float(aggregate_ratio))
+
+    matches: list[dict[str, Any]] = []
+    for instance in instances:
+        radius_mm = instance.get("radius_mm")
+        if not isinstance(radius_mm, (int, float)):
+            continue
+        reasons: list[str] = []
+        rounded_radius = round(float(radius_mm), 3)
+        if dominant_radius is not None and unique_count > unique_threshold and rounded_radius != dominant_radius:
+            reasons.append("non_dominant_corner_radius")
+        if (
+            ratio is not None
+            and ratio > ratio_threshold
+            and (rounded_radius == round(min_radius, 3) or rounded_radius == round(max_radius, 3))
+        ):
+            reasons.append(f"radius_variation_ratio_above_{ratio_threshold:.1f}")
+        if not reasons:
+            continue
+        enriched = dict(instance)
+        enriched["violation_reasons"] = reasons
+        matches.append(enriched)
+    return matches
+
+
+def _matching_critical_corner_instances(review_facts: dict[str, Any]) -> list[dict[str, Any]]:
+    matches: list[dict[str, Any]] = []
+    for instance in _normalized_internal_radius_instances(review_facts):
+        status = _clean_optional_string(instance.get("status")).upper()
+        if status != "CRITICAL":
+            continue
+        enriched = dict(instance)
+        enriched["violation_reasons"] = ["critical_corner_crevice"]
         matches.append(enriched)
     return matches
 

@@ -125,8 +125,17 @@ const formatViolationReason = (value: string): string => {
   if (value.startsWith("depth_to_radius_ratio_above_")) {
     return `Depth/radius above ${value.replace("depth_to_radius_ratio_above_", "")}`;
   }
+  if (value.startsWith("radius_variation_ratio_above_")) {
+    return `Radius variation above ${value.replace("radius_variation_ratio_above_", "")}`;
+  }
+  if (value === "non_dominant_corner_radius") {
+    return "Non-dominant corner radius";
+  }
   if (value === "long_reach_tool_risk") {
     return "Long-reach tool risk";
+  }
+  if (value === "critical_corner_crevice") {
+    return "Critical crevice-prone corner";
   }
   if (value === "zero_or_negative_radius") {
     return "Zero-radius corner";

@@ -470,6 +470,113 @@ def test_review_v2_deep_pocket_and_long_reach_findings_can_emit_violating_instan
     assert cnc_024_instances[1]["bbox_bounds_mm"] == [73.0, 83.0, 93.0, 77.0, 87.0, 97.0]
 
 
+def test_review_v2_radius_consistency_findings_can_emit_violating_instances():
+    bundle = _bundle()
+    context_payload = _all_required_facts(bundle, ["A_DRAWING", "B_CNC"])
+    context_payload.update(
+        {
+            "material_spec": "Aluminum 6061",
+            "pocket_depth": True,
+            "pocket_corner_radius": True,
+            "unique_internal_radius_count": 6,
+            "radius_variation_ratio": 4.8,
+            "internal_radius_instances": [
+                {
+                    "instance_id": "R1",
+                    "edge_index": 31,
+                    "location_description": "dominant pocket corner",
+                    "radius_mm": 3.0,
+                    "status": "OK",
+                    "recommendation": "No action",
+                    "pocket_depth_mm": 8.0,
+                    "depth_to_radius_ratio": 2.7,
+                    "aggravating_factor": False,
+                    "position_mm": [10.0, 20.0, 30.0],
+                    "bbox_bounds_mm": [8.5, 18.5, 28.5, 11.5, 21.5, 31.5],
+                },
+                {
+                    "instance_id": "R2",
+                    "edge_index": 32,
+                    "location_description": "small finishing corner",
+                    "radius_mm": 0.8,
+                    "status": "CRITICAL",
+                    "recommendation": "Increase radius",
+                    "pocket_depth_mm": 12.0,
+                    "depth_to_radius_ratio": 15.0,
+                    "aggravating_factor": True,
+                    "position_mm": [40.0, 50.0, 60.0],
+                    "bbox_bounds_mm": [38.5, 48.5, 58.5, 41.5, 51.5, 61.5],
+                },
+                {
+                    "instance_id": "R3",
+                    "edge_index": 33,
+                    "location_description": "oversize blend",
+                    "radius_mm": 3.84,
+                    "status": "CAUTION",
+                    "recommendation": "Standardize corner radius",
+                    "pocket_depth_mm": 10.0,
+                    "depth_to_radius_ratio": 2.6042,
+                    "aggravating_factor": False,
+                    "position_mm": [70.0, 80.0, 90.0],
+                    "bbox_bounds_mm": [68.0, 78.0, 88.0, 72.0, 82.0, 92.0],
+                },
+                {
+                    "instance_id": "R4",
+                    "edge_index": 34,
+                    "location_description": "second dominant corner",
+                    "radius_mm": 3.0,
+                    "status": "OK",
+                    "recommendation": "No action",
+                    "pocket_depth_mm": 7.0,
+                    "depth_to_radius_ratio": 2.3333,
+                    "aggravating_factor": False,
+                    "position_mm": [100.0, 110.0, 120.0],
+                    "bbox_bounds_mm": [98.5, 108.5, 118.5, 101.5, 111.5, 121.5],
+                },
+            ],
+        }
+    )
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="model-radius-consistency",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Part 1",
+            "profile": {},
+        },
+        execution_plans=[
+            {
+                "plan_id": "plan_1",
+                "route_source": "selected",
+                "process_id": "cnc_milling",
+                "pack_ids": ["A_DRAWING", "B_CNC"],
+                "overlay_id": None,
+                "role_id": "general_dfm",
+                "template_id": "executive_1page",
+            }
+        ],
+        context_payload=context_payload,
+    )
+
+    violations = {
+        finding["rule_id"]: finding
+        for finding in response["routes"][0]["findings"]
+        if finding.get("finding_type") == "rule_violation"
+    }
+    cnc_010_instances = violations["CNC-010"]["evidence"]["violating_instances"]
+
+    assert [instance["instance_id"] for instance in cnc_010_instances] == ["R2", "R3"]
+    assert cnc_010_instances[0]["violation_reasons"] == [
+        "non_dominant_corner_radius",
+        "radius_variation_ratio_above_3.0",
+    ]
+    assert cnc_010_instances[1]["violation_reasons"] == [
+        "non_dominant_corner_radius",
+        "radius_variation_ratio_above_3.0",
+    ]
+    assert cnc_010_instances[0]["bbox_bounds_mm"] == [38.5, 48.5, 58.5, 41.5, 51.5, 61.5]
+
+
 def test_review_v2_hole_findings_can_emit_violating_instances():
     bundle = _bundle()
     context_payload = _all_required_facts(bundle, ["A_DRAWING", "B_CNC"])
@@ -1052,6 +1159,76 @@ def test_review_v2_pilot_geometry_rules_emit_rule_violations_when_inputs_present
     assert {"PSTD-001", "PSTD-004", "PSTD-008", "PSTD-009", "PSTD-012", "PSTD-019"}.issubset(
         violation_ids
     )
+
+
+def test_review_v2_pstd_019_can_emit_violating_instances():
+    bundle = _bundle()
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="model-pilot-crevice-localization",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Part 1",
+            "profile": {
+                "material": "Aluminum",
+                "manufacturingProcess": "CNC Milling",
+                "industry": "Food Machinery and Hygienic Design",
+            },
+        },
+        planning_inputs={
+            "extracted_part_facts": {
+                "geometry_features": True,
+                "cad.hygienic_design.crevice_count": 2,
+                "critical_corner_count": 2,
+                "internal_radius_instances": [
+                    {
+                        "instance_id": "HC1",
+                        "location_description": "product-zone corner",
+                        "radius_mm": 0.9,
+                        "status": "CRITICAL",
+                        "position_mm": [12.0, 22.0, 32.0],
+                        "bbox_bounds_mm": [10.5, 20.5, 30.5, 13.5, 23.5, 33.5],
+                    },
+                    {
+                        "instance_id": "HC2",
+                        "location_description": "service-zone corner",
+                        "radius_mm": 1.1,
+                        "status": "CRITICAL",
+                        "position_mm": [42.0, 52.0, 62.0],
+                        "bbox_bounds_mm": [40.5, 50.5, 60.5, 43.5, 53.5, 63.5],
+                    },
+                    {
+                        "instance_id": "HC3",
+                        "location_description": "benign corner",
+                        "radius_mm": 4.0,
+                        "status": "OK",
+                        "position_mm": [72.0, 82.0, 92.0],
+                        "bbox_bounds_mm": [70.0, 80.0, 90.0, 74.0, 84.0, 94.0],
+                    },
+                ],
+            },
+            "analysis_mode": "geometry_dfm",
+            "selected_process_override": "cnc_milling",
+            "selected_overlay": "pilot_prototype",
+            "process_selection_mode": "override",
+            "overlay_selection_mode": "override",
+            "selected_role": "general_dfm",
+            "selected_template": "executive_1page",
+            "run_both_if_mismatch": False,
+        },
+        context_payload={},
+    )
+
+    violations = {
+        finding["rule_id"]: finding
+        for finding in response["routes"][0]["findings"]
+        if finding.get("finding_type") == "rule_violation"
+    }
+    pstd_019_instances = violations["PSTD-019"]["evidence"]["violating_instances"]
+
+    assert [instance["instance_id"] for instance in pstd_019_instances] == ["HC1", "HC2"]
+    assert pstd_019_instances[0]["violation_reasons"] == ["critical_corner_crevice"]
+    assert pstd_019_instances[0]["bbox_bounds_mm"] == [10.5, 20.5, 30.5, 13.5, 23.5, 33.5]
 
 
 def test_review_v2_evaluator_registry_includes_phase2_targets():
