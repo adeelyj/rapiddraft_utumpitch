@@ -49,7 +49,8 @@ def test_part_facts_service_persists_payload_when_geometry_extraction_fails(tmp_
         force_refresh=True,
     )
 
-    assert payload["schema_version"] == "1.8.0"
+    assert payload["schema_version"] == "1.11.0"
+    assert payload["geometry_instances"] == {}
     core = payload["coverage"]["core_extraction_coverage"]
     readiness = payload["coverage"]["full_rule_readiness_coverage"]
     assert core["total_metrics"] == core["applicable_metrics"] + core["not_applicable_metrics"]

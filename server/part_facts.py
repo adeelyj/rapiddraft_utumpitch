@@ -70,8 +70,151 @@ def _safe_optional_int(value: Any) -> int | None:
     return None
 
 
+def _rounded_point(value: Any) -> list[float] | None:
+    if not isinstance(value, (list, tuple)) or len(value) != 3:
+        return None
+    point: list[float] = []
+    for axis_value in value:
+        numeric_value = _safe_optional_float(axis_value)
+        if numeric_value is None:
+            return None
+        point.append(round(numeric_value, 4))
+    return point
+
+
+def _rounded_bbox_bounds(value: Any) -> list[float] | None:
+    if not isinstance(value, (list, tuple)) or len(value) != 6:
+        return None
+    bounds: list[float] = []
+    for axis_value in value:
+        numeric_value = _safe_optional_float(axis_value)
+        if numeric_value is None:
+            return None
+        bounds.append(round(numeric_value, 4))
+    return bounds
+
+
+def _reduced_internal_radius_instances(corners: list[Any]) -> list[dict[str, Any]]:
+    reduced: list[dict[str, Any]] = []
+    for item in corners:
+        if not isinstance(item, dict):
+            continue
+        radius_mm = _safe_optional_float(item.get("radius_mm"))
+        if radius_mm is None:
+            continue
+        pocket_depth_mm = _safe_optional_float(item.get("pocket_depth_mm"))
+        depth_to_radius_ratio = _safe_optional_float(item.get("depth_to_radius_ratio"))
+        entry: dict[str, Any] = {
+            "instance_id": str(item.get("corner_id") or f"corner_{len(reduced) + 1}"),
+            "edge_index": _safe_optional_int(item.get("edge_index")),
+            "location_description": str(item.get("location_description") or "").strip(),
+            "radius_mm": round(radius_mm, 4),
+            "status": str(item.get("status") or "").strip() or None,
+            "recommendation": str(item.get("recommendation") or "").strip() or None,
+            "pocket_depth_mm": None if pocket_depth_mm is None else round(pocket_depth_mm, 4),
+            "depth_to_radius_ratio": None
+            if depth_to_radius_ratio is None
+            else round(depth_to_radius_ratio, 4),
+            "aggravating_factor": bool(item.get("aggravating_factor")),
+            "position_mm": _rounded_point(item.get("position_mm")),
+            "bbox_bounds_mm": _rounded_bbox_bounds(
+                item.get("bbox_bounds_mm")
+                if item.get("bbox_bounds_mm") is not None
+                else item.get("anchor_bounds_mm")
+            ),
+        }
+        reduced.append(entry)
+    return reduced
+
+
+def _bbox_center(bounds: list[float] | None) -> list[float] | None:
+    if not isinstance(bounds, list) or len(bounds) != 6:
+        return None
+    return [
+        round((bounds[0] + bounds[3]) * 0.5, 4),
+        round((bounds[1] + bounds[4]) * 0.5, 4),
+        round((bounds[2] + bounds[5]) * 0.5, 4),
+    ]
+
+
+def _merge_bbox_bounds(
+    first: list[float] | None,
+    second: list[float] | None,
+) -> list[float] | None:
+    if not isinstance(first, list) or len(first) != 6:
+        return second
+    if not isinstance(second, list) or len(second) != 6:
+        return first
+    return [
+        round(min(first[0], second[0]), 4),
+        round(min(first[1], second[1]), 4),
+        round(min(first[2], second[2]), 4),
+        round(max(first[3], second[3]), 4),
+        round(max(first[4], second[4]), 4),
+        round(max(first[5], second[5]), 4),
+    ]
+
+
+def _reduced_hole_instances(candidates: Any) -> list[dict[str, Any]]:
+    if not isinstance(candidates, list):
+        return []
+    reduced: list[dict[str, Any]] = []
+    for item in candidates:
+        if not isinstance(item, dict):
+            continue
+        diameter_mm = _safe_optional_float(item.get("diameter_mm"))
+        if diameter_mm is None or diameter_mm <= 0:
+            continue
+        depth_mm = _safe_optional_float(item.get("depth_mm"))
+        bbox_bounds_mm = _rounded_bbox_bounds(item.get("bbox_bounds"))
+        position_mm = _rounded_point(item.get("position_mm")) or _bbox_center(bbox_bounds_mm)
+        location_description = str(item.get("selection_reason") or item.get("subtype") or "hole feature").strip()
+        reduced.append(
+            {
+                "instance_id": str(item.get("instance_id") or f"hole_{len(reduced) + 1}"),
+                "subtype": str(item.get("subtype") or "").strip() or None,
+                "location_description": location_description.replace("_", " "),
+                "diameter_mm": round(diameter_mm, 4),
+                "depth_mm": None if depth_mm is None else round(depth_mm, 4),
+                "depth_to_diameter_ratio": _safe_optional_float(item.get("depth_to_diameter_ratio")),
+                "position_mm": position_mm,
+                "bbox_bounds_mm": bbox_bounds_mm,
+                "face_indices": [
+                    int(face_index)
+                    for face_index in item.get("group_face_indices", [])
+                    if isinstance(face_index, int)
+                ],
+            }
+        )
+    return reduced
+
+
+def _reduced_wall_thickness_instances(payload: Any) -> list[dict[str, Any]]:
+    if not isinstance(payload, dict):
+        return []
+    thickness_mm = _safe_optional_float(payload.get("thickness_mm"))
+    if thickness_mm is None or thickness_mm <= 0:
+        return []
+    bbox_bounds_mm = _rounded_bbox_bounds(payload.get("bbox_bounds_mm"))
+    position_mm = _rounded_point(payload.get("position_mm")) or _bbox_center(bbox_bounds_mm)
+    return [
+        {
+            "instance_id": str(payload.get("instance_id") or "wall_1"),
+            "location_description": str(payload.get("location_description") or "thinnest wall region").strip(),
+            "thickness_mm": round(thickness_mm, 4),
+            "position_mm": position_mm,
+            "bbox_bounds_mm": bbox_bounds_mm,
+            "face_indices": [
+                int(face_index)
+                for face_index in payload.get("face_indices", [])
+                if isinstance(face_index, int)
+            ],
+        }
+    ]
+
+
 class PartFactsService:
-    SCHEMA_VERSION = "1.8.0"
+    SCHEMA_VERSION = "1.11.0"
 
     def __init__(
         self,
@@ -196,11 +339,14 @@ class PartFactsService:
                 source="model.components.triangleCount",
             )
 
+        geometry_instances: dict[str, Any] = {}
+
         try:
             self._apply_geometry_metrics(
                 sections=sections,
                 step_path=step_path,
                 component_node_name=component_node_name,
+                geometry_instances=geometry_instances,
             )
         except PartFactsError as exc:
             errors.append(str(exc))
@@ -276,6 +422,7 @@ class PartFactsService:
             "missing_inputs": missing_inputs,
             "assumptions": assumptions,
             "errors": errors,
+            "geometry_instances": geometry_instances,
             "sections": sections,
         }
 
@@ -285,6 +432,7 @@ class PartFactsService:
         sections: dict[str, dict[str, dict[str, Any]]],
         step_path: Path,
         component_node_name: str,
+        geometry_instances: dict[str, Any] | None = None,
     ) -> None:
         if not step_path.exists():
             raise PartFactsError("STEP file not found for part facts extraction.")
@@ -631,6 +779,11 @@ class PartFactsService:
         summary = cnc_payload.get("summary") if isinstance(cnc_payload, dict) else None
         corners = corners if isinstance(corners, list) else []
         summary = summary if isinstance(summary, dict) else {}
+        if isinstance(geometry_instances, dict):
+            geometry_instances["internal_radius_instances"] = _reduced_internal_radius_instances(corners)
+            geometry_instances["hole_instances"] = _reduced_hole_instances(
+                hole_detection.get("candidates") if isinstance(hole_detection, dict) else None
+            )
 
         radii = [
             value
@@ -1022,10 +1175,19 @@ class PartFactsService:
                     source="occ.face_inventory.hole_detection",
                 )
 
-        wall_thickness = self._estimate_min_wall_thickness_mm(
+        wall_thickness_payload = self._estimate_min_wall_thickness_region(
             occ=occ,
             shape=analysis_shape,
         )
+        wall_thickness = _safe_optional_float(
+            wall_thickness_payload.get("thickness_mm")
+            if isinstance(wall_thickness_payload, dict)
+            else None
+        )
+        if isinstance(geometry_instances, dict):
+            geometry_instances["wall_thickness_instances"] = _reduced_wall_thickness_instances(
+                wall_thickness_payload
+            )
         if isinstance(wall_thickness, (int, float)) and wall_thickness > 0:
             wall_thickness = float(wall_thickness)
             sections["manufacturing_signals"]["min_wall_thickness_mm"] = _metric(
@@ -1162,24 +1324,27 @@ class PartFactsService:
             payload["max_hole_depth_mm"] = max(depths)
         return payload
 
-    def _estimate_min_wall_thickness_mm(self, *, occ: dict[str, Any], shape) -> float | None:
+    def _estimate_min_wall_thickness_region(self, *, occ: dict[str, Any], shape) -> dict[str, Any] | None:
         try:
             from OCC.Core.BRepAdaptor import BRepAdaptor_Surface
             from OCC.Core.GeomAbs import GeomAbs_Plane
         except Exception:
             return None
 
-        plane_equations: list[tuple[tuple[float, float, float], float]] = []
+        plane_records: list[dict[str, Any]] = []
         try:
             explorer = occ["TopExp_Explorer"](shape, occ["TopAbs_FACE"])
+            face_index = 1
             while explorer.More():
                 face = occ["topods"].Face(explorer.Current())
                 explorer.Next()
                 try:
                     surface = BRepAdaptor_Surface(face, True)
                 except Exception:
+                    face_index += 1
                     continue
                 if surface.GetType() != GeomAbs_Plane:
+                    face_index += 1
                     continue
                 try:
                     plane = surface.Plane()
@@ -1201,18 +1366,35 @@ class PartFactsService:
                         + unit_normal[1] * float(point.Y())
                         + unit_normal[2] * float(point.Z())
                     )
+                    face_box = occ["Bnd_Box"]()
+                    occ["brepbndlib"].Add(face, face_box)
+                    face_bounds = _rounded_bbox_bounds(face_box.Get())
                 except Exception:
+                    face_index += 1
                     continue
-                plane_equations.append((unit_normal, d))
+                plane_records.append(
+                    {
+                        "face_index": face_index,
+                        "unit_normal": unit_normal,
+                        "d": d,
+                        "bbox_bounds_mm": face_bounds,
+                    }
+                )
+                face_index += 1
         except Exception:
             return None
 
-        if len(plane_equations) < 2:
+        if len(plane_records) < 2:
             return None
 
         min_distance: float | None = None
-        for idx, (n1, d1) in enumerate(plane_equations):
-            for n2, d2 in plane_equations[idx + 1 :]:
+        best_pair: tuple[dict[str, Any], dict[str, Any]] | None = None
+        for idx, first in enumerate(plane_records):
+            n1 = first["unit_normal"]
+            d1 = first["d"]
+            for second in plane_records[idx + 1 :]:
+                n2 = second["unit_normal"]
+                d2 = second["d"]
                 dot = n1[0] * n2[0] + n1[1] * n2[1] + n1[2] * n2[2]
                 if dot > -0.97:
                     continue
@@ -1221,8 +1403,26 @@ class PartFactsService:
                     continue
                 if min_distance is None or candidate < min_distance:
                     min_distance = candidate
+                    best_pair = (first, second)
 
-        return min_distance
+        if min_distance is None or best_pair is None:
+            return None
+
+        merged_bounds = _merge_bbox_bounds(
+            best_pair[0].get("bbox_bounds_mm"),
+            best_pair[1].get("bbox_bounds_mm"),
+        )
+        return {
+            "instance_id": "wall_1",
+            "location_description": "thinnest opposing wall region",
+            "thickness_mm": round(min_distance, 4),
+            "position_mm": _bbox_center(merged_bounds),
+            "bbox_bounds_mm": merged_bounds,
+            "face_indices": [
+                best_pair[0].get("face_index"),
+                best_pair[1].get("face_index"),
+            ],
+        }
 
     def _geometry_section_defaults(self) -> dict[str, dict[str, Any]]:
         return {

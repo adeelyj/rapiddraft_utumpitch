@@ -1,6 +1,6 @@
 export type LeftRailTab = "views" | "reviews" | "com" | "dfm" | "km" | "req";
 
-export type RightRailTab = "dfm" | "rep" | "cnc" | "vision" | "fusion" | "draftlint";
+export type RightRailTab = "dfm" | "dfmEvidence" | "rep" | "cnc" | "vision" | "fusion" | "draftlint";
 
 export type RailIconId =
   | "nav_views"
@@ -24,7 +24,7 @@ export type RailTabSpec = {
 
 export const LEFT_RAIL_TAB_ORDER: LeftRailTab[] = ["views", "com", "reviews", "dfm", "km", "req"];
 
-export const RIGHT_RAIL_TAB_ORDER: RightRailTab[] = ["vision", "draftlint", "cnc", "dfm", "fusion", "rep"];
+export const RIGHT_RAIL_TAB_ORDER: RightRailTab[] = ["vision", "draftlint", "cnc", "dfm", "dfmEvidence", "fusion", "rep"];
 
 export const LEFT_RAIL_TAB_SPECS: Record<LeftRailTab, RailTabSpec> = {
   views: {
@@ -79,6 +79,11 @@ export const RIGHT_RAIL_TAB_SPECS: Record<RightRailTab, RailTabSpec> = {
     label: "DFM (AI)",
     iconId: "nav_dfm",
     fallbackGlyph: "D",
+  },
+  dfmEvidence: {
+    label: "DFM Benchmark Bar",
+    iconId: "nav_dfm",
+    fallbackGlyph: "E",
   },
   fusion: {
     label: "Fusion",

@@ -446,6 +446,7 @@ def _generate_dfm_review_v2_payload(
     }
 
     context_payload = dict(body.context_payload or {})
+    include_geometry_anchors = bool(context_payload.get("include_geometry_anchors"))
     planning_inputs = body.planning_inputs.dict() if body.planning_inputs else None
     effective_context = None
     if planning_inputs:
@@ -478,6 +479,17 @@ def _generate_dfm_review_v2_payload(
                 component_profile=component_profile,
                 context_payload=context_payload,
             )
+    if component_node_name and include_geometry_anchors:
+        try:
+            component_context["geometry_feature_inventory"] = (
+                part_facts_service.geometry_analyzer.inspect_feature_inventory(
+                    step_path=metadata.step_path,
+                    component_node_name=component_node_name,
+                )
+            )
+        except Exception:
+            # Geometry anchors are additive best-effort context for the benchmark bar.
+            pass
     execution_plans = (
         [plan.dict() for plan in body.execution_plans]
         if body.execution_plans

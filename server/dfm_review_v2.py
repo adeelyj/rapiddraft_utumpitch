@@ -170,12 +170,20 @@ def generate_dfm_review_v2(
             mismatch=mismatch,
             context_payload=context_payload,
         )
+    geometry_evidence = _build_geometry_evidence(
+        review_facts=review_facts,
+        route_outputs=route_outputs,
+        effective_context=effective_context,
+        ai_recommendation=ai_recommendation,
+        component_context=component_context,
+    )
 
     return {
         "model_id": model_id,
         "component_context": component_context,
         "effective_context": effective_context,
         "ai_recommendation": ai_recommendation,
+        "geometry_evidence": geometry_evidence,
         "mismatch": mismatch,
         "route_count": len(route_outputs),
         "finding_count_total": total_findings,
@@ -186,6 +194,1034 @@ def generate_dfm_review_v2(
         "cost_compare_routes": cost_outputs["cost_compare_routes"],
         "routes": route_outputs,
     }
+
+
+def _build_geometry_evidence(
+    *,
+    review_facts: dict[str, Any],
+    route_outputs: list[dict[str, Any]],
+    effective_context: dict[str, Any] | None,
+    ai_recommendation: dict[str, Any] | None,
+    component_context: dict[str, Any],
+) -> dict[str, Any] | None:
+    effective_process_label = ""
+    if isinstance(effective_context, dict):
+        process_context = effective_context.get("process")
+        if isinstance(process_context, dict):
+            effective_process_label = _clean_optional_string(
+                process_context.get("effective_process_label")
+            )
+    if not effective_process_label and route_outputs:
+        effective_process_label = _clean_optional_string(
+            route_outputs[0].get("process_label")
+        )
+
+    ai_process_label = ""
+    if isinstance(ai_recommendation, dict):
+        ai_process_label = _clean_optional_string(ai_recommendation.get("process_label"))
+
+    geometry_anchors = _build_geometry_anchor_lookup(component_context)
+
+    turning_metrics: list[dict[str, Any]] = []
+    turning_detail_metrics: list[dict[str, Any]] = []
+    hole_metrics: list[dict[str, Any]] = []
+    hole_detail_metrics: list[dict[str, Any]] = []
+    pocket_metrics: list[dict[str, Any]] = []
+    pocket_detail_metrics: list[dict[str, Any]] = []
+    groove_metrics: list[dict[str, Any]] = []
+    milled_metrics: list[dict[str, Any]] = []
+    milled_detail_metrics: list[dict[str, Any]] = []
+    boss_metrics: list[dict[str, Any]] = []
+
+    rotational_symmetry = _bool_fact(review_facts, "rotational_symmetry")
+    if rotational_symmetry:
+        turning_metrics.append(
+            _geometry_metric(
+                "rotational_symmetry",
+                "Rotational symmetry",
+                True,
+                geometry_anchor=geometry_anchors.get("rotational_symmetry"),
+            )
+        )
+
+    turned_face_count = _geometry_count_fact(review_facts, "turned_face_count")
+    turned_diameter_faces_count = _geometry_count_fact(
+        review_facts, "turned_diameter_faces_count"
+    )
+    turned_end_faces_count = _geometry_count_fact(
+        review_facts, "turned_end_faces_count"
+    )
+    turned_profile_faces_count = _geometry_count_fact(
+        review_facts, "turned_profile_faces_count"
+    )
+    if turned_face_count > 0:
+        turning_metrics.append(
+            _geometry_metric(
+                "turned_face_count",
+                "Turned faces",
+                turned_face_count,
+                geometry_anchor=geometry_anchors.get("turned_face_count"),
+            )
+        )
+    if turned_diameter_faces_count > 0:
+        turning_detail_metrics.append(
+            _geometry_metric(
+                "turned_diameter_faces_count",
+                "Turned diameter faces",
+                turned_diameter_faces_count,
+                geometry_anchor=geometry_anchors.get("turned_diameter_faces_count"),
+            )
+        )
+    if turned_end_faces_count > 0:
+        turning_detail_metrics.append(
+            _geometry_metric(
+                "turned_end_faces_count",
+                "Turned end faces",
+                turned_end_faces_count,
+                geometry_anchor=geometry_anchors.get("turned_end_faces_count"),
+            )
+        )
+    if turned_profile_faces_count > 0:
+        turning_detail_metrics.append(
+            _geometry_metric(
+                "turned_profile_faces_count",
+                "Turned profile faces",
+                turned_profile_faces_count,
+                geometry_anchor=geometry_anchors.get("turned_profile_faces_count"),
+            )
+        )
+
+    outer_diameter_groove_count = _geometry_count_fact(
+        review_facts, "outer_diameter_groove_count"
+    )
+    end_face_groove_count = _geometry_count_fact(
+        review_facts, "end_face_groove_count"
+    )
+    if outer_diameter_groove_count > 0:
+        groove_metrics.append(
+            _geometry_metric(
+                "outer_diameter_groove_count",
+                "Outer diameter grooves",
+                outer_diameter_groove_count,
+                geometry_anchor=geometry_anchors.get("outer_diameter_groove_count"),
+            )
+        )
+    if end_face_groove_count > 0:
+        groove_metrics.append(
+            _geometry_metric(
+                "end_face_groove_count",
+                "End-face grooves",
+                end_face_groove_count,
+                geometry_anchor=geometry_anchors.get("end_face_groove_count"),
+            )
+        )
+
+    hole_count = _geometry_count_fact(review_facts, "hole_count")
+    through_hole_count = _geometry_count_fact(review_facts, "through_hole_count")
+    partial_hole_count = _geometry_count_fact(review_facts, "partial_hole_count")
+    stepped_hole_count = _geometry_count_fact(review_facts, "stepped_hole_count")
+    bore_count = _geometry_count_fact(review_facts, "bore_count")
+    if hole_count > 0:
+        hole_metrics.append(
+            _geometry_metric(
+                "hole_count",
+                "Hole features",
+                hole_count,
+                geometry_anchor=geometry_anchors.get("hole_count"),
+            )
+        )
+    if through_hole_count > 0:
+        hole_metrics.append(
+            _geometry_metric(
+                "through_hole_count",
+                "Through holes",
+                through_hole_count,
+                geometry_anchor=geometry_anchors.get("through_hole_count"),
+            )
+        )
+    if bore_count > 0:
+        hole_metrics.append(
+            _geometry_metric(
+                "bore_count",
+                "Bores",
+                bore_count,
+                geometry_anchor=geometry_anchors.get("bore_count"),
+            )
+        )
+    if partial_hole_count > 0:
+        hole_detail_metrics.append(
+            _geometry_metric(
+                "partial_hole_count",
+                "Partial holes",
+                partial_hole_count,
+                geometry_anchor=geometry_anchors.get("partial_hole_count"),
+            )
+        )
+    if stepped_hole_count > 0:
+        hole_detail_metrics.append(
+            _geometry_metric(
+                "stepped_hole_count",
+                "Stepped holes",
+                stepped_hole_count,
+                geometry_anchor=geometry_anchors.get("stepped_hole_count"),
+            )
+        )
+
+    pocket_count = _geometry_count_fact(review_facts, "pocket_count")
+    open_pocket_count = _geometry_count_fact(review_facts, "open_pocket_count")
+    closed_pocket_count = _geometry_count_fact(review_facts, "closed_pocket_count")
+    if pocket_count > 0:
+        pocket_metrics.append(
+            _geometry_metric(
+                "pocket_count",
+                "Pocket features",
+                pocket_count,
+                geometry_anchor=geometry_anchors.get("pocket_count"),
+            )
+        )
+    if open_pocket_count > 0:
+        pocket_metrics.append(
+            _geometry_metric(
+                "open_pocket_count",
+                "Open pockets",
+                open_pocket_count,
+                geometry_anchor=geometry_anchors.get("open_pocket_count"),
+            )
+        )
+    if closed_pocket_count > 0:
+        pocket_metrics.append(
+            _geometry_metric(
+                "closed_pocket_count",
+                "Closed pockets",
+                closed_pocket_count,
+                geometry_anchor=geometry_anchors.get("closed_pocket_count"),
+            )
+        )
+
+    milled_face_count = _geometry_count_fact(review_facts, "milled_face_count")
+    circular_milled_face_count = _geometry_count_fact(
+        review_facts, "circular_milled_face_count"
+    )
+    flat_milled_face_count = _geometry_count_fact(
+        review_facts, "flat_milled_face_count"
+    )
+    flat_side_milled_face_count = _geometry_count_fact(
+        review_facts, "flat_side_milled_face_count"
+    )
+    curved_milled_face_count = _geometry_count_fact(
+        review_facts, "curved_milled_face_count"
+    )
+    convex_profile_edge_milled_face_count = _geometry_count_fact(
+        review_facts, "convex_profile_edge_milled_face_count"
+    )
+    concave_fillet_edge_milled_face_count = _geometry_count_fact(
+        review_facts, "concave_fillet_edge_milled_face_count"
+    )
+    if milled_face_count > 0:
+        milled_metrics.append(
+            _geometry_metric(
+                "milled_face_count",
+                "Milled faces",
+                milled_face_count,
+                geometry_anchor=geometry_anchors.get("milled_face_count"),
+            )
+        )
+    if circular_milled_face_count > 0:
+        milled_metrics.append(
+            _geometry_metric(
+                "circular_milled_face_count",
+                "Circular milled faces",
+                circular_milled_face_count,
+                geometry_anchor=geometry_anchors.get("circular_milled_face_count"),
+            )
+        )
+    if flat_milled_face_count > 0:
+        milled_detail_metrics.append(
+            _geometry_metric(
+                "flat_milled_face_count",
+                "Flat milled faces",
+                flat_milled_face_count,
+                geometry_anchor=geometry_anchors.get("flat_milled_face_count"),
+            )
+        )
+    if flat_side_milled_face_count > 0:
+        milled_detail_metrics.append(
+            _geometry_metric(
+                "flat_side_milled_face_count",
+                "Flat-side milled faces",
+                flat_side_milled_face_count,
+                geometry_anchor=geometry_anchors.get("flat_side_milled_face_count"),
+            )
+        )
+    if curved_milled_face_count > 0:
+        milled_detail_metrics.append(
+            _geometry_metric(
+                "curved_milled_face_count",
+                "Curved milled faces",
+                curved_milled_face_count,
+                geometry_anchor=geometry_anchors.get("curved_milled_face_count"),
+            )
+        )
+    if convex_profile_edge_milled_face_count > 0:
+        milled_detail_metrics.append(
+            _geometry_metric(
+                "convex_profile_edge_milled_face_count",
+                "Convex profile-edge milled faces",
+                convex_profile_edge_milled_face_count,
+                geometry_anchor=geometry_anchors.get(
+                    "convex_profile_edge_milled_face_count"
+                ),
+            )
+        )
+    if concave_fillet_edge_milled_face_count > 0:
+        milled_detail_metrics.append(
+            _geometry_metric(
+                "concave_fillet_edge_milled_face_count",
+                "Concave fillet-edge milled faces",
+                concave_fillet_edge_milled_face_count,
+                geometry_anchor=geometry_anchors.get(
+                    "concave_fillet_edge_milled_face_count"
+                ),
+            )
+        )
+
+    boss_count = _geometry_count_fact(review_facts, "boss_count")
+    if boss_count > 0:
+        boss_metrics.append(
+            _geometry_metric(
+                "boss_count",
+                "Bosses",
+                boss_count,
+                geometry_anchor=geometry_anchors.get("boss_count"),
+            )
+        )
+
+    feature_groups: list[dict[str, Any]] = []
+    if turning_metrics:
+        feature_groups.append(
+            {
+                "group_id": "turning",
+                "label": "Turning features",
+                "summary": _turning_summary(
+                    rotational_symmetry=bool(rotational_symmetry),
+                    turned_face_count=turned_face_count,
+                ),
+                "metrics": turning_metrics,
+            }
+        )
+    if hole_metrics:
+        feature_groups.append(
+            {
+                "group_id": "holes",
+                "label": "Hole features",
+                "summary": _hole_summary(
+                    hole_count=hole_count,
+                    through_hole_count=through_hole_count,
+                    bore_count=bore_count,
+                ),
+                "metrics": hole_metrics,
+            }
+        )
+    if pocket_metrics:
+        feature_groups.append(
+            {
+                "group_id": "pockets",
+                "label": "Pocket features",
+                "summary": _pocket_summary(
+                    pocket_count=pocket_count,
+                    open_pocket_count=open_pocket_count,
+                    closed_pocket_count=closed_pocket_count,
+                ),
+                "metrics": pocket_metrics,
+            }
+        )
+    if groove_metrics:
+        feature_groups.append(
+            {
+                "group_id": "grooves",
+                "label": "Groove features",
+                "summary": _groove_summary(
+                    outer_diameter_groove_count=outer_diameter_groove_count,
+                    end_face_groove_count=end_face_groove_count,
+                ),
+                "metrics": groove_metrics,
+            }
+        )
+    if milled_metrics:
+        feature_groups.append(
+            {
+                "group_id": "milled_faces",
+                "label": "Milled-face features",
+                "summary": _milled_summary(
+                    milled_face_count=milled_face_count,
+                    circular_milled_face_count=circular_milled_face_count,
+                ),
+                "metrics": milled_metrics,
+            }
+        )
+    if boss_metrics:
+        feature_groups.append(
+            {
+                "group_id": "bosses",
+                "label": "Boss features",
+                "summary": _boss_summary(boss_count=boss_count),
+                "metrics": boss_metrics,
+            }
+        )
+
+    detail_metrics = [
+        *turning_detail_metrics,
+        *hole_detail_metrics,
+        *pocket_detail_metrics,
+        *milled_detail_metrics,
+    ]
+
+    reason_tags = _geometry_reason_tags(
+        rotational_symmetry=bool(rotational_symmetry),
+        turned_face_count=turned_face_count,
+        hole_count=hole_count,
+        pocket_count=pocket_count,
+        groove_count=outer_diameter_groove_count + end_face_groove_count,
+        circular_milled_face_count=circular_milled_face_count,
+    )
+
+    if (
+        not effective_process_label
+        and not ai_process_label
+        and not reason_tags
+        and not feature_groups
+        and not detail_metrics
+    ):
+        return None
+
+    return {
+        "process_summary": {
+            "effective_process_label": effective_process_label or None,
+            "ai_process_label": ai_process_label or None,
+            "reason_tags": reason_tags,
+        },
+        "feature_groups": feature_groups,
+        "detail_metrics": detail_metrics,
+    }
+
+
+def _geometry_metric(
+    key: str,
+    label: str,
+    value: str | int | float | bool,
+    *,
+    unit: str | None = None,
+    geometry_anchor: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    return {
+        "key": key,
+        "label": label,
+        "value": _normalize_geometry_metric_value(value),
+        "unit": unit,
+        "geometry_anchor": geometry_anchor,
+    }
+
+
+def _normalize_geometry_metric_value(value: str | int | float | bool) -> str | int | float | bool:
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    return value
+
+
+def _build_geometry_anchor_lookup(component_context: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    inventory = component_context.get("geometry_feature_inventory")
+    if not isinstance(inventory, dict):
+        return {}
+
+    component_node_name = _clean_optional_string(component_context.get("component_node_name")) or _clean_optional_string(
+        inventory.get("component_node_name")
+    )
+    face_lookup = {
+        int(face.get("face_index")): face
+        for face in inventory.get("face_inventory", [])
+        if isinstance(face, dict) and isinstance(face.get("face_index"), int)
+    }
+
+    turning_detection = inventory.get("turning_detection")
+    hole_detection = inventory.get("hole_detection")
+    pocket_detection = inventory.get("pocket_detection")
+    boss_detection = inventory.get("boss_detection")
+    milled_face_detection = inventory.get("milled_face_detection")
+
+    hole_candidates = (
+        [candidate for candidate in hole_detection.get("candidates", []) if isinstance(candidate, dict)]
+        if isinstance(hole_detection, dict)
+        else []
+    )
+    boss_candidates = (
+        [candidate for candidate in boss_detection.get("candidates", []) if isinstance(candidate, dict)]
+        if isinstance(boss_detection, dict)
+        else []
+    )
+
+    turning_primary_anchor = _anchor_from_payload(
+        component_node_name=component_node_name or None,
+        face_lookup=face_lookup,
+        payload=turning_detection.get("primary_cluster") if isinstance(turning_detection, dict) else None,
+        anchor_id="turning-primary",
+        label="Turning feature region",
+    )
+    turned_diameter_anchor = _anchor_from_first_payload(
+        component_node_name=component_node_name or None,
+        face_lookup=face_lookup,
+        payloads=turning_detection.get("turned_diameter_groups") if isinstance(turning_detection, dict) else None,
+        anchor_id="turning-diameter",
+        label="Turned diameter region",
+    )
+    turned_end_anchor = _anchor_from_face_indices(
+        component_node_name=component_node_name or None,
+        face_lookup=face_lookup,
+        face_indices=turning_detection.get("turned_end_face_indices") if isinstance(turning_detection, dict) else None,
+        anchor_id="turning-end",
+        label="Turned end-face region",
+    )
+    outer_groove_anchor = _anchor_from_first_payload(
+        component_node_name=component_node_name or None,
+        face_lookup=face_lookup,
+        payloads=turning_detection.get("outer_diameter_groove_groups") if isinstance(turning_detection, dict) else None,
+        anchor_id="groove-outer-diameter",
+        label="Outer diameter groove",
+    )
+    end_face_groove_anchor = _anchor_from_first_payload(
+        component_node_name=component_node_name or None,
+        face_lookup=face_lookup,
+        payloads=turning_detection.get("end_face_groove_groups") if isinstance(turning_detection, dict) else None,
+        anchor_id="groove-end-face",
+        label="End-face groove",
+    )
+
+    open_pocket_anchor = _anchor_from_first_group(
+        component_node_name=component_node_name or None,
+        face_lookup=face_lookup,
+        groups=pocket_detection.get("open_pocket_feature_groups") if isinstance(pocket_detection, dict) else None,
+        anchor_id="pocket-open",
+        label="Open pocket",
+    )
+    closed_pocket_anchor = _anchor_from_first_group(
+        component_node_name=component_node_name or None,
+        face_lookup=face_lookup,
+        groups=pocket_detection.get("closed_pocket_feature_groups") if isinstance(pocket_detection, dict) else None,
+        anchor_id="pocket-closed",
+        label="Closed pocket",
+    )
+
+    milled_anchor = _first_geometry_anchor(
+        _anchor_from_first_group(
+            component_node_name=component_node_name or None,
+            face_lookup=face_lookup,
+            groups=milled_face_detection.get("flat_milled_feature_groups") if isinstance(milled_face_detection, dict) else None,
+            anchor_id="milled-flat",
+            label="Flat milled face region",
+        ),
+        _anchor_from_first_group(
+            component_node_name=component_node_name or None,
+            face_lookup=face_lookup,
+            groups=milled_face_detection.get("curved_milled_feature_groups") if isinstance(milled_face_detection, dict) else None,
+            anchor_id="milled-curved",
+            label="Curved milled face region",
+        ),
+        _anchor_from_first_group(
+            component_node_name=component_node_name or None,
+            face_lookup=face_lookup,
+            groups=milled_face_detection.get("circular_milled_feature_groups") if isinstance(milled_face_detection, dict) else None,
+            anchor_id="milled-circular",
+            label="Circular milled face",
+        ),
+        _anchor_from_face_indices(
+            component_node_name=component_node_name or None,
+            face_lookup=face_lookup,
+            face_indices=milled_face_detection.get("face_indices") if isinstance(milled_face_detection, dict) else None,
+            anchor_id="milled-any",
+            label="Milled feature region",
+        ),
+    )
+
+    return {
+        key: anchor
+        for key, anchor in {
+            "rotational_symmetry": turning_primary_anchor,
+            "turned_face_count": turning_primary_anchor,
+            "turned_diameter_faces_count": turned_diameter_anchor,
+            "turned_end_faces_count": turned_end_anchor,
+            "turned_profile_faces_count": turning_primary_anchor,
+            "outer_diameter_groove_count": outer_groove_anchor,
+            "end_face_groove_count": end_face_groove_anchor,
+            "hole_count": _anchor_from_first_candidate(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                candidates=hole_candidates,
+                anchor_id="hole-any",
+                label="Hole feature",
+            ),
+            "through_hole_count": _anchor_from_first_candidate(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                candidates=hole_candidates,
+                anchor_id="hole-through",
+                label="Through hole",
+                subtype="through_hole",
+            ),
+            "bore_count": _anchor_from_first_candidate(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                candidates=hole_candidates,
+                anchor_id="hole-bore",
+                label="Bore feature",
+                subtype="bore",
+            ),
+            "partial_hole_count": _anchor_from_first_candidate(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                candidates=hole_candidates,
+                anchor_id="hole-partial",
+                label="Partial hole",
+                subtype="partial_hole",
+            ),
+            "stepped_hole_count": _anchor_from_first_candidate(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                candidates=hole_candidates,
+                anchor_id="hole-stepped",
+                label="Stepped hole",
+                subtype="stepped_hole",
+            ),
+            "pocket_count": _first_geometry_anchor(open_pocket_anchor, closed_pocket_anchor),
+            "open_pocket_count": open_pocket_anchor,
+            "closed_pocket_count": closed_pocket_anchor,
+            "milled_face_count": milled_anchor,
+            "circular_milled_face_count": _anchor_from_first_group(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                groups=milled_face_detection.get("circular_milled_feature_groups") if isinstance(milled_face_detection, dict) else None,
+                anchor_id="milled-circular",
+                label="Circular milled face",
+            ),
+            "flat_milled_face_count": _anchor_from_first_group(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                groups=milled_face_detection.get("flat_milled_feature_groups") if isinstance(milled_face_detection, dict) else None,
+                anchor_id="milled-flat",
+                label="Flat milled face region",
+            ),
+            "flat_side_milled_face_count": _anchor_from_first_group(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                groups=milled_face_detection.get("flat_side_milled_feature_groups") if isinstance(milled_face_detection, dict) else None,
+                anchor_id="milled-flat-side",
+                label="Flat-side milled face region",
+            ),
+            "curved_milled_face_count": _anchor_from_first_group(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                groups=milled_face_detection.get("curved_milled_feature_groups") if isinstance(milled_face_detection, dict) else None,
+                anchor_id="milled-curved",
+                label="Curved milled face region",
+            ),
+            "convex_profile_edge_milled_face_count": _anchor_from_first_group(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                groups=milled_face_detection.get("convex_profile_edge_milled_feature_groups") if isinstance(milled_face_detection, dict) else None,
+                anchor_id="milled-convex-profile",
+                label="Convex profile-edge milled face",
+            ),
+            "concave_fillet_edge_milled_face_count": _anchor_from_first_group(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                groups=milled_face_detection.get("concave_fillet_edge_milled_feature_groups") if isinstance(milled_face_detection, dict) else None,
+                anchor_id="milled-concave-fillet",
+                label="Concave fillet-edge milled face",
+            ),
+            "boss_count": _anchor_from_first_candidate(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                candidates=boss_candidates,
+                anchor_id="boss-any",
+                label="Boss feature",
+            ),
+        }.items()
+        if anchor
+    }
+
+
+def _first_geometry_anchor(*anchors: dict[str, Any] | None) -> dict[str, Any] | None:
+    for anchor in anchors:
+        if isinstance(anchor, dict):
+            return anchor
+    return None
+
+
+def _anchor_from_first_candidate(
+    *,
+    component_node_name: str | None,
+    face_lookup: dict[int, dict[str, Any]],
+    candidates: list[dict[str, Any]],
+    anchor_id: str,
+    label: str,
+    subtype: str | None = None,
+) -> dict[str, Any] | None:
+    for candidate in candidates:
+        if subtype and str(candidate.get("subtype") or "").strip().lower() != subtype:
+            continue
+        anchor = _anchor_from_payload(
+            component_node_name=component_node_name,
+            face_lookup=face_lookup,
+            payload=candidate,
+            anchor_id=anchor_id,
+            label=label,
+        )
+        if anchor:
+            return anchor
+    return None
+
+
+def _anchor_from_first_payload(
+    *,
+    component_node_name: str | None,
+    face_lookup: dict[int, dict[str, Any]],
+    payloads: Any,
+    anchor_id: str,
+    label: str,
+) -> dict[str, Any] | None:
+    if not isinstance(payloads, list):
+        return None
+    for payload in payloads:
+        anchor = _anchor_from_payload(
+            component_node_name=component_node_name,
+            face_lookup=face_lookup,
+            payload=payload,
+            anchor_id=anchor_id,
+            label=label,
+        )
+        if anchor:
+            return anchor
+    return None
+
+
+def _anchor_from_first_group(
+    *,
+    component_node_name: str | None,
+    face_lookup: dict[int, dict[str, Any]],
+    groups: Any,
+    anchor_id: str,
+    label: str,
+) -> dict[str, Any] | None:
+    if not isinstance(groups, list):
+        return None
+    for group in groups:
+        anchor = _anchor_from_payload(
+            component_node_name=component_node_name,
+            face_lookup=face_lookup,
+            payload=group,
+            anchor_id=anchor_id,
+            label=label,
+        )
+        if anchor:
+            return anchor
+    return None
+
+
+def _anchor_from_face_indices(
+    *,
+    component_node_name: str | None,
+    face_lookup: dict[int, dict[str, Any]],
+    face_indices: Any,
+    anchor_id: str,
+    label: str,
+) -> dict[str, Any] | None:
+    return _build_geometry_anchor(
+        component_node_name=component_node_name,
+        face_lookup=face_lookup,
+        face_indices=_extract_face_indices(face_indices),
+        bbox_bounds=None,
+        anchor_id=anchor_id,
+        label=label,
+    )
+
+
+def _anchor_from_payload(
+    *,
+    component_node_name: str | None,
+    face_lookup: dict[int, dict[str, Any]],
+    payload: Any,
+    anchor_id: str,
+    label: str,
+) -> dict[str, Any] | None:
+    if payload is None:
+        return None
+    if isinstance(payload, list):
+        return _build_geometry_anchor(
+            component_node_name=component_node_name,
+            face_lookup=face_lookup,
+            face_indices=_extract_face_indices(payload),
+            bbox_bounds=None,
+            anchor_id=anchor_id,
+            label=label,
+        )
+    if not isinstance(payload, dict):
+        return None
+
+    return _build_geometry_anchor(
+        component_node_name=component_node_name,
+        face_lookup=face_lookup,
+        face_indices=_extract_face_indices(payload),
+        bbox_bounds=payload.get("bbox_bounds"),
+        anchor_id=anchor_id,
+        label=str(payload.get("selection_reason") or label).replace("_", " ").strip().title()
+        if payload.get("selection_reason")
+        else label,
+    )
+
+
+def _build_geometry_anchor(
+    *,
+    component_node_name: str | None,
+    face_lookup: dict[int, dict[str, Any]],
+    face_indices: list[int],
+    bbox_bounds: Any,
+    anchor_id: str,
+    label: str,
+) -> dict[str, Any] | None:
+    normalized_face_indices = sorted({face_index for face_index in face_indices if isinstance(face_index, int)})
+    collected_bounds: list[tuple[float, float, float, float, float, float]] = []
+    collected_positions: list[tuple[float, float, float]] = []
+    normal: tuple[float, float, float] | None = None
+
+    normalized_bbox = _normalize_bbox_bounds(bbox_bounds)
+    if normalized_bbox is not None:
+        collected_bounds.append(normalized_bbox)
+
+    for face_index in normalized_face_indices:
+        face = face_lookup.get(face_index)
+        if not isinstance(face, dict):
+            continue
+        face_bbox = _normalize_bbox_bounds(face.get("bbox_bounds"))
+        if face_bbox is not None:
+            collected_bounds.append(face_bbox)
+        face_position = _normalize_xyz(face.get("sample_point_mm")) or _normalize_xyz(face.get("centroid_mm"))
+        if face_position is not None:
+            collected_positions.append(face_position)
+        if normal is None:
+            normal = _normalize_xyz(face.get("sample_normal"))
+
+    merged_bounds = _merge_bbox_bounds(collected_bounds)
+    position = _mean_xyz(collected_positions) or _bbox_center(merged_bounds)
+    if merged_bounds is None and position is None:
+        return None
+
+    return {
+        "anchor_id": anchor_id,
+        "component_node_name": component_node_name,
+        "anchor_kind": "point" if len(normalized_face_indices) <= 1 else "region",
+        "position_mm": list(position) if position is not None else None,
+        "normal": list(normal) if normal is not None else None,
+        "bbox_bounds_mm": list(merged_bounds) if merged_bounds is not None else None,
+        "face_indices": normalized_face_indices,
+        "label": label,
+    }
+
+
+def _extract_face_indices(payload: Any) -> list[int]:
+    if isinstance(payload, dict):
+        if isinstance(payload.get("group_face_indices"), list):
+            return _extract_face_indices(payload.get("group_face_indices"))
+        if isinstance(payload.get("face_indices"), list):
+            return _extract_face_indices(payload.get("face_indices"))
+        face_index = payload.get("face_index")
+        return [face_index] if isinstance(face_index, int) else []
+    if not isinstance(payload, list):
+        return []
+    return [int(face_index) for face_index in payload if isinstance(face_index, int)]
+
+
+def _normalize_xyz(value: Any) -> tuple[float, float, float] | None:
+    if not isinstance(value, (list, tuple)) or len(value) != 3:
+        return None
+    coordinates = tuple(float(entry) for entry in value)
+    if not all(isinstance(entry, float) and entry == entry for entry in coordinates):
+        return None
+    if not all(abs(entry) != float("inf") for entry in coordinates):
+        return None
+    return coordinates
+
+
+def _normalize_bbox_bounds(value: Any) -> tuple[float, float, float, float, float, float] | None:
+    if not isinstance(value, (list, tuple)) or len(value) != 6:
+        return None
+    bounds = tuple(float(entry) for entry in value)
+    if not all(bound == bound and abs(bound) != float("inf") for bound in bounds):
+        return None
+    return bounds
+
+
+def _merge_bbox_bounds(
+    bounds_list: list[tuple[float, float, float, float, float, float]]
+) -> tuple[float, float, float, float, float, float] | None:
+    if not bounds_list:
+        return None
+    x_mins = [bounds[0] for bounds in bounds_list]
+    y_mins = [bounds[1] for bounds in bounds_list]
+    z_mins = [bounds[2] for bounds in bounds_list]
+    x_maxs = [bounds[3] for bounds in bounds_list]
+    y_maxs = [bounds[4] for bounds in bounds_list]
+    z_maxs = [bounds[5] for bounds in bounds_list]
+    return (
+        min(x_mins),
+        min(y_mins),
+        min(z_mins),
+        max(x_maxs),
+        max(y_maxs),
+        max(z_maxs),
+    )
+
+
+def _bbox_center(
+    bounds: tuple[float, float, float, float, float, float] | None,
+) -> tuple[float, float, float] | None:
+    if bounds is None:
+        return None
+    return (
+        (bounds[0] + bounds[3]) * 0.5,
+        (bounds[1] + bounds[4]) * 0.5,
+        (bounds[2] + bounds[5]) * 0.5,
+    )
+
+
+def _mean_xyz(points: list[tuple[float, float, float]]) -> tuple[float, float, float] | None:
+    if not points:
+        return None
+    count = float(len(points))
+    return (
+        sum(point[0] for point in points) / count,
+        sum(point[1] for point in points) / count,
+        sum(point[2] for point in points) / count,
+    )
+
+
+def _geometry_count_fact(review_facts: dict[str, Any], *keys: str) -> int:
+    value = _numeric_fact(review_facts, *keys)
+    if value is None:
+        return 0
+    return max(0, int(round(value)))
+
+
+def _geometry_reason_tags(
+    *,
+    rotational_symmetry: bool,
+    turned_face_count: int,
+    hole_count: int,
+    pocket_count: int,
+    groove_count: int,
+    circular_milled_face_count: int,
+) -> list[str]:
+    tags: list[str] = []
+    if rotational_symmetry:
+        tags.append("Rotational symmetry detected")
+    if turned_face_count > 0:
+        tags.append(f"{turned_face_count} turned faces detected")
+    if groove_count > 0:
+        tags.append(
+            f"{groove_count} groove feature{'s' if groove_count != 1 else ''} detected"
+        )
+    if circular_milled_face_count > 0:
+        tags.append(
+            f"{circular_milled_face_count} circular milled face{'s' if circular_milled_face_count != 1 else ''} detected"
+        )
+    if hole_count > 0:
+        tags.append(f"{hole_count} hole feature{'s' if hole_count != 1 else ''} detected")
+    elif pocket_count > 0:
+        tags.append(
+            f"{pocket_count} pocket feature{'s' if pocket_count != 1 else ''} detected"
+        )
+    return tags[:4]
+
+
+def _turning_summary(*, rotational_symmetry: bool, turned_face_count: int) -> str:
+    if rotational_symmetry and turned_face_count > 0:
+        return (
+            f"Rotational symmetry and {turned_face_count} turned faces suggest turning-dominant geometry."
+        )
+    if turned_face_count > 0:
+        return f"{turned_face_count} turned faces were detected in the part geometry."
+    if rotational_symmetry:
+        return "Rotational symmetry suggests turning compatibility."
+    return "Turning-style geometry evidence detected."
+
+
+def _hole_summary(*, hole_count: int, through_hole_count: int, bore_count: int) -> str:
+    fragments: list[str] = []
+    if hole_count > 0:
+        fragments.append(
+            f"{hole_count} hole feature{'s' if hole_count != 1 else ''}"
+        )
+    if through_hole_count > 0:
+        fragments.append(
+            f"{through_hole_count} through hole{'s' if through_hole_count != 1 else ''}"
+        )
+    if bore_count > 0:
+        fragments.append(f"{bore_count} bore{'s' if bore_count != 1 else ''}")
+    if not fragments:
+        return "Hole-style geometry evidence detected."
+    return f"Detected {', '.join(fragments)}."
+
+
+def _pocket_summary(*, pocket_count: int, open_pocket_count: int, closed_pocket_count: int) -> str:
+    fragments: list[str] = []
+    if pocket_count > 0:
+        fragments.append(
+            f"{pocket_count} pocket feature{'s' if pocket_count != 1 else ''}"
+        )
+    if open_pocket_count > 0:
+        fragments.append(
+            f"{open_pocket_count} open pocket{'s' if open_pocket_count != 1 else ''}"
+        )
+    if closed_pocket_count > 0:
+        fragments.append(
+            f"{closed_pocket_count} closed pocket{'s' if closed_pocket_count != 1 else ''}"
+        )
+    if not fragments:
+        return "Pocket-style geometry evidence detected."
+    return f"Detected {', '.join(fragments)}."
+
+
+def _groove_summary(*, outer_diameter_groove_count: int, end_face_groove_count: int) -> str:
+    fragments: list[str] = []
+    if outer_diameter_groove_count > 0:
+        fragments.append(
+            f"{outer_diameter_groove_count} outer diameter groove{'s' if outer_diameter_groove_count != 1 else ''}"
+        )
+    if end_face_groove_count > 0:
+        fragments.append(
+            f"{end_face_groove_count} end-face groove{'s' if end_face_groove_count != 1 else ''}"
+        )
+    if not fragments:
+        return "Groove-style geometry evidence detected."
+    return f"Detected {', '.join(fragments)}."
+
+
+def _milled_summary(*, milled_face_count: int, circular_milled_face_count: int) -> str:
+    fragments: list[str] = []
+    if milled_face_count > 0:
+        fragments.append(
+            f"{milled_face_count} milled face{'s' if milled_face_count != 1 else ''}"
+        )
+    if circular_milled_face_count > 0:
+        fragments.append(
+            f"{circular_milled_face_count} circular milled face{'s' if circular_milled_face_count != 1 else ''}"
+        )
+    if not fragments:
+        return "Milled-face evidence detected."
+    return f"Detected {', '.join(fragments)}."
+
+
+def _boss_summary(*, boss_count: int) -> str:
+    if boss_count > 0:
+        return f"Detected {boss_count} boss feature{'s' if boss_count != 1 else ''}."
+    return "Boss-style geometry evidence detected."
 
 
 def _resolve_plan_payload(
@@ -347,6 +1383,10 @@ def _build_review_facts(
     if _truthy(context_payload.get("manual_context")):
         facts["manual_context"] = True
 
+    component_node_name = _clean_optional_string(component_context.get("component_node_name"))
+    if component_node_name:
+        facts.setdefault("component_node_name", component_node_name)
+
     profile = component_context.get("profile")
     if isinstance(profile, dict):
         if profile.get("material"):
@@ -447,6 +1487,21 @@ def _evaluate_plan(
                 evaluation=violation.get("evaluation"),
             )
             trace_fields = _rule_trace_fields(rule)
+            evidence = {
+                "provided_inputs": required_inputs,
+                "evaluation": violation.get("evaluation", {}),
+            }
+            violating_instances = violation.get("violating_instances")
+            if isinstance(violating_instances, list) and violating_instances:
+                evidence["violating_instances"] = violating_instances
+            blame_map = _build_finding_blame_map(
+                rule_id=_clean_optional_string(rule.get("rule_id")) or None,
+                review_facts=review_facts,
+                violation=violation,
+                violating_instances=violating_instances
+                if isinstance(violating_instances, list)
+                else [],
+            )
             finding = {
                 "rule_id": rule.get("rule_id"),
                 "pack_id": rule.get("pack_id"),
@@ -458,11 +1513,10 @@ def _evaluate_plan(
                 **trace_fields,
                 "recommended_action": guidance["recommended_action"],
                 "expected_impact": guidance["expected_impact"],
-                "evidence": {
-                    "provided_inputs": required_inputs,
-                    "evaluation": violation.get("evaluation", {}),
-                },
+                "evidence": evidence,
             }
+            if blame_map:
+                finding["blame_map"] = blame_map
             findings.append(finding)
             continue
         coverage_summary["blocked_by_missing_inputs"] = int(
@@ -789,7 +1843,7 @@ def _evaluate_cnc_001(review_facts: dict[str, Any]) -> dict[str, Any] | None:
     material_spec = _string_fact(review_facts.get("material_spec"))
     threshold, material_class = _wall_threshold_for_material(material_spec)
     violated = wall_thickness < threshold
-    return {
+    result = {
         "violated": violated,
         "evaluation": {
             "operator": ">=",
@@ -801,6 +1855,12 @@ def _evaluate_cnc_001(review_facts: dict[str, Any]) -> dict[str, Any] | None:
             "rule_expression": "min_wall_thickness >= material_threshold_mm",
         },
     }
+    if violated:
+        result["violating_instances"] = _matching_wall_thickness_instances(
+            review_facts,
+            threshold=threshold,
+        )
+    return result
 
 
 def _evaluate_cnc_002(review_facts: dict[str, Any]) -> dict[str, Any] | None:
@@ -822,7 +1882,7 @@ def _evaluate_cnc_002(review_facts: dict[str, Any]) -> dict[str, Any] | None:
     recommended_max = 4.0
     hard_max = 10.0
     violated = depth_ratio > hard_max
-    return {
+    result = {
         "violated": violated,
         "evaluation": {
             "operator": "<=",
@@ -833,6 +1893,12 @@ def _evaluate_cnc_002(review_facts: dict[str, Any]) -> dict[str, Any] | None:
             "rule_expression": "(hole_depth / hole_diameter) <= 10.0",
         },
     }
+    if violated:
+        result["violating_instances"] = _matching_hole_instances(
+            review_facts,
+            ratio_threshold=hard_max,
+        )
+    return result
 
 
 def _evaluate_cnc_005(review_facts: dict[str, Any]) -> dict[str, Any] | None:
@@ -858,12 +1924,17 @@ def _evaluate_cnc_005(review_facts: dict[str, Any]) -> dict[str, Any] | None:
                 "threshold": 0.0,
                 "rule_expression": "corner_radius_mm > 0.0",
             },
+            "violating_instances": _matching_internal_radius_instances(
+                review_facts,
+                radius_floor=0.0,
+                allow_zero_radius=True,
+            ),
         }
 
     ratio = pocket_depth / corner_radius
     threshold = 8.0
     violated = ratio > threshold
-    return {
+    result = {
         "violated": violated,
         "evaluation": {
             "operator": "<=",
@@ -873,6 +1944,12 @@ def _evaluate_cnc_005(review_facts: dict[str, Any]) -> dict[str, Any] | None:
             "rule_expression": "(pocket_depth_mm / corner_radius_mm) <= 8.0",
         },
     }
+    if violated:
+        result["violating_instances"] = _matching_internal_radius_instances(
+            review_facts,
+            ratio_threshold=threshold,
+        )
+    return result
 
 
 def _evaluate_cnc_024(review_facts: dict[str, Any]) -> dict[str, Any] | None:
@@ -905,13 +1982,18 @@ def _evaluate_cnc_024(review_facts: dict[str, Any]) -> dict[str, Any] | None:
                 },
                 "rule_expression": "corner_radius_mm > 0 and depth_to_radius_ratio <= 10.0",
             },
+            "violating_instances": _matching_internal_radius_instances(
+                review_facts,
+                allow_zero_radius=True,
+                min_pocket_depth=12.0,
+            ),
         }
 
     depth_threshold = 12.0
     ratio_threshold = 10.0
     ratio = pocket_depth / corner_radius
     violated = pocket_depth > depth_threshold and ratio > ratio_threshold
-    return {
+    result = {
         "violated": violated,
         "evaluation": {
             "operator": "and",
@@ -928,6 +2010,13 @@ def _evaluate_cnc_024(review_facts: dict[str, Any]) -> dict[str, Any] | None:
             "rule_expression": "pocket_depth_mm > 12.0 and (pocket_depth_mm / corner_radius_mm) > 10.0",
         },
     }
+    if violated:
+        result["violating_instances"] = _matching_internal_radius_instances(
+            review_facts,
+            ratio_threshold=ratio_threshold,
+            min_pocket_depth=depth_threshold,
+        )
+    return result
 
 
 def _evaluate_cnc_025(review_facts: dict[str, Any]) -> dict[str, Any] | None:
@@ -966,33 +2055,11 @@ def _evaluate_cnc_003(review_facts: dict[str, Any]) -> dict[str, Any] | None:
     if hole_diameter is None or hole_diameter <= 0:
         return None
 
-    standard_diameters_mm = [
-        1.0,
-        1.5,
-        2.0,
-        2.5,
-        3.0,
-        3.5,
-        4.0,
-        4.2,
-        4.5,
-        5.0,
-        5.5,
-        6.0,
-        6.8,
-        8.0,
-        8.5,
-        10.0,
-        12.0,
-        14.0,
-        16.0,
-        18.0,
-        20.0,
-    ]
+    standard_diameters_mm = _standard_hole_diameters_mm()
     nearest = min(standard_diameters_mm, key=lambda value: abs(value - hole_diameter))
     tolerance = 0.15
     violated = abs(nearest - hole_diameter) > tolerance
-    return {
+    result = {
         "violated": violated,
         "evaluation": {
             "operator": "<=",
@@ -1003,6 +2070,13 @@ def _evaluate_cnc_003(review_facts: dict[str, Any]) -> dict[str, Any] | None:
             "rule_expression": "abs(hole_diameter_mm - nearest_standard_mm) <= 0.15",
         },
     }
+    if violated:
+        result["violating_instances"] = _matching_hole_instances(
+            review_facts,
+            standard_diameters_mm=standard_diameters_mm,
+            standard_tolerance_mm=tolerance,
+        )
+    return result
 
 
 def _evaluate_cnc_004(review_facts: dict[str, Any]) -> dict[str, Any] | None:
@@ -1046,8 +2120,9 @@ def _evaluate_cnc_020(review_facts: dict[str, Any]) -> dict[str, Any] | None:
         "cad.tolerances.tight_profile_on_thin_walls",
     )
     threshold = 1.2 if tight_tolerance_requested else 0.8
-    return {
-        "violated": min_wall_thickness < threshold,
+    violated = min_wall_thickness < threshold
+    result = {
+        "violated": violated,
         "evaluation": {
             "operator": ">=",
             "fact_key": "min_wall_thickness_mm",
@@ -1057,6 +2132,12 @@ def _evaluate_cnc_020(review_facts: dict[str, Any]) -> dict[str, Any] | None:
             "rule_expression": "min_wall_thickness_mm >= threshold_mm",
         },
     }
+    if violated:
+        result["violating_instances"] = _matching_wall_thickness_instances(
+            review_facts,
+            threshold=threshold,
+        )
+    return result
 
 
 def _evaluate_cnc_006(review_facts: dict[str, Any]) -> dict[str, Any] | None:
@@ -1082,13 +2163,18 @@ def _evaluate_cnc_006(review_facts: dict[str, Any]) -> dict[str, Any] | None:
                 "threshold": 0.0,
                 "rule_expression": "min_internal_radius_mm > 0",
             },
+            "violating_instances": _matching_internal_radius_instances(
+                review_facts,
+                radius_floor=0.0,
+                allow_zero_radius=True,
+            ),
         }
 
     depth_to_radius = pocket_depth / min_radius
     radius_floor = 3.0
     ratio_threshold = 6.0
     violated = (min_radius < radius_floor) and (depth_to_radius > ratio_threshold)
-    return {
+    result = {
         "violated": violated,
         "evaluation": {
             "operator": "and",
@@ -1105,6 +2191,13 @@ def _evaluate_cnc_006(review_facts: dict[str, Any]) -> dict[str, Any] | None:
             "rule_expression": "min_radius_mm >= 3.0 or (depth/radius) <= 6.0",
         },
     }
+    if violated:
+        result["violating_instances"] = _matching_internal_radius_instances(
+            review_facts,
+            radius_floor=radius_floor,
+            ratio_threshold=ratio_threshold,
+        )
+    return result
 
 
 def _evaluate_turn_001(review_facts: dict[str, Any]) -> dict[str, Any] | None:
@@ -1120,8 +2213,9 @@ def _evaluate_turn_001(review_facts: dict[str, Any]) -> dict[str, Any] | None:
     material_spec = _string_fact(review_facts.get("material_spec"))
     wall_threshold, material_class = _wall_threshold_for_material(material_spec)
     turning_threshold = max(0.8, wall_threshold + 0.2)
-    return {
-        "violated": min_wall_thickness < turning_threshold,
+    violated = min_wall_thickness < turning_threshold
+    result = {
+        "violated": violated,
         "evaluation": {
             "operator": ">=",
             "fact_key": "min_wall_thickness_mm",
@@ -1131,6 +2225,12 @@ def _evaluate_turn_001(review_facts: dict[str, Any]) -> dict[str, Any] | None:
             "rule_expression": "min_wall_thickness_mm >= turning_material_threshold_mm",
         },
     }
+    if violated:
+        result["violating_instances"] = _matching_wall_thickness_instances(
+            review_facts,
+            threshold=turning_threshold,
+        )
+    return result
 
 
 def _evaluate_turn_004(review_facts: dict[str, Any]) -> dict[str, Any] | None:
@@ -1150,8 +2250,9 @@ def _evaluate_turn_004(review_facts: dict[str, Any]) -> dict[str, Any] | None:
         "radial_hole",
     )
     threshold = 2.5 if radial_hole else 2.0
-    return {
-        "violated": hole_diameter < threshold,
+    violated = hole_diameter < threshold
+    result = {
+        "violated": violated,
         "evaluation": {
             "operator": ">=",
             "fact_key": "hole_diameter_mm",
@@ -1161,6 +2262,12 @@ def _evaluate_turn_004(review_facts: dict[str, Any]) -> dict[str, Any] | None:
             "rule_expression": "hole_diameter_mm >= turning_min_hole_diameter_mm",
         },
     }
+    if violated:
+        result["violating_instances"] = _matching_hole_instances(
+            review_facts,
+            max_diameter=threshold,
+        )
+    return result
 
 
 def _evaluate_cnc_010(review_facts: dict[str, Any]) -> dict[str, Any] | None:
@@ -1183,7 +2290,7 @@ def _evaluate_cnc_010(review_facts: dict[str, Any]) -> dict[str, Any] | None:
     if radius_variation_ratio is not None and radius_variation_ratio > ratio_threshold:
         violated = True
 
-    return {
+    result = {
         "violated": violated,
         "evaluation": {
             "operator": "or",
@@ -1199,6 +2306,13 @@ def _evaluate_cnc_010(review_facts: dict[str, Any]) -> dict[str, Any] | None:
             "rule_expression": "unique_radius_count <= 4 and radius_variation_ratio <= 3.0",
         },
     }
+    if violated:
+        result["violating_instances"] = _matching_internal_radius_consistency_instances(
+            review_facts,
+            unique_threshold=unique_threshold,
+            ratio_threshold=ratio_threshold,
+        )
+    return result
 
 
 def _evaluate_cnc_013(review_facts: dict[str, Any]) -> dict[str, Any] | None:
@@ -1221,7 +2335,7 @@ def _evaluate_cnc_013(review_facts: dict[str, Any]) -> dict[str, Any] | None:
     if depth_to_radius_ratio is not None and depth_to_radius_ratio > ratio_threshold:
         violated = True
 
-    return {
+    result = {
         "violated": violated,
         "evaluation": {
             "operator": "or",
@@ -1237,6 +2351,13 @@ def _evaluate_cnc_013(review_facts: dict[str, Any]) -> dict[str, Any] | None:
             "rule_expression": "long_reach_tool_risk_count == 0 and depth_to_radius_ratio <= 8.0",
         },
     }
+    if violated:
+        result["violating_instances"] = _matching_internal_radius_instances(
+            review_facts,
+            ratio_threshold=ratio_threshold,
+            include_aggravating_factor=True,
+        )
+    return result
 
 
 def _evaluate_food_002(review_facts: dict[str, Any]) -> dict[str, Any] | None:
@@ -1245,7 +2366,7 @@ def _evaluate_food_002(review_facts: dict[str, Any]) -> dict[str, Any] | None:
         return None
 
     violated = critical_corner_count > 0
-    return {
+    result = {
         "violated": violated,
         "evaluation": {
             "operator": "==",
@@ -1255,6 +2376,9 @@ def _evaluate_food_002(review_facts: dict[str, Any]) -> dict[str, Any] | None:
             "rule_expression": "critical_corner_count == 0",
         },
     }
+    if violated:
+        result["violating_instances"] = _matching_critical_corner_instances(review_facts)
+    return result
 
 
 def _evaluate_food_004(review_facts: dict[str, Any]) -> dict[str, Any] | None:
@@ -1268,7 +2392,7 @@ def _evaluate_food_004(review_facts: dict[str, Any]) -> dict[str, Any] | None:
         violated = True
     if count_below_3 is not None and count_below_3 > 0:
         violated = True
-    return {
+    result = {
         "violated": violated,
         "evaluation": {
             "operator": "and",
@@ -1284,6 +2408,12 @@ def _evaluate_food_004(review_facts: dict[str, Any]) -> dict[str, Any] | None:
             "rule_expression": "min_internal_radius_mm >= 3.0 and count_radius_below_3_0_mm == 0",
         },
     }
+    if violated:
+        result["violating_instances"] = _matching_internal_radius_instances(
+            review_facts,
+            radius_floor=3.0,
+        )
+    return result
 
 
 def _evaluate_fix_003(review_facts: dict[str, Any]) -> dict[str, Any] | None:
@@ -1292,7 +2422,7 @@ def _evaluate_fix_003(review_facts: dict[str, Any]) -> dict[str, Any] | None:
         return None
     threshold = 1.5
     violated = min_wall < threshold
-    return {
+    result = {
         "violated": violated,
         "evaluation": {
             "operator": ">=",
@@ -1302,6 +2432,12 @@ def _evaluate_fix_003(review_facts: dict[str, Any]) -> dict[str, Any] | None:
             "rule_expression": "min_wall_thickness_mm >= 1.5",
         },
     }
+    if violated:
+        result["violating_instances"] = _matching_wall_thickness_instances(
+            review_facts,
+            threshold=threshold,
+        )
+    return result
 
 
 def _evaluate_sm_001(review_facts: dict[str, Any]) -> dict[str, Any] | None:
@@ -1464,7 +2600,7 @@ def _evaluate_pstd_019(review_facts: dict[str, Any]) -> dict[str, Any] | None:
     )
     if count is None:
         return None
-    return {
+    result = {
         "violated": count > 0,
         "evaluation": {
             "operator": "==",
@@ -1474,6 +2610,9 @@ def _evaluate_pstd_019(review_facts: dict[str, Any]) -> dict[str, Any] | None:
             "rule_expression": "cad.hygienic_design.crevice_count == 0",
         },
     }
+    if count > 0:
+        result["violating_instances"] = _matching_critical_corner_instances(review_facts)
+    return result
 
 
 RULE_VIOLATION_EVALUATORS: dict[str, Any] = {
@@ -1502,6 +2641,467 @@ RULE_VIOLATION_EVALUATORS: dict[str, Any] = {
     "PSTD-016": _evaluate_pstd_016,
     "PSTD-019": _evaluate_pstd_019,
 }
+
+
+def _matching_internal_radius_instances(
+    review_facts: dict[str, Any],
+    *,
+    radius_floor: float | None = None,
+    ratio_threshold: float | None = None,
+    min_pocket_depth: float | None = None,
+    include_aggravating_factor: bool = False,
+    allow_zero_radius: bool = False,
+) -> list[dict[str, Any]]:
+    matches: list[dict[str, Any]] = []
+    for instance in _normalized_internal_radius_instances(review_facts):
+        radius_mm = instance.get("radius_mm")
+        if not isinstance(radius_mm, (int, float)):
+            continue
+        reasons: list[str] = []
+        if allow_zero_radius and radius_mm <= 0:
+            reasons.append("zero_or_negative_radius")
+        if radius_floor is not None and radius_mm < radius_floor:
+            reasons.append(f"radius_below_{radius_floor:.1f}_mm")
+        if min_pocket_depth is not None:
+            pocket_depth_mm = instance.get("pocket_depth_mm")
+            if isinstance(pocket_depth_mm, (int, float)) and pocket_depth_mm > min_pocket_depth:
+                reasons.append(f"pocket_depth_above_{min_pocket_depth:.1f}_mm")
+        if ratio_threshold is not None:
+            depth_to_radius_ratio = instance.get("depth_to_radius_ratio")
+            if isinstance(depth_to_radius_ratio, (int, float)) and depth_to_radius_ratio > ratio_threshold:
+                reasons.append(f"depth_to_radius_ratio_above_{ratio_threshold:.1f}")
+        if include_aggravating_factor and bool(instance.get("aggravating_factor")):
+            reasons.append("long_reach_tool_risk")
+        if not reasons:
+            continue
+        enriched = dict(instance)
+        enriched["violation_reasons"] = reasons
+        matches.append(enriched)
+    return matches
+
+
+def _matching_internal_radius_consistency_instances(
+    review_facts: dict[str, Any],
+    *,
+    unique_threshold: float,
+    ratio_threshold: float,
+) -> list[dict[str, Any]]:
+    instances = _normalized_internal_radius_instances(review_facts)
+    if not instances:
+        return []
+
+    rounded_radius_buckets: dict[float, int] = {}
+    for instance in instances:
+        radius_mm = instance.get("radius_mm")
+        if isinstance(radius_mm, (int, float)):
+            rounded_radius = round(float(radius_mm), 3)
+            rounded_radius_buckets[rounded_radius] = rounded_radius_buckets.get(rounded_radius, 0) + 1
+
+    dominant_radius = None
+    if rounded_radius_buckets:
+        dominant_radius = max(
+            rounded_radius_buckets.items(),
+            key=lambda item: (item[1], -abs(item[0])),
+        )[0]
+
+    numeric_radii = [
+        float(instance["radius_mm"])
+        for instance in instances
+        if isinstance(instance.get("radius_mm"), (int, float))
+    ]
+    min_radius = min(numeric_radii) if numeric_radii else None
+    max_radius = max(numeric_radii) if numeric_radii else None
+    aggregate_unique_count = _numeric_fact(review_facts, "unique_internal_radius_count")
+    unique_count = max(float(len(rounded_radius_buckets)), float(aggregate_unique_count or 0.0))
+    aggregate_ratio = _numeric_fact(review_facts, "radius_variation_ratio")
+    ratio = None
+    if min_radius is not None and min_radius > 0 and max_radius is not None:
+        ratio = max_radius / min_radius
+    if aggregate_ratio is not None:
+        ratio = max(ratio or 0.0, float(aggregate_ratio))
+
+    matches: list[dict[str, Any]] = []
+    for instance in instances:
+        radius_mm = instance.get("radius_mm")
+        if not isinstance(radius_mm, (int, float)):
+            continue
+        reasons: list[str] = []
+        rounded_radius = round(float(radius_mm), 3)
+        if dominant_radius is not None and unique_count > unique_threshold and rounded_radius != dominant_radius:
+            reasons.append("non_dominant_corner_radius")
+        if (
+            ratio is not None
+            and ratio > ratio_threshold
+            and (rounded_radius == round(min_radius, 3) or rounded_radius == round(max_radius, 3))
+        ):
+            reasons.append(f"radius_variation_ratio_above_{ratio_threshold:.1f}")
+        if not reasons:
+            continue
+        enriched = dict(instance)
+        enriched["violation_reasons"] = reasons
+        matches.append(enriched)
+    return matches
+
+
+def _matching_critical_corner_instances(review_facts: dict[str, Any]) -> list[dict[str, Any]]:
+    matches: list[dict[str, Any]] = []
+    for instance in _normalized_internal_radius_instances(review_facts):
+        status = _clean_optional_string(instance.get("status")).upper()
+        if status != "CRITICAL":
+            continue
+        enriched = dict(instance)
+        enriched["violation_reasons"] = ["critical_corner_crevice"]
+        matches.append(enriched)
+    return matches
+
+
+def _matching_hole_instances(
+    review_facts: dict[str, Any],
+    *,
+    ratio_threshold: float | None = None,
+    max_diameter: float | None = None,
+    standard_diameters_mm: list[float] | None = None,
+    standard_tolerance_mm: float | None = None,
+) -> list[dict[str, Any]]:
+    matches: list[dict[str, Any]] = []
+    for instance in _normalized_hole_instances(review_facts):
+        reasons: list[str] = []
+        diameter_mm = instance.get("diameter_mm")
+        if isinstance(max_diameter, (int, float)) and isinstance(diameter_mm, (int, float)):
+            if diameter_mm < max_diameter:
+                reasons.append(f"diameter_below_{max_diameter:.1f}_mm")
+        depth_ratio = instance.get("depth_to_diameter_ratio")
+        if isinstance(ratio_threshold, (int, float)) and isinstance(depth_ratio, (int, float)):
+            if depth_ratio > ratio_threshold:
+                reasons.append(f"depth_to_diameter_ratio_above_{ratio_threshold:.1f}")
+        if (
+            standard_diameters_mm
+            and isinstance(standard_tolerance_mm, (int, float))
+            and isinstance(diameter_mm, (int, float))
+        ):
+            nearest = min(standard_diameters_mm, key=lambda value: abs(value - diameter_mm))
+            if abs(nearest - diameter_mm) > standard_tolerance_mm:
+                reasons.append("non_standard_hole_diameter")
+        if not reasons:
+            continue
+        enriched = dict(instance)
+        enriched["violation_reasons"] = reasons
+        matches.append(enriched)
+    return matches
+
+
+def _matching_wall_thickness_instances(
+    review_facts: dict[str, Any],
+    *,
+    threshold: float,
+) -> list[dict[str, Any]]:
+    matches: list[dict[str, Any]] = []
+    for instance in _normalized_wall_thickness_instances(review_facts):
+        thickness_mm = instance.get("thickness_mm")
+        if not isinstance(thickness_mm, (int, float)):
+            continue
+        if thickness_mm >= threshold:
+            continue
+        enriched = dict(instance)
+        enriched["violation_reasons"] = [f"wall_thickness_below_{threshold:.1f}_mm"]
+        matches.append(enriched)
+    return matches
+
+
+def _build_finding_blame_map(
+    *,
+    rule_id: str | None,
+    review_facts: dict[str, Any],
+    violation: dict[str, Any],
+    violating_instances: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    component_node_name = _clean_optional_string(review_facts.get("component_node_name")) or None
+    evaluation = violation.get("evaluation")
+    source_fact_keys: list[str] = []
+    if isinstance(evaluation, dict):
+        fact_key = _clean_optional_string(evaluation.get("fact_key"))
+        if fact_key:
+            source_fact_keys.append(fact_key)
+        fact_keys = evaluation.get("fact_keys")
+        if isinstance(fact_keys, list):
+            for candidate in fact_keys:
+                cleaned = _clean_optional_string(candidate)
+                if cleaned and cleaned not in source_fact_keys:
+                    source_fact_keys.append(cleaned)
+
+    if not violating_instances:
+        if not component_node_name:
+            return None
+        return {
+            "localization_status": "part_level",
+            "primary_anchor": {
+                "anchor_id": f"{rule_id or 'dfm'}-part-level",
+                "component_node_name": component_node_name,
+                "anchor_kind": "part",
+                "position_mm": None,
+                "normal": None,
+                "bbox_bounds_mm": None,
+                "face_indices": [],
+                "label": "Whole part focus",
+            },
+            "secondary_anchors": [],
+            "source_fact_keys": source_fact_keys,
+            "source_feature_refs": [],
+            "explanation": f"Whole-part focus for {rule_id or 'DFM finding'}; no exact local region is preserved yet.",
+        }
+
+    anchor_entries: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    for instance in violating_instances:
+        if not isinstance(instance, dict):
+            continue
+        anchor = _anchor_from_violating_instance(
+            instance=instance,
+            component_node_name=component_node_name,
+            rule_id=rule_id,
+        )
+        if anchor:
+            anchor_entries.append((instance, anchor))
+
+    if not anchor_entries:
+        if not component_node_name:
+            return None
+        return {
+            "localization_status": "part_level",
+            "primary_anchor": {
+                "anchor_id": f"{rule_id or 'dfm'}-part-level",
+                "component_node_name": component_node_name,
+                "anchor_kind": "part",
+                "position_mm": None,
+                "normal": None,
+                "bbox_bounds_mm": None,
+                "face_indices": [],
+                "label": "Whole part focus",
+            },
+            "secondary_anchors": [],
+            "source_fact_keys": source_fact_keys,
+            "source_feature_refs": [],
+            "explanation": f"Whole-part focus for {rule_id or 'DFM finding'}; no exact local region is preserved yet.",
+        }
+
+    primary_index = _select_primary_blame_anchor_index(anchor_entries)
+    primary_instance, primary_anchor = anchor_entries[primary_index]
+    secondary_anchors = [
+        anchor
+        for index, (_, anchor) in enumerate(anchor_entries)
+        if index != primary_index
+    ]
+
+    source_feature_refs = [
+        _clean_optional_string(instance.get("instance_id"))
+        for instance, _ in anchor_entries
+        if _clean_optional_string(instance.get("instance_id"))
+    ]
+
+    if len(anchor_entries) > 1:
+        localization_status = "multi"
+    elif primary_anchor.get("anchor_kind") == "region":
+        localization_status = "region"
+    else:
+        localization_status = "exact_feature"
+
+    return {
+        "localization_status": localization_status,
+        "primary_anchor": primary_anchor,
+        "secondary_anchors": secondary_anchors,
+        "source_fact_keys": source_fact_keys,
+        "source_feature_refs": source_feature_refs,
+        "explanation": _build_blame_map_explanation(
+            rule_id=rule_id,
+            primary_instance=primary_instance,
+            anchor_count=len(anchor_entries),
+        ),
+    }
+
+
+def _anchor_from_violating_instance(
+    *,
+    instance: dict[str, Any],
+    component_node_name: str | None,
+    rule_id: str | None,
+) -> dict[str, Any] | None:
+    bbox_bounds = _rounded_bbox_bounds(instance.get("bbox_bounds_mm"))
+    position = _rounded_point(instance.get("position_mm"))
+    if bbox_bounds is None and position is None:
+        return None
+
+    instance_id = _clean_optional_string(instance.get("instance_id")) or "instance"
+    label = _clean_optional_string(instance.get("location_description")) or instance_id
+    face_indices = [
+        int(face_index)
+        for face_index in instance.get("face_indices", [])
+        if isinstance(face_index, int)
+    ]
+
+    return {
+        "anchor_id": f"{rule_id or 'dfm'}-{instance_id}",
+        "component_node_name": component_node_name,
+        "anchor_kind": "region" if bbox_bounds is not None else "point",
+        "position_mm": position,
+        "normal": None,
+        "bbox_bounds_mm": bbox_bounds,
+        "face_indices": face_indices,
+        "label": label,
+    }
+
+
+def _select_primary_blame_anchor_index(
+    anchor_entries: list[tuple[dict[str, Any], dict[str, Any]]],
+) -> int:
+    best_index = 0
+    best_score = -1
+    for index, (instance, anchor) in enumerate(anchor_entries):
+        reason_count = (
+            len(instance.get("violation_reasons", []))
+            if isinstance(instance.get("violation_reasons"), list)
+            else 0
+        )
+        score = reason_count * 100
+        if anchor.get("bbox_bounds_mm") is not None:
+            score += 10
+        if bool(instance.get("aggravating_factor")):
+            score += 5
+        if score > best_score:
+            best_score = score
+            best_index = index
+    return best_index
+
+
+def _build_blame_map_explanation(
+    *,
+    rule_id: str | None,
+    primary_instance: dict[str, Any],
+    anchor_count: int,
+) -> str:
+    label = _clean_optional_string(primary_instance.get("location_description")) or _clean_optional_string(
+        primary_instance.get("instance_id")
+    )
+    if anchor_count > 1 and label:
+        return f"Primary mapped region for {rule_id or 'DFM finding'} chosen from {anchor_count} localized locations: {label}."
+    if label:
+        return f"Mapped region for {rule_id or 'DFM finding'}: {label}."
+    return f"Primary mapped region for {rule_id or 'DFM finding'}."
+
+
+def _normalized_internal_radius_instances(review_facts: dict[str, Any]) -> list[dict[str, Any]]:
+    payload = review_facts.get("internal_radius_instances")
+    if not isinstance(payload, list):
+        return []
+    normalized: list[dict[str, Any]] = []
+    for item in payload:
+        if not isinstance(item, dict):
+            continue
+        radius_mm = _optional_float(item.get("radius_mm"))
+        if radius_mm is None:
+            continue
+        normalized.append(
+            {
+                "instance_id": _clean_optional_string(item.get("instance_id"))
+                or f"corner_{len(normalized) + 1}",
+                "edge_index": _optional_int(item.get("edge_index")),
+                "location_description": _clean_optional_string(item.get("location_description")),
+                "radius_mm": round(radius_mm, 4),
+                "status": _clean_optional_string(item.get("status")) or None,
+                "recommendation": _clean_optional_string(item.get("recommendation")) or None,
+                "pocket_depth_mm": _rounded_optional_float(item.get("pocket_depth_mm")),
+                "depth_to_radius_ratio": _rounded_optional_float(item.get("depth_to_radius_ratio")),
+                "aggravating_factor": bool(item.get("aggravating_factor")),
+                "position_mm": _rounded_point(item.get("position_mm")),
+                "bbox_bounds_mm": _rounded_bbox_bounds(item.get("bbox_bounds_mm")),
+            }
+        )
+    return normalized
+
+
+def _normalized_hole_instances(review_facts: dict[str, Any]) -> list[dict[str, Any]]:
+    payload = review_facts.get("hole_instances")
+    if not isinstance(payload, list):
+        return []
+    normalized: list[dict[str, Any]] = []
+    for item in payload:
+        if not isinstance(item, dict):
+            continue
+        diameter_mm = _optional_float(item.get("diameter_mm"))
+        if diameter_mm is None or diameter_mm <= 0:
+            continue
+        normalized.append(
+            {
+                "instance_id": _clean_optional_string(item.get("instance_id"))
+                or f"hole_{len(normalized) + 1}",
+                "subtype": _clean_optional_string(item.get("subtype")) or None,
+                "location_description": _clean_optional_string(item.get("location_description")),
+                "diameter_mm": round(diameter_mm, 4),
+                "depth_mm": _rounded_optional_float(item.get("depth_mm")),
+                "depth_to_diameter_ratio": _rounded_optional_float(item.get("depth_to_diameter_ratio")),
+                "position_mm": _rounded_point(item.get("position_mm")),
+                "bbox_bounds_mm": _rounded_bbox_bounds(item.get("bbox_bounds_mm")),
+                "face_indices": [
+                    int(face_index)
+                    for face_index in item.get("face_indices", [])
+                    if isinstance(face_index, int)
+                ],
+            }
+        )
+    return normalized
+
+
+def _normalized_wall_thickness_instances(review_facts: dict[str, Any]) -> list[dict[str, Any]]:
+    payload = review_facts.get("wall_thickness_instances")
+    if not isinstance(payload, list):
+        return []
+    normalized: list[dict[str, Any]] = []
+    for item in payload:
+        if not isinstance(item, dict):
+            continue
+        thickness_mm = _optional_float(item.get("thickness_mm"))
+        if thickness_mm is None or thickness_mm <= 0:
+            continue
+        normalized.append(
+            {
+                "instance_id": _clean_optional_string(item.get("instance_id"))
+                or f"wall_{len(normalized) + 1}",
+                "location_description": _clean_optional_string(item.get("location_description")),
+                "thickness_mm": round(thickness_mm, 4),
+                "position_mm": _rounded_point(item.get("position_mm")),
+                "bbox_bounds_mm": _rounded_bbox_bounds(item.get("bbox_bounds_mm")),
+                "face_indices": [
+                    int(face_index)
+                    for face_index in item.get("face_indices", [])
+                    if isinstance(face_index, int)
+                ],
+            }
+        )
+    return normalized
+
+
+def _standard_hole_diameters_mm() -> list[float]:
+    return [
+        1.0,
+        1.5,
+        2.0,
+        2.5,
+        3.0,
+        3.5,
+        4.0,
+        4.2,
+        4.5,
+        5.0,
+        5.5,
+        6.0,
+        6.8,
+        8.0,
+        8.5,
+        10.0,
+        12.0,
+        14.0,
+        16.0,
+        18.0,
+        20.0,
+    ]
 
 
 def _numeric_fact(review_facts: dict[str, Any], *keys: str) -> float | None:
@@ -1536,6 +3136,57 @@ def _string_fact(value: Any) -> str:
     if not isinstance(value, str):
         return ""
     return value.strip()
+
+
+def _optional_float(value: Any) -> float | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        candidate = float(value)
+        if candidate == candidate and candidate not in (float("inf"), float("-inf")):
+            return candidate
+    return None
+
+
+def _optional_int(value: Any) -> int | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    return None
+
+
+def _rounded_optional_float(value: Any) -> float | None:
+    candidate = _optional_float(value)
+    if candidate is None:
+        return None
+    return round(candidate, 4)
+
+
+def _rounded_point(value: Any) -> list[float] | None:
+    if not isinstance(value, (list, tuple)) or len(value) != 3:
+        return None
+    rounded: list[float] = []
+    for axis_value in value:
+        candidate = _optional_float(axis_value)
+        if candidate is None:
+            return None
+        rounded.append(round(candidate, 4))
+    return rounded
+
+
+def _rounded_bbox_bounds(value: Any) -> list[float] | None:
+    if not isinstance(value, (list, tuple)) or len(value) != 6:
+        return None
+    rounded: list[float] = []
+    for axis_value in value:
+        candidate = _optional_float(axis_value)
+        if candidate is None:
+            return None
+        rounded.append(round(candidate, 4))
+    return rounded
 
 
 def _wall_threshold_for_material(material_spec: str) -> tuple[float, str]:
