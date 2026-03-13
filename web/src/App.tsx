@@ -1684,7 +1684,9 @@ const App = () => {
     if (payload.component_node_name) {
       handleSelectComponent(payload.component_node_name);
     }
-    handleFitView();
+    if (!payload.position_mm && !payload.bbox_bounds_mm) {
+      handleFitView();
+    }
   };
 
   const handleDraftLintSourceChange = (payload: {
@@ -2293,6 +2295,7 @@ const App = () => {
           }
           selectedProfile={selectedComponentProfile}
           profileComplete={isSelectedProfileComplete}
+          onFocusInModel={handleFocusInModel}
           onClose={() => {
             setRightOpen(false);
             setRightTab(null);

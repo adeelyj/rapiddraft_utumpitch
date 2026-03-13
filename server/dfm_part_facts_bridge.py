@@ -20,6 +20,23 @@ def build_extracted_facts_from_part_facts(
         raw_sections = part_facts_payload.get("sections")
         if isinstance(raw_sections, dict):
             sections = raw_sections
+        raw_geometry_instances = part_facts_payload.get("geometry_instances")
+        if isinstance(raw_geometry_instances, dict):
+            internal_radius_instances = _normalized_internal_radius_instances(
+                raw_geometry_instances.get("internal_radius_instances")
+            )
+            if internal_radius_instances:
+                facts["internal_radius_instances"] = internal_radius_instances
+            hole_instances = _normalized_hole_instances(
+                raw_geometry_instances.get("hole_instances")
+            )
+            if hole_instances:
+                facts["hole_instances"] = hole_instances
+            wall_thickness_instances = _normalized_wall_thickness_instances(
+                raw_geometry_instances.get("wall_thickness_instances")
+            )
+            if wall_thickness_instances:
+                facts["wall_thickness_instances"] = wall_thickness_instances
 
     ordered_sections = (
         "geometry",
@@ -77,6 +94,91 @@ def _metric_fact_value(metric: dict[str, Any]) -> Any:
     return value
 
 
+def _normalized_internal_radius_instances(payload: Any) -> list[dict[str, Any]]:
+    if not isinstance(payload, list):
+        return []
+    normalized: list[dict[str, Any]] = []
+    for item in payload:
+        if not isinstance(item, dict):
+            continue
+        radius_mm = _safe_optional_float(item.get("radius_mm"))
+        if radius_mm is None:
+            continue
+        normalized.append(
+            {
+                "instance_id": str(item.get("instance_id") or f"corner_{len(normalized) + 1}"),
+                "edge_index": _safe_optional_int(item.get("edge_index")),
+                "location_description": _clean_optional_string(item.get("location_description")),
+                "radius_mm": round(radius_mm, 4),
+                "status": _clean_optional_string(item.get("status")) or None,
+                "recommendation": _clean_optional_string(item.get("recommendation")) or None,
+                "pocket_depth_mm": _rounded_optional_float(item.get("pocket_depth_mm")),
+                "depth_to_radius_ratio": _rounded_optional_float(item.get("depth_to_radius_ratio")),
+                "aggravating_factor": bool(item.get("aggravating_factor")),
+                "position_mm": _rounded_point(item.get("position_mm")),
+                "bbox_bounds_mm": _rounded_bbox_bounds(item.get("bbox_bounds_mm")),
+            }
+        )
+    return normalized
+
+
+def _normalized_hole_instances(payload: Any) -> list[dict[str, Any]]:
+    if not isinstance(payload, list):
+        return []
+    normalized: list[dict[str, Any]] = []
+    for item in payload:
+        if not isinstance(item, dict):
+            continue
+        diameter_mm = _safe_optional_float(item.get("diameter_mm"))
+        if diameter_mm is None or diameter_mm <= 0:
+            continue
+        normalized.append(
+            {
+                "instance_id": str(item.get("instance_id") or f"hole_{len(normalized) + 1}"),
+                "subtype": _clean_optional_string(item.get("subtype")) or None,
+                "location_description": _clean_optional_string(item.get("location_description")),
+                "diameter_mm": round(diameter_mm, 4),
+                "depth_mm": _rounded_optional_float(item.get("depth_mm")),
+                "depth_to_diameter_ratio": _rounded_optional_float(item.get("depth_to_diameter_ratio")),
+                "position_mm": _rounded_point(item.get("position_mm")),
+                "bbox_bounds_mm": _rounded_bbox_bounds(item.get("bbox_bounds_mm")),
+                "face_indices": [
+                    int(face_index)
+                    for face_index in item.get("face_indices", [])
+                    if isinstance(face_index, int)
+                ],
+            }
+        )
+    return normalized
+
+
+def _normalized_wall_thickness_instances(payload: Any) -> list[dict[str, Any]]:
+    if not isinstance(payload, list):
+        return []
+    normalized: list[dict[str, Any]] = []
+    for item in payload:
+        if not isinstance(item, dict):
+            continue
+        thickness_mm = _safe_optional_float(item.get("thickness_mm"))
+        if thickness_mm is None or thickness_mm <= 0:
+            continue
+        normalized.append(
+            {
+                "instance_id": str(item.get("instance_id") or f"wall_{len(normalized) + 1}"),
+                "location_description": _clean_optional_string(item.get("location_description")),
+                "thickness_mm": round(thickness_mm, 4),
+                "position_mm": _rounded_point(item.get("position_mm")),
+                "bbox_bounds_mm": _rounded_bbox_bounds(item.get("bbox_bounds_mm")),
+                "face_indices": [
+                    int(face_index)
+                    for face_index in item.get("face_indices", [])
+                    if isinstance(face_index, int)
+                ],
+            }
+        )
+    return normalized
+
+
 def _merge_fact_value(facts: dict[str, Any], key: str, candidate: Any) -> None:
     if key not in facts:
         facts[key] = candidate
@@ -104,6 +206,63 @@ def _merge_fact_value(facts: dict[str, Any], key: str, candidate: Any) -> None:
         return
 
     # Preserve the first non-empty value for remaining duplicate key cases.
+
+
+def _safe_optional_float(value: Any) -> float | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        candidate = float(value)
+        if candidate == candidate and candidate not in (float("inf"), float("-inf")):
+            return candidate
+    return None
+
+
+def _safe_optional_int(value: Any) -> int | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    return None
+
+
+def _rounded_optional_float(value: Any) -> float | None:
+    candidate = _safe_optional_float(value)
+    if candidate is None:
+        return None
+    return round(candidate, 4)
+
+
+def _rounded_point(value: Any) -> list[float] | None:
+    if not isinstance(value, (list, tuple)) or len(value) != 3:
+        return None
+    point: list[float] = []
+    for axis_value in value:
+        candidate = _safe_optional_float(axis_value)
+        if candidate is None:
+            return None
+        point.append(round(candidate, 4))
+    return point
+
+
+def _rounded_bbox_bounds(value: Any) -> list[float] | None:
+    if not isinstance(value, (list, tuple)) or len(value) != 6:
+        return None
+    bounds: list[float] = []
+    for axis_value in value:
+        candidate = _safe_optional_float(axis_value)
+        if candidate is None:
+            return None
+        bounds.append(round(candidate, 4))
+    return bounds
+
+
+def _clean_optional_string(value: Any) -> str:
+    if not isinstance(value, str):
+        return ""
+    return value.strip()
 
 
 def _derive_hole_features(

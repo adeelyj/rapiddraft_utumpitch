@@ -1,4 +1,6 @@
-export type AnalysisFocusSource = "vision" | "fusion";
+export type AnalysisFocusSource = "vision" | "fusion" | "dfm_benchmark";
+
+export type AnalysisFocusAnchorKind = "point" | "region" | "multi" | "part";
 
 export type AnalysisFocusPayload = {
   id: string;
@@ -7,5 +9,9 @@ export type AnalysisFocusPayload = {
   details?: string;
   severity?: string;
   component_node_name?: string | null;
+  anchor_kind?: AnalysisFocusAnchorKind;
+  position_mm?: [number, number, number] | null;
+  normal?: [number, number, number] | null;
+  bbox_bounds_mm?: [number, number, number, number, number, number] | null;
+  face_indices?: number[];
 };
-

@@ -2,7 +2,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { Center, Environment, GizmoHelper, GizmoViewport, Html, Line, OrbitControls } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { Box3, MOUSE, Object3D, Vector2, Vector3 } from "three";
+import { Box3, BoxGeometry, EdgesGeometry, MOUSE, Object3D, Vector2, Vector3 } from "three";
 import ReviewPins from "./ReviewPins";
 import type { AnalysisFocusPayload } from "../types/analysis";
 import type { PinPosition, PinnedItem } from "../types/review";
@@ -105,6 +105,56 @@ const analysisTone = (severity: string | undefined): "critical" | "warning" | "c
   if (value === "warning") return "warning";
   if (value === "caution" || value === "minor") return "caution";
   return "info";
+};
+
+
+const analysisToneColor = (tone: "critical" | "warning" | "caution" | "info"): string => {
+  if (tone === "critical") return "#e4573e";
+  if (tone === "warning") return "#f29122";
+  if (tone === "caution") return "#f6a94a";
+  return "#516da4";
+};
+
+const isFiniteTuple = (value: unknown, length: number): value is number[] =>
+  Array.isArray(value) &&
+  value.length === length &&
+  value.every((entry) => typeof entry === "number" && Number.isFinite(entry));
+
+const analysisFocusCenter = (
+  analysisFocus: AnalysisFocusPayload | null | undefined,
+  fallbackObject: Object3D,
+): { center: Vector3; extent: number } | null => {
+  if (analysisFocus && isFiniteTuple(analysisFocus.bbox_bounds_mm, 6)) {
+    const bounds = analysisFocus.bbox_bounds_mm;
+    const center = new Vector3(
+      (bounds[0] + bounds[3]) * 0.5,
+      (bounds[1] + bounds[4]) * 0.5,
+      (bounds[2] + bounds[5]) * 0.5,
+    );
+    const extent = Math.max(
+      new Vector3(bounds[3] - bounds[0], bounds[4] - bounds[1], bounds[5] - bounds[2]).length(),
+      1,
+    );
+    return { center, extent };
+  }
+
+  if (analysisFocus && isFiniteTuple(analysisFocus.position_mm, 3)) {
+    const center = new Vector3(
+      analysisFocus.position_mm[0],
+      analysisFocus.position_mm[1],
+      analysisFocus.position_mm[2],
+    );
+    return { center, extent: 1 };
+  }
+
+  const bounds = new Box3().setFromObject(fallbackObject);
+  if (!Number.isFinite(bounds.max.x) || !Number.isFinite(bounds.min.x)) {
+    return null;
+  }
+  return {
+    center: bounds.getCenter(new Vector3()),
+    extent: Math.max(bounds.getSize(new Vector3()).length(), 1),
+  };
 };
 
 const metricStateClass = (state: string): string => {
@@ -233,6 +283,42 @@ const ModelContents = ({
   }, [analysisFocus?.id]);
 
   useEffect(() => {
+    if (!analysisFocus) return;
+    const requestedNode = analysisFocus.component_node_name || null;
+    const fallbackNode = components[0]?.nodeName ?? null;
+    const targetNodeName = requestedNode || fallbackNode;
+    const targetObject = targetNodeName ? gltf.scene.getObjectByName(targetNodeName) : null;
+    const focusTarget = analysisFocusCenter(analysisFocus, targetObject || gltf.scene);
+    if (!focusTarget) return;
+    if (!analysisFocus.position_mm && !analysisFocus.bbox_bounds_mm) return;
+
+    const startTarget = (controls?.target ?? new Vector3()).clone();
+    const direction = camera.position.clone().sub(startTarget);
+    if (direction.lengthSq() < 1e-6) {
+      direction.copy(camera.position.clone().sub(focusTarget.center));
+    }
+    if (direction.lengthSq() < 1e-6) {
+      direction.set(1, 1, 1);
+    }
+    direction.normalize();
+
+    const endDistance = Math.max(focusTarget.extent * 1.35, 1.6);
+    const endPosition = focusTarget.center.clone().add(direction.multiplyScalar(endDistance));
+
+    flyRef.current = {
+      startPos: camera.position.clone(),
+      startTarget,
+      endPos: endPosition,
+      endTarget: focusTarget.center,
+      startTime: performance.now(),
+      duration: 520,
+    };
+    if (controls) {
+      controls.enabled = false;
+    }
+  }, [analysisFocus?.id, analysisFocus, camera, components, controls, gltf.scene]);
+
+  useEffect(() => {
     if (pinMode === "none" || (!onCommentPin && !onReviewPin)) {
       gl.domElement.style.cursor = "default";
       return;
@@ -350,14 +436,10 @@ const ModelContents = ({
     const fallbackNode = components[0]?.nodeName ?? null;
     const targetNodeName = requestedNode || fallbackNode;
     const targetObject = targetNodeName ? gltf.scene.getObjectByName(targetNodeName) : null;
-    const boundsTarget = targetObject || gltf.scene;
-    const bounds = new Box3().setFromObject(boundsTarget);
-    if (!Number.isFinite(bounds.max.x) || !Number.isFinite(bounds.min.x)) {
-      return null;
-    }
-    const center = bounds.getCenter(new Vector3());
-    const extents = bounds.getSize(new Vector3());
-    const extent = Math.max(extents.length(), 1);
+    const focusTarget = analysisFocusCenter(analysisFocus, targetObject || gltf.scene);
+    if (!focusTarget) return null;
+    const center = focusTarget.center;
+    const extent = focusTarget.extent;
     const offsetDirection = camera.position.clone().sub(center);
     if (offsetDirection.lengthSq() < 1e-6) {
       offsetDirection.set(0, 1, 0);
@@ -371,6 +453,44 @@ const ModelContents = ({
       tone: analysisTone(analysisFocus.severity),
     };
   }, [analysisFocus, camera, components, gltf.scene]);
+
+  const analysisBoundsOverlay = useMemo(() => {
+    if (!analysisFocus || !isFiniteTuple(analysisFocus.bbox_bounds_mm, 6)) return null;
+    const bounds = analysisFocus.bbox_bounds_mm;
+    const size: [number, number, number] = [
+      Math.max(bounds[3] - bounds[0], 0.05),
+      Math.max(bounds[4] - bounds[1], 0.05),
+      Math.max(bounds[5] - bounds[2], 0.05),
+    ];
+    const center: [number, number, number] = [
+      (bounds[0] + bounds[3]) * 0.5,
+      (bounds[1] + bounds[4]) * 0.5,
+      (bounds[2] + bounds[5]) * 0.5,
+    ];
+    return {
+      center,
+      size,
+      tone: analysisTone(analysisFocus.severity),
+    };
+  }, [analysisFocus]);
+
+  const analysisBoundsEdges = useMemo(() => {
+    if (!analysisBoundsOverlay) return null;
+    const geometry = new BoxGeometry(
+      analysisBoundsOverlay.size[0],
+      analysisBoundsOverlay.size[1],
+      analysisBoundsOverlay.size[2],
+    );
+    const edges = new EdgesGeometry(geometry);
+    geometry.dispose();
+    return edges;
+  }, [analysisBoundsOverlay]);
+
+  useEffect(() => {
+    return () => {
+      analysisBoundsEdges?.dispose();
+    };
+  }, [analysisBoundsEdges]);
 
   return (
     <>
@@ -386,6 +506,32 @@ const ModelContents = ({
         onSelect={onSelectTicket}
         showCards={showReviewCards}
       />
+      {analysisBoundsOverlay && analysisBoundsEdges ? (
+        <group key={`analysis-focus-bounds-${analysisFocus?.id}`}>
+          <mesh
+            position={analysisBoundsOverlay.center}
+            renderOrder={1}
+          >
+            <boxGeometry args={analysisBoundsOverlay.size} />
+            <meshBasicMaterial
+              color={analysisToneColor(analysisBoundsOverlay.tone)}
+              transparent
+              opacity={0.12}
+              depthWrite={false}
+              depthTest={false}
+            />
+          </mesh>
+          <lineSegments position={analysisBoundsOverlay.center} renderOrder={2}>
+            <primitive object={analysisBoundsEdges} attach="geometry" />
+            <lineBasicMaterial
+              color={analysisToneColor(analysisBoundsOverlay.tone)}
+              transparent
+              opacity={0.94}
+              depthTest={false}
+            />
+          </lineSegments>
+        </group>
+      ) : null}
       {analysisFocus && analysisMarker ? (
         <group key={`analysis-focus-${analysisFocus.id}`}>
           <Line points={[analysisMarker.position, analysisMarker.lineEnd]} color="#ef651a" lineWidth={1.2} />

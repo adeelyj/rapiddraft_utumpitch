@@ -15,6 +15,46 @@ from server.dfm_part_facts_bridge import (  # noqa: E402
 
 def test_bridge_maps_known_metrics_derives_fields_and_tracks_not_applicable():
     payload = {
+        "geometry_instances": {
+            "internal_radius_instances": [
+                {
+                    "instance_id": "C1",
+                    "edge_index": 12,
+                    "location_description": "front-left pocket corner",
+                    "radius_mm": 1.2,
+                    "status": "WARNING",
+                    "recommendation": "Increase radius",
+                    "pocket_depth_mm": 9.6,
+                    "depth_to_radius_ratio": 8.0,
+                    "aggravating_factor": True,
+                    "position_mm": [10.0, 20.0, 30.0],
+                    "bbox_bounds_mm": [9.0, 19.0, 29.0, 11.0, 21.0, 31.0],
+                }
+            ],
+            "hole_instances": [
+                {
+                    "instance_id": "H1",
+                    "subtype": "through_hole",
+                    "location_description": "primary bore",
+                    "diameter_mm": 2.0,
+                    "depth_mm": 24.0,
+                    "depth_to_diameter_ratio": 12.0,
+                    "position_mm": [15.0, 25.0, 35.0],
+                    "bbox_bounds_mm": [14.0, 24.0, 34.0, 16.0, 26.0, 36.0],
+                    "face_indices": [7, 8],
+                }
+            ],
+            "wall_thickness_instances": [
+                {
+                    "instance_id": "W1",
+                    "location_description": "thin clamp wall",
+                    "thickness_mm": 1.2,
+                    "position_mm": [5.0, 6.0, 7.0],
+                    "bbox_bounds_mm": [4.0, 5.0, 6.0, 6.0, 7.0, 8.0],
+                    "face_indices": [21, 22],
+                }
+            ],
+        },
         "sections": {
             "geometry": {
                 "bbox_x_mm": {
@@ -120,6 +160,44 @@ def test_bridge_maps_known_metrics_derives_fields_and_tracks_not_applicable():
     assert facts["curved_milled_faces_present"] is True
     assert facts["min_wall_thickness"] == 1.2
     assert facts["wall_thickness_map"] is True
+    assert facts["internal_radius_instances"] == [
+        {
+            "instance_id": "C1",
+            "edge_index": 12,
+            "location_description": "front-left pocket corner",
+            "radius_mm": 1.2,
+            "status": "WARNING",
+            "recommendation": "Increase radius",
+            "pocket_depth_mm": 9.6,
+            "depth_to_radius_ratio": 8.0,
+            "aggravating_factor": True,
+            "position_mm": [10.0, 20.0, 30.0],
+            "bbox_bounds_mm": [9.0, 19.0, 29.0, 11.0, 21.0, 31.0],
+        }
+    ]
+    assert facts["hole_instances"] == [
+        {
+            "instance_id": "H1",
+            "subtype": "through_hole",
+            "location_description": "primary bore",
+            "diameter_mm": 2.0,
+            "depth_mm": 24.0,
+            "depth_to_diameter_ratio": 12.0,
+            "position_mm": [15.0, 25.0, 35.0],
+            "bbox_bounds_mm": [14.0, 24.0, 34.0, 16.0, 26.0, 36.0],
+            "face_indices": [7, 8],
+        }
+    ]
+    assert facts["wall_thickness_instances"] == [
+        {
+            "instance_id": "W1",
+            "location_description": "thin clamp wall",
+            "thickness_mm": 1.2,
+            "position_mm": [5.0, 6.0, 7.0],
+            "bbox_bounds_mm": [4.0, 5.0, 6.0, 6.0, 7.0, 8.0],
+            "face_indices": [21, 22],
+        }
+    ]
 
     # Profile values override lower-fidelity bridge hints.
     assert facts["material_spec"] == "Aluminum"

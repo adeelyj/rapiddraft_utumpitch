@@ -325,6 +325,22 @@ def _bbox_center_point(
     )
 
 
+def _box_payload_from_center(
+    center: tuple[float, float, float],
+    *,
+    half_extent_mm: float,
+) -> list[float]:
+    half_extent = max(float(half_extent_mm), 0.05)
+    return [
+        round(float(center[0]) - half_extent, 4),
+        round(float(center[1]) - half_extent, 4),
+        round(float(center[2]) - half_extent, 4),
+        round(float(center[0]) + half_extent, 4),
+        round(float(center[1]) + half_extent, 4),
+        round(float(center[2]) + half_extent, 4),
+    ]
+
+
 def detect_turning_from_face_inventory(
     face_inventory: list[dict[str, Any]],
     *,
@@ -3711,6 +3727,11 @@ class CncGeometryAnalyzer:
                     "corner_id": f"C{corner_num}",
                     "edge_index": edge_index,
                     "location_description": describe_location(midpoint, bounds),
+                    "position_mm": [
+                        round(float(midpoint[0]), 4),
+                        round(float(midpoint[1]), 4),
+                        round(float(midpoint[2]), 4),
+                    ],
                     "radius_mm": None if radius_mm is None else round(radius_mm, 4),
                     "status": status,
                     "minimum_tool_required": minimum_tool_required(
@@ -3724,6 +3745,17 @@ class CncGeometryAnalyzer:
                     if depth_to_radius_ratio is None
                     else round(depth_to_radius_ratio, 4),
                     "aggravating_factor": aggravating_factor,
+                    "anchor_bounds_mm": _box_payload_from_center(
+                        midpoint,
+                        half_extent_mm=min(
+                            12.0,
+                            max(
+                                1.5,
+                                (pocket_depth_mm or 0.0) * 0.08,
+                                (radius_mm or 0.0) * 2.0,
+                            ),
+                        ),
+                    ),
                 }
             )
             corner_num += 1

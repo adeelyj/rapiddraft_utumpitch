@@ -261,6 +261,349 @@ def test_review_v2_can_emit_rule_violation_findings():
     assert all(isinstance(finding.get("expected_impact"), dict) for finding in rule_violations)
 
 
+def test_review_v2_small_radius_findings_can_emit_violating_instances():
+    bundle = _bundle()
+    context_payload = _all_required_facts(bundle, ["A_DRAWING", "B_CNC"])
+    context_payload.update(
+        {
+            "material_spec": "Aluminum 6061",
+            "pocket_depth": True,
+            "pocket_corner_radius": True,
+            "max_pocket_depth_mm": 25.0,
+            "min_internal_radius_mm": 1.2,
+            "count_radius_below_3_0_mm": 2,
+            "internal_radius_instances": [
+                {
+                    "instance_id": "C1",
+                    "edge_index": 11,
+                    "location_description": "front-left pocket corner",
+                    "radius_mm": 1.2,
+                    "status": "WARNING",
+                    "recommendation": "Increase radius",
+                    "pocket_depth_mm": 12.0,
+                    "depth_to_radius_ratio": 10.0,
+                    "aggravating_factor": True,
+                    "position_mm": [10.0, 20.0, 30.0],
+                    "bbox_bounds_mm": [9.0, 19.0, 29.0, 11.0, 21.0, 31.0],
+                },
+                {
+                    "instance_id": "C2",
+                    "edge_index": 12,
+                    "location_description": "rear-right pocket corner",
+                    "radius_mm": 2.5,
+                    "status": "CAUTION",
+                    "recommendation": "Increase radius",
+                    "pocket_depth_mm": 17.5,
+                    "depth_to_radius_ratio": 7.0,
+                    "aggravating_factor": True,
+                    "position_mm": [40.0, 50.0, 60.0],
+                    "bbox_bounds_mm": [38.5, 48.5, 58.5, 41.5, 51.5, 61.5],
+                },
+                {
+                    "instance_id": "C3",
+                    "edge_index": 13,
+                    "location_description": "large blend",
+                    "radius_mm": 4.0,
+                    "status": "OK",
+                    "recommendation": "No action",
+                    "pocket_depth_mm": 8.0,
+                    "depth_to_radius_ratio": 2.0,
+                    "aggravating_factor": False,
+                    "position_mm": [70.0, 80.0, 90.0],
+                    "bbox_bounds_mm": [68.0, 78.0, 88.0, 72.0, 82.0, 92.0],
+                },
+            ],
+        }
+    )
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="model-small-radius-instances",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Part 1",
+            "profile": {},
+        },
+        execution_plans=[
+            {
+                "plan_id": "plan_1",
+                "route_source": "selected",
+                "process_id": "cnc_milling",
+                "pack_ids": ["A_DRAWING", "B_CNC"],
+                "overlay_id": None,
+                "role_id": "general_dfm",
+                "template_id": "executive_1page",
+            }
+        ],
+        context_payload=context_payload,
+    )
+
+    violations = [
+        finding
+        for finding in response["routes"][0]["findings"]
+        if finding.get("finding_type") == "rule_violation"
+    ]
+    cnc_006 = next(finding for finding in violations if finding.get("rule_id") == "CNC-006")
+    food_004 = next((finding for finding in violations if finding.get("rule_id") == "FOOD-004"), None)
+
+    cnc_006_instances = cnc_006["evidence"]["violating_instances"]
+    assert [instance["instance_id"] for instance in cnc_006_instances] == ["C1", "C2"]
+    assert cnc_006_instances[0]["violation_reasons"] == [
+        "radius_below_3.0_mm",
+        "depth_to_radius_ratio_above_6.0",
+    ]
+    assert cnc_006_instances[0]["bbox_bounds_mm"] == [9.0, 19.0, 29.0, 11.0, 21.0, 31.0]
+    assert cnc_006_instances[1]["violation_reasons"] == [
+        "radius_below_3.0_mm",
+        "depth_to_radius_ratio_above_6.0",
+    ]
+    assert cnc_006_instances[1]["bbox_bounds_mm"] == [38.5, 48.5, 58.5, 41.5, 51.5, 61.5]
+
+    if food_004 is not None:
+        food_004_instances = food_004["evidence"]["violating_instances"]
+        assert [instance["instance_id"] for instance in food_004_instances] == ["C1", "C2"]
+        assert food_004_instances[0]["bbox_bounds_mm"] == [9.0, 19.0, 29.0, 11.0, 21.0, 31.0]
+
+
+def test_review_v2_deep_pocket_and_long_reach_findings_can_emit_violating_instances():
+    bundle = _bundle()
+    context_payload = _all_required_facts(bundle, ["A_DRAWING", "B_CNC"])
+    context_payload.update(
+        {
+            "material_spec": "Aluminum 6061",
+            "pocket_depth": True,
+            "pocket_corner_radius": True,
+            "max_pocket_depth_mm": 22.0,
+            "min_internal_radius_mm": 1.5,
+            "long_reach_tool_risk_count": 2,
+            "max_depth_to_radius_ratio": 14.6667,
+            "internal_radius_instances": [
+                {
+                    "instance_id": "P1",
+                    "edge_index": 21,
+                    "location_description": "deep rib pocket corner",
+                    "radius_mm": 1.5,
+                    "status": "WARNING",
+                    "recommendation": "Increase radius",
+                    "pocket_depth_mm": 22.0,
+                    "depth_to_radius_ratio": 14.6667,
+                    "aggravating_factor": True,
+                    "position_mm": [15.0, 25.0, 35.0],
+                    "bbox_bounds_mm": [13.5, 23.5, 33.5, 16.5, 26.5, 36.5],
+                },
+                {
+                    "instance_id": "P2",
+                    "edge_index": 22,
+                    "location_description": "long-reach corner",
+                    "radius_mm": 2.8,
+                    "status": "CAUTION",
+                    "recommendation": "Reduce pocket depth",
+                    "pocket_depth_mm": 11.0,
+                    "depth_to_radius_ratio": 3.9286,
+                    "aggravating_factor": True,
+                    "position_mm": [45.0, 55.0, 65.0],
+                    "bbox_bounds_mm": [43.5, 53.5, 63.5, 46.5, 56.5, 66.5],
+                },
+                {
+                    "instance_id": "P3",
+                    "edge_index": 23,
+                    "location_description": "deep finishing corner",
+                    "radius_mm": 3.5,
+                    "status": "WARNING",
+                    "recommendation": "Open up pocket",
+                    "pocket_depth_mm": 40.0,
+                    "depth_to_radius_ratio": 11.4286,
+                    "aggravating_factor": False,
+                    "position_mm": [75.0, 85.0, 95.0],
+                    "bbox_bounds_mm": [73.0, 83.0, 93.0, 77.0, 87.0, 97.0],
+                },
+            ],
+        }
+    )
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="model-deep-pocket-long-reach-instances",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Part 1",
+            "profile": {},
+        },
+        execution_plans=[
+            {
+                "plan_id": "plan_1",
+                "route_source": "selected",
+                "process_id": "cnc_milling",
+                "pack_ids": ["A_DRAWING", "B_CNC"],
+                "overlay_id": None,
+                "role_id": "general_dfm",
+                "template_id": "executive_1page",
+            }
+        ],
+        context_payload=context_payload,
+    )
+
+    violations = {
+        finding["rule_id"]: finding
+        for finding in response["routes"][0]["findings"]
+        if finding.get("finding_type") == "rule_violation"
+    }
+    cnc_013_instances = violations["CNC-013"]["evidence"]["violating_instances"]
+    cnc_024_instances = violations["CNC-024"]["evidence"]["violating_instances"]
+
+    assert [instance["instance_id"] for instance in cnc_013_instances] == ["P1", "P2", "P3"]
+    assert cnc_013_instances[0]["violation_reasons"] == [
+        "depth_to_radius_ratio_above_8.0",
+        "long_reach_tool_risk",
+    ]
+    assert cnc_013_instances[1]["violation_reasons"] == ["long_reach_tool_risk"]
+    assert cnc_013_instances[2]["violation_reasons"] == ["depth_to_radius_ratio_above_8.0"]
+    assert cnc_013_instances[0]["bbox_bounds_mm"] == [13.5, 23.5, 33.5, 16.5, 26.5, 36.5]
+
+    assert [instance["instance_id"] for instance in cnc_024_instances] == ["P1", "P3"]
+    assert cnc_024_instances[0]["violation_reasons"] == [
+        "pocket_depth_above_12.0_mm",
+        "depth_to_radius_ratio_above_10.0",
+    ]
+    assert cnc_024_instances[1]["violation_reasons"] == [
+        "pocket_depth_above_12.0_mm",
+        "depth_to_radius_ratio_above_10.0",
+    ]
+    assert cnc_024_instances[1]["bbox_bounds_mm"] == [73.0, 83.0, 93.0, 77.0, 87.0, 97.0]
+
+
+def test_review_v2_hole_findings_can_emit_violating_instances():
+    bundle = _bundle()
+    context_payload = _all_required_facts(bundle, ["A_DRAWING", "B_CNC"])
+    context_payload.update(
+        {
+            "hole_features": True,
+            "hole_depth": True,
+            "hole_diameter": True,
+            "hole_depth_mm": 18.0,
+            "hole_diameter_mm": 1.3,
+            "min_hole_diameter_mm": 1.3,
+            "hole_instances": [
+                {
+                    "instance_id": "H1",
+                    "subtype": "through_hole",
+                    "location_description": "small deep pilot hole",
+                    "diameter_mm": 1.3,
+                    "depth_mm": 18.0,
+                    "depth_to_diameter_ratio": 13.8462,
+                    "position_mm": [15.0, 25.0, 35.0],
+                    "bbox_bounds_mm": [14.0, 24.0, 34.0, 16.0, 26.0, 36.0],
+                    "face_indices": [7, 8],
+                },
+                {
+                    "instance_id": "H2",
+                    "subtype": "through_hole",
+                    "location_description": "clearance hole",
+                    "diameter_mm": 4.0,
+                    "depth_mm": 8.0,
+                    "depth_to_diameter_ratio": 2.0,
+                    "position_mm": [45.0, 55.0, 65.0],
+                    "bbox_bounds_mm": [43.0, 53.0, 63.0, 47.0, 57.0, 67.0],
+                    "face_indices": [17],
+                },
+            ],
+        }
+    )
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="model-hole-instances",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Part 1",
+            "profile": {},
+        },
+        execution_plans=[
+            {
+                "plan_id": "plan_1",
+                "route_source": "selected",
+                "process_id": "cnc_milling",
+                "pack_ids": ["A_DRAWING", "B_CNC"],
+                "overlay_id": None,
+                "role_id": "general_dfm",
+                "template_id": "executive_1page",
+            }
+        ],
+        context_payload=context_payload,
+    )
+
+    violations = {
+        finding["rule_id"]: finding
+        for finding in response["routes"][0]["findings"]
+        if finding.get("finding_type") == "rule_violation"
+    }
+    cnc_002_instances = violations["CNC-002"]["evidence"]["violating_instances"]
+    cnc_003_instances = violations["CNC-003"]["evidence"]["violating_instances"]
+
+    assert [instance["instance_id"] for instance in cnc_002_instances] == ["H1"]
+    assert cnc_002_instances[0]["violation_reasons"] == ["depth_to_diameter_ratio_above_10.0"]
+    assert cnc_002_instances[0]["bbox_bounds_mm"] == [14.0, 24.0, 34.0, 16.0, 26.0, 36.0]
+
+    assert [instance["instance_id"] for instance in cnc_003_instances] == ["H1"]
+    assert cnc_003_instances[0]["violation_reasons"] == ["non_standard_hole_diameter"]
+
+
+def test_review_v2_wall_findings_can_emit_violating_instances():
+    bundle = _bundle()
+    context_payload = _all_required_facts(bundle, ["A_DRAWING", "B_CNC"])
+    context_payload.update(
+        {
+            "wall_thickness_map": True,
+            "min_wall_thickness": 0.6,
+            "material_spec": "Aluminum 6061",
+            "tight_tolerance_flag": True,
+            "wall_thickness_instances": [
+                {
+                    "instance_id": "W1",
+                    "location_description": "thin clamp wall",
+                    "thickness_mm": 0.6,
+                    "position_mm": [5.0, 6.0, 7.0],
+                    "bbox_bounds_mm": [4.0, 5.0, 6.0, 6.0, 7.0, 8.0],
+                    "face_indices": [21, 22],
+                }
+            ],
+        }
+    )
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="model-wall-instances",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Part 1",
+            "profile": {},
+        },
+        execution_plans=[
+            {
+                "plan_id": "plan_1",
+                "route_source": "selected",
+                "process_id": "cnc_milling",
+                "pack_ids": ["A_DRAWING", "B_CNC"],
+                "overlay_id": None,
+                "role_id": "general_dfm",
+                "template_id": "executive_1page",
+            }
+        ],
+        context_payload=context_payload,
+    )
+
+    violations = {
+        finding["rule_id"]: finding
+        for finding in response["routes"][0]["findings"]
+        if finding.get("finding_type") == "rule_violation"
+    }
+    cnc_001_instances = violations["CNC-001"]["evidence"]["violating_instances"]
+    cnc_020_instances = violations["CNC-020"]["evidence"]["violating_instances"]
+
+    assert [instance["instance_id"] for instance in cnc_001_instances] == ["W1"]
+    assert cnc_001_instances[0]["violation_reasons"] == ["wall_thickness_below_1.0_mm"]
+    assert cnc_001_instances[0]["bbox_bounds_mm"] == [4.0, 5.0, 6.0, 6.0, 7.0, 8.0]
+
+    assert [instance["instance_id"] for instance in cnc_020_instances] == ["W1"]
+    assert cnc_020_instances[0]["violation_reasons"] == ["wall_thickness_below_1.2_mm"]
+
+
 def test_review_v2_geometry_evidence_surfaces_sample_2_turning_signals():
     bundle = _bundle()
     adapted = adapt_cadex_features_to_facts(
@@ -374,6 +717,105 @@ def test_review_v2_geometry_evidence_surfaces_sample_6_turning_and_groove_signal
     assert detail_metrics["turned_diameter_faces_count"] == 18
     assert detail_metrics["turned_end_faces_count"] == 4
     assert detail_metrics["turned_profile_faces_count"] == 4
+
+
+def test_review_v2_geometry_evidence_can_emit_feature_anchors():
+    bundle = _bundle()
+
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="geometry-evidence-anchor-test",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Anchor Part",
+            "profile": {
+                "material": "Aluminum",
+                "manufacturingProcess": "CNC Machining",
+                "industry": "Aerospace",
+            },
+            "geometry_feature_inventory": {
+                "face_inventory": [
+                    {
+                        "face_index": 7,
+                        "centroid_mm": [10.0, 20.0, 30.0],
+                        "bbox_bounds": [8.0, 18.0, 28.0, 12.0, 22.0, 32.0],
+                        "sample_point_mm": [10.0, 20.0, 30.0],
+                        "sample_normal": [0.0, 0.0, 1.0],
+                    },
+                    {
+                        "face_index": 8,
+                        "centroid_mm": [40.0, 25.0, 15.0],
+                        "bbox_bounds": [38.0, 23.0, 13.0, 42.0, 27.0, 17.0],
+                        "sample_point_mm": [40.0, 25.0, 15.0],
+                        "sample_normal": [1.0, 0.0, 0.0],
+                    },
+                ],
+                "turning_detection": {
+                    "primary_cluster": {"face_indices": [8]},
+                    "turned_diameter_groups": [{"face_indices": [8]}],
+                    "turned_end_face_indices": [8],
+                    "outer_diameter_groove_groups": [],
+                    "end_face_groove_groups": [],
+                },
+                "hole_detection": {
+                    "candidates": [
+                        {
+                            "face_index": 7,
+                            "group_face_indices": [7],
+                            "bbox_bounds": [8.0, 18.0, 28.0, 12.0, 22.0, 32.0],
+                            "subtype": "bore",
+                        }
+                    ]
+                },
+                "pocket_detection": {
+                    "open_pocket_feature_groups": [],
+                    "closed_pocket_feature_groups": [],
+                },
+                "boss_detection": {"candidates": []},
+                "milled_face_detection": {"face_indices": []},
+            },
+        },
+        planning_inputs={
+            "extracted_part_facts": {
+                "rotational_symmetry": True,
+                "turned_face_count": 1,
+                "turned_diameter_faces_count": 1,
+                "hole_count": 1,
+                "bore_count": 1,
+            },
+            "analysis_mode": "geometry_dfm",
+            "selected_process_override": None,
+            "selected_overlay": None,
+            "process_selection_mode": "auto",
+            "overlay_selection_mode": "none",
+            "selected_role": "general_dfm",
+            "selected_template": "executive_1page",
+            "run_both_if_mismatch": False,
+        },
+        context_payload={},
+    )
+
+    geometry_evidence = response["geometry_evidence"]
+    groups = {entry["group_id"]: entry for entry in geometry_evidence["feature_groups"]}
+
+    turning_anchor = next(
+        metric["geometry_anchor"]
+        for metric in groups["turning"]["metrics"]
+        if metric["key"] == "turned_face_count"
+    )
+    bore_anchor = next(
+        metric["geometry_anchor"]
+        for metric in groups["holes"]["metrics"]
+        if metric["key"] == "bore_count"
+    )
+
+    assert turning_anchor["component_node_name"] == "component_1"
+    assert turning_anchor["face_indices"] == [8]
+    assert turning_anchor["position_mm"] == [40.0, 25.0, 15.0]
+
+    assert bore_anchor["component_node_name"] == "component_1"
+    assert bore_anchor["face_indices"] == [7]
+    assert bore_anchor["bbox_bounds_mm"] == [8.0, 18.0, 28.0, 12.0, 22.0, 32.0]
 
 
 def test_review_v2_response_includes_effective_context_when_provided():

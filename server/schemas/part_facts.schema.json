@@ -14,6 +14,7 @@
     "missing_inputs",
     "assumptions",
     "errors",
+    "geometry_instances",
     "sections"
   ],
   "properties": {
@@ -74,6 +75,30 @@
       "items": {
         "type": "string"
       }
+    },
+    "geometry_instances": {
+      "type": "object",
+      "properties": {
+        "internal_radius_instances": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/internalRadiusInstance"
+          }
+        },
+        "hole_instances": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/holeInstance"
+          }
+        },
+        "wall_thickness_instances": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/wallThicknessInstance"
+          }
+        }
+      },
+      "additionalProperties": false
     },
     "sections": {
       "type": "object",
@@ -188,6 +213,142 @@
         },
         "reason": {
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "internalRadiusInstance": {
+      "type": "object",
+      "required": [
+        "instance_id",
+        "radius_mm",
+        "aggravating_factor"
+      ],
+      "properties": {
+        "instance_id": {
+          "type": "string"
+        },
+        "edge_index": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "location_description": {
+          "type": "string"
+        },
+        "radius_mm": {
+          "type": "number"
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "recommendation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pocket_depth_mm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "depth_to_radius_ratio": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "aggravating_factor": {
+          "type": "boolean"
+        },
+        "position_mm": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "bbox_bounds_mm": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          },
+          "minItems": 6,
+          "maxItems": 6
+        }
+      },
+      "additionalProperties": false
+    },
+    "holeInstance": {
+      "type": "object",
+      "required": [
+        "instance_id",
+        "diameter_mm"
+      ],
+      "properties": {
+        "instance_id": { "type": "string" },
+        "subtype": { "type": ["string", "null"] },
+        "location_description": { "type": "string" },
+        "diameter_mm": { "type": "number" },
+        "depth_mm": { "type": ["number", "null"] },
+        "depth_to_diameter_ratio": { "type": ["number", "null"] },
+        "position_mm": {
+          "type": ["array", "null"],
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "bbox_bounds_mm": {
+          "type": ["array", "null"],
+          "items": { "type": "number" },
+          "minItems": 6,
+          "maxItems": 6
+        },
+        "face_indices": {
+          "type": "array",
+          "items": { "type": "integer" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "wallThicknessInstance": {
+      "type": "object",
+      "required": [
+        "instance_id",
+        "thickness_mm"
+      ],
+      "properties": {
+        "instance_id": { "type": "string" },
+        "location_description": { "type": "string" },
+        "thickness_mm": { "type": "number" },
+        "position_mm": {
+          "type": ["array", "null"],
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "bbox_bounds_mm": {
+          "type": ["array", "null"],
+          "items": { "type": "number" },
+          "minItems": 6,
+          "maxItems": 6
+        },
+        "face_indices": {
+          "type": "array",
+          "items": { "type": "integer" }
         }
       },
       "additionalProperties": false
