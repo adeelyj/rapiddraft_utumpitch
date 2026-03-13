@@ -54,17 +54,80 @@ type DfmFindingExpectedImpact = {
   lead_time_impact?: string;
 };
 
+type DfmFindingAnchor = {
+  anchor_id: string;
+  component_node_name?: string | null;
+  anchor_kind?: "point" | "region" | "multi" | "part";
+  position_mm?: [number, number, number] | null;
+  normal?: [number, number, number] | null;
+  bbox_bounds_mm?: [number, number, number, number, number, number] | null;
+  face_indices?: number[];
+  label?: string | null;
+};
+
+type DfmFindingBlameMap = {
+  localization_status?: "exact_feature" | "region" | "multi" | "part_level" | "unlocalized";
+  primary_anchor?: DfmFindingAnchor | null;
+  secondary_anchors?: DfmFindingAnchor[];
+  source_fact_keys?: string[];
+  source_feature_refs?: string[];
+  explanation?: string | null;
+};
+
+type DfmViolatingInstance = {
+  instance_id: string;
+  location_description?: string | null;
+  radius_mm?: number | null;
+  diameter_mm?: number | null;
+  depth_mm?: number | null;
+  thickness_mm?: number | null;
+  pocket_depth_mm?: number | null;
+  depth_to_radius_ratio?: number | null;
+  depth_to_diameter_ratio?: number | null;
+  position_mm?: [number, number, number] | null;
+  bbox_bounds_mm?: [number, number, number, number, number, number] | null;
+};
+
+type DfmFindingEvidence = {
+  violating_instances?: DfmViolatingInstance[];
+};
+
+type DfmGeometryMetric = {
+  key: string;
+  label: string;
+  value: string | number | boolean;
+  unit?: string | null;
+  geometry_anchor?: DfmFindingAnchor | null;
+};
+
+type DfmGeometryEvidence = {
+  process_summary?: {
+    effective_process_label?: string | null;
+    ai_process_label?: string | null;
+  };
+  feature_groups?: Array<{
+    group_id: string;
+    label: string;
+    summary: string;
+    metrics: DfmGeometryMetric[];
+  }>;
+  detail_metrics?: DfmGeometryMetric[];
+};
+
 type DfmFinding = {
   rule_id: string;
   pack_id: string;
   finding_type?: "evidence_gap" | "rule_violation";
   severity: string;
   title?: string;
+  description?: string;
   refs: string[];
   standard_clause?: string;
   recommended_action?: string;
   evidence_quality?: string;
   expected_impact?: DfmFindingExpectedImpact;
+  blame_map?: DfmFindingBlameMap;
+  evidence?: DfmFindingEvidence;
 };
 
 type DfmCoverageSummary = {
@@ -117,12 +180,21 @@ type DfmReviewV2Response = {
   } | null;
   ai_recommendation: DfmAiRecommendation | null;
   mismatch: {
+    has_mismatch?: boolean;
+    banner?: string | null;
     run_both_executed?: boolean;
+    user_selected_process?: {
+      process_label?: string | null;
+    } | null;
+    ai_process?: {
+      process_label?: string | null;
+    } | null;
   };
   route_count: number;
   finding_count_total: number;
   standards_used_auto_union: DfmStandardRef[];
   routes: DfmReviewRoute[];
+  geometry_evidence?: DfmGeometryEvidence | null;
 };
 
 type DesignReviewStatus = "idle" | "uploading" | "needs_input" | "ready" | "running" | "passed" | "partial" | "failed";
@@ -152,12 +224,17 @@ type ReviewFindingCard = {
   tone: "critical" | "warning" | "caution" | "info";
   title: string;
   summary: string;
+  description?: string;
   severity: string;
   refs: string[];
   standardClause?: string;
   recommendedAction?: string;
   evidenceQuality?: string;
   expectedImpact?: DfmFindingExpectedImpact;
+  locationHint?: string | null;
+  locationSummary?: string | null;
+  mappedLocationCount: number;
+  focusPayload: AnalysisFocusPayload;
 };
 
 type TimelineTone = "accent" | "neutral" | "warning";
@@ -423,28 +500,169 @@ const findingTone = (severity: string): "critical" | "warning" | "caution" | "in
   return "info";
 };
 
-const flattenFindings = (result: DfmReviewV2Response | null): ReviewFindingCard[] =>
+const formatCompactNumber = (value: number, digits = 1): string =>
+  Number.isInteger(value) ? value.toString() : value.toFixed(digits);
+
+const blameMapLabel = (blameMap: DfmFindingBlameMap | undefined): string | null => {
+  switch (blameMap?.localization_status) {
+    case "multi":
+      return "Multi-location focus";
+    case "region":
+      return "Regional focus";
+    case "exact_feature":
+      return "Feature focus";
+    case "part_level":
+      return "Whole-part focus";
+    default:
+      return null;
+  }
+};
+
+const hasAnchorFocusData = (anchor: DfmFindingAnchor | null | undefined): anchor is DfmFindingAnchor =>
+  Boolean(
+    anchor &&
+      ((anchor.position_mm && anchor.position_mm.length === 3) ||
+        (anchor.bbox_bounds_mm && anchor.bbox_bounds_mm.length === 6) ||
+        anchor.component_node_name),
+  );
+
+const hasInstanceFocusData = (instance: DfmViolatingInstance | null | undefined): instance is DfmViolatingInstance =>
+  Boolean(
+    instance &&
+      ((instance.position_mm && instance.position_mm.length === 3) ||
+        (instance.bbox_bounds_mm && instance.bbox_bounds_mm.length === 6)),
+  );
+
+const describeInstance = (instance: DfmViolatingInstance): string =>
+  [
+    instance.location_description || instance.instance_id,
+    typeof instance.radius_mm === "number" ? `R${formatCompactNumber(instance.radius_mm, 2)} mm` : null,
+    typeof instance.diameter_mm === "number" ? `Dia ${formatCompactNumber(instance.diameter_mm, 2)} mm` : null,
+    typeof instance.depth_mm === "number" ? `Depth ${formatCompactNumber(instance.depth_mm, 2)} mm` : null,
+    typeof instance.thickness_mm === "number" ? `Thickness ${formatCompactNumber(instance.thickness_mm, 2)} mm` : null,
+    typeof instance.depth_to_radius_ratio === "number"
+      ? `Depth/radius ${formatCompactNumber(instance.depth_to_radius_ratio, 2)}`
+      : null,
+    typeof instance.depth_to_diameter_ratio === "number"
+      ? `Depth/diameter ${formatCompactNumber(instance.depth_to_diameter_ratio, 2)}`
+      : null,
+  ]
+    .filter((value): value is string => Boolean(value && value.trim()))
+    .join(" | ");
+
+const buildAnchorFocusPayload = (
+  id: string,
+  finding: DfmFinding,
+  route: DfmReviewRoute,
+  anchor: DfmFindingAnchor,
+  componentNodeName: string | null,
+  explanation?: string | null,
+): AnalysisFocusPayload => ({
+  id,
+  source: "dfm_benchmark",
+  title: finding.title ?? finding.rule_id,
+  details: [route.process_label, explanation || null, anchor.label || null].filter((value): value is string => Boolean(value && value.trim())).join(" | "),
+  severity: finding.severity,
+  component_node_name: anchor.component_node_name ?? componentNodeName,
+  anchor_kind: anchor.anchor_kind,
+  position_mm: anchor.position_mm ?? null,
+  normal: anchor.normal ?? null,
+  bbox_bounds_mm: anchor.bbox_bounds_mm ?? null,
+  face_indices: anchor.face_indices ?? [],
+});
+
+const buildInstanceFocusPayload = (
+  id: string,
+  finding: DfmFinding,
+  route: DfmReviewRoute,
+  instance: DfmViolatingInstance,
+  componentNodeName: string | null,
+): AnalysisFocusPayload => ({
+  id,
+  source: "dfm_benchmark",
+  title: finding.title ?? finding.rule_id,
+  details: [route.process_label, describeInstance(instance)].filter((value): value is string => Boolean(value && value.trim())).join(" | "),
+  severity: finding.severity,
+  component_node_name: componentNodeName,
+  anchor_kind: instance.bbox_bounds_mm && instance.bbox_bounds_mm.length === 6 ? "region" : "point",
+  position_mm: instance.position_mm ?? null,
+  normal: null,
+  bbox_bounds_mm: instance.bbox_bounds_mm ?? null,
+  face_indices: [],
+});
+
+const buildFallbackFocusPayload = (
+  id: string,
+  finding: DfmFinding,
+  componentNodeName: string | null,
+): AnalysisFocusPayload => ({
+  id,
+  source: "dfm",
+  title: finding.title ?? finding.rule_id,
+  details:
+    finding.description ??
+    finding.recommended_action ??
+    finding.standard_clause ??
+    finding.evidence_quality ??
+    "Review this rule in the current part context.",
+  severity: finding.severity,
+  component_node_name: componentNodeName,
+});
+
+const flattenFindings = (
+  result: DfmReviewV2Response | null,
+  componentNodeName: string | null = null,
+): ReviewFindingCard[] =>
   result?.routes.flatMap((route) =>
-    route.findings.map((finding, index) => ({
-      id: `${route.plan_id}:${finding.rule_id}:${index}`,
-      routeId: route.plan_id,
-      processLabel: route.process_label,
-      routeLabel: route.pack_labels.filter((label): label is string => Boolean(label)).join(", ") || route.pack_ids.join(", "),
-      kind: finding.finding_type === "evidence_gap" ? "evidence_gap" : "design_risk",
-      tone: findingTone(finding.severity),
-      title: finding.title ?? finding.rule_id,
-      summary:
-        finding.recommended_action ??
-        finding.standard_clause ??
-        finding.evidence_quality ??
-        "Review this rule in the current part context.",
-      severity: finding.severity,
-      refs: finding.refs,
-      standardClause: finding.standard_clause,
-      recommendedAction: finding.recommended_action,
-      evidenceQuality: finding.evidence_quality,
-      expectedImpact: finding.expected_impact,
-    })),
+    route.findings.map((finding, index) => {
+      const id = `${route.plan_id}:${finding.rule_id}:${index}`;
+      const violatingInstances = Array.isArray(finding.evidence?.violating_instances)
+        ? finding.evidence.violating_instances.filter(hasInstanceFocusData)
+        : [];
+      const primaryAnchor = hasAnchorFocusData(finding.blame_map?.primary_anchor) ? finding.blame_map?.primary_anchor : null;
+      const primaryInstance = violatingInstances[0] ?? null;
+      const locationHint =
+        blameMapLabel(finding.blame_map) ??
+        (violatingInstances.length
+          ? `${violatingInstances.length} mapped location${violatingInstances.length === 1 ? "" : "s"}`
+          : null);
+      const locationSummary =
+        finding.blame_map?.explanation ??
+        primaryAnchor?.label ??
+        (primaryInstance ? describeInstance(primaryInstance) : null);
+      const focusPayload = primaryAnchor
+        ? buildAnchorFocusPayload(id, finding, route, primaryAnchor, componentNodeName, finding.blame_map?.explanation)
+        : primaryInstance
+          ? buildInstanceFocusPayload(id, finding, route, primaryInstance, componentNodeName)
+          : buildFallbackFocusPayload(id, finding, componentNodeName);
+
+      return {
+        id,
+        routeId: route.plan_id,
+        processLabel: route.process_label,
+        routeLabel: route.pack_labels.filter((label): label is string => Boolean(label)).join(", ") || route.pack_ids.join(", "),
+        kind: finding.finding_type === "evidence_gap" ? "evidence_gap" : "design_risk",
+        tone: findingTone(finding.severity),
+        title: finding.title ?? finding.rule_id,
+        summary:
+          finding.recommended_action ??
+          finding.description ??
+          finding.standard_clause ??
+          finding.evidence_quality ??
+          "Review this rule in the current part context.",
+        description: finding.description,
+        severity: finding.severity,
+        refs: finding.refs,
+        standardClause: finding.standard_clause,
+        recommendedAction: finding.recommended_action,
+        evidenceQuality: finding.evidence_quality,
+        expectedImpact: finding.expected_impact,
+        locationHint,
+        locationSummary,
+        mappedLocationCount: violatingInstances.length + (primaryAnchor ? 1 : 0),
+        focusPayload,
+      };
+    }),
   ) ?? [];
 
 const summarizeResultState = (result: DfmReviewV2Response): Pick<DesignReviewSession, "status" | "statusMessage"> => {
@@ -516,15 +734,6 @@ const createChatMessage = (role: ChatMessage["role"], text: string): ChatMessage
   timestamp: new Date().toISOString(),
 });
 
-const buildFindingFocus = (finding: ReviewFindingCard, componentNodeName: string | null): AnalysisFocusPayload => ({
-  id: finding.id,
-  source: "dfm",
-  title: finding.title,
-  details: finding.summary,
-  severity: finding.severity,
-  component_node_name: componentNodeName,
-});
-
 const formatClock = (value: string): string =>
   new Date(value).toLocaleTimeString([], {
     hour: "2-digit",
@@ -592,7 +801,10 @@ const DesignReviewWorkspace = ({ apiBase, onBack, onEnterExpert }: DesignReviewW
     return config.industries.find((item) => item.label === selectedComponentProfile.industry)?.standards ?? [];
   }, [config, selectedComponentProfile.industry]);
 
-  const findingCards = useMemo(() => flattenFindings(review.result), [review.result]);
+  const findingCards = useMemo(
+    () => flattenFindings(review.result, review.selectedComponentNodeName),
+    [review.result, review.selectedComponentNodeName],
+  );
   const selectedFinding = useMemo(
     () => findingCards.find((finding) => finding.id === selectedFindingId) ?? null,
     [findingCards, selectedFindingId],
@@ -600,6 +812,25 @@ const DesignReviewWorkspace = ({ apiBase, onBack, onEnterExpert }: DesignReviewW
 
   const designRiskCount = useMemo(() => findingCards.filter((finding) => finding.kind === "design_risk").length, [findingCards]);
   const evidenceGapCount = useMemo(() => findingCards.filter((finding) => finding.kind === "evidence_gap").length, [findingCards]);
+  const geometryEvidence = review.result?.geometry_evidence ?? null;
+  const featureRecognitionCount = useMemo(
+    () => (geometryEvidence?.feature_groups?.length ?? 0) + (geometryEvidence?.detail_metrics?.length ?? 0),
+    [geometryEvidence],
+  );
+  const featureEvidencePreview = useMemo(() => {
+    const labels = [
+      ...(geometryEvidence?.feature_groups?.slice(0, 3).map((group) => group.label) ?? []),
+      ...(geometryEvidence?.detail_metrics?.slice(0, 2).map((metric) => metric.label) ?? []),
+    ];
+    return labels.filter((label, index, values) => Boolean(label && label.trim()) && values.indexOf(label) === index).slice(0, 4);
+  }, [geometryEvidence]);
+  const mismatchBanner = useMemo(() => {
+    if (!review.result?.mismatch?.has_mismatch) return null;
+    if (review.result.mismatch.banner) return review.result.mismatch.banner;
+    const user = review.result.mismatch.user_selected_process?.process_label;
+    const ai = review.result.mismatch.ai_process?.process_label;
+    return user && ai ? `Profile requested ${user}, AI recommended ${ai}.` : "Process mismatch detected during benchmarking.";
+  }, [review.result]);
   const canRun = Boolean(
     review.modelId &&
       review.selectedComponentNodeName &&
@@ -791,7 +1022,7 @@ const DesignReviewWorkspace = ({ apiBase, onBack, onEnterExpert }: DesignReviewW
 
   const handleSelectFinding = (finding: ReviewFindingCard) => {
     setSelectedFindingId(finding.id);
-    setAnalysisFocus(buildFindingFocus(finding, review.selectedComponentNodeName));
+    setAnalysisFocus(finding.focusPayload);
     pushTimeline("Issue focused", `${finding.title} is now highlighted in the review viewer.`, "accent");
   };
 
@@ -842,12 +1073,14 @@ const DesignReviewWorkspace = ({ apiBase, onBack, onEnterExpert }: DesignReviewW
             selected_process_override: null,
             selected_overlay: null,
             process_selection_mode: "profile",
-            overlay_selection_mode: "profile",
+            overlay_selection_mode: "none",
             selected_role: defaultRoleId(config),
             selected_template: defaultTemplateId(config),
             run_both_if_mismatch: true,
           },
-          context_payload: {},
+          context_payload: {
+            include_geometry_anchors: true,
+          },
         }),
       });
       if (!reviewResponse.ok) {
@@ -856,7 +1089,7 @@ const DesignReviewWorkspace = ({ apiBase, onBack, onEnterExpert }: DesignReviewW
 
       const result = (await reviewResponse.json()) as DfmReviewV2Response;
       const resultState = summarizeResultState(result);
-      const nextFindingCards = flattenFindings(result);
+      const nextFindingCards = flattenFindings(result, review.selectedComponentNodeName);
       const firstFinding = nextFindingCards[0] ?? null;
 
       setReview((current) => ({
@@ -868,7 +1101,7 @@ const DesignReviewWorkspace = ({ apiBase, onBack, onEnterExpert }: DesignReviewW
 
       if (firstFinding) {
         setSelectedFindingId(firstFinding.id);
-        setAnalysisFocus(buildFindingFocus(firstFinding, review.selectedComponentNodeName));
+        setAnalysisFocus(firstFinding.focusPayload);
       }
 
       pushTimeline(
@@ -1151,11 +1384,17 @@ const DesignReviewWorkspace = ({ apiBase, onBack, onEnterExpert }: DesignReviewW
                   <strong>{evidenceGapCount}</strong>
                 </div>
                 <div className="design-review-workspace__metric-card">
+                  <span>Feature evidence</span>
+                  <strong>{featureRecognitionCount}</strong>
+                </div>
+                <div className="design-review-workspace__metric-card">
                   <span>Process</span>
                   <strong>{currentProcessLabel}</strong>
                 </div>
               </div>
             </div>
+
+            {mismatchBanner ? <div className="design-review-workspace__benchmark-banner">{mismatchBanner}</div> : null}
 
             <div className="design-review-workspace__review-stage-main">
               <div className="design-review-workspace__stage-stack">
@@ -1201,6 +1440,18 @@ const DesignReviewWorkspace = ({ apiBase, onBack, onEnterExpert }: DesignReviewW
                         <span>{selectedFinding.routeLabel}</span>
                         {selectedFinding.refs.length ? <span>{selectedFinding.refs.join(", ")}</span> : null}
                       </div>
+                      {selectedFinding.locationHint || selectedFinding.mappedLocationCount || selectedFinding.locationSummary ? (
+                        <div className="design-review-workspace__benchmark-meta">
+                          {selectedFinding.locationHint ? <span>{selectedFinding.locationHint}</span> : null}
+                          {selectedFinding.mappedLocationCount ? (
+                            <span>
+                              {selectedFinding.mappedLocationCount} mapped location
+                              {selectedFinding.mappedLocationCount === 1 ? "" : "s"}
+                            </span>
+                          ) : null}
+                          {selectedFinding.locationSummary ? <span>{selectedFinding.locationSummary}</span> : null}
+                        </div>
+                      ) : null}
                       {selectedFinding.expectedImpact ? (
                         <div className="design-review-workspace__impact-list">
                           {selectedFinding.expectedImpact.risk_reduction ? <span>Risk: {selectedFinding.expectedImpact.risk_reduction}</span> : null}
@@ -1217,6 +1468,13 @@ const DesignReviewWorkspace = ({ apiBase, onBack, onEnterExpert }: DesignReviewW
                           ? "This run returned no findings, so the review stage is showing the imported geometry without a focused issue."
                           : "Select an issue card below to lock the review stage to that finding."}
                       </p>
+                      {featureEvidencePreview.length ? (
+                        <div className="design-review-workspace__benchmark-meta">
+                          {featureEvidencePreview.map((label) => (
+                            <span key={label}>{label}</span>
+                          ))}
+                        </div>
+                      ) : null}
                     </div>
                   ) : (
                     <div className="design-review-workspace__empty-state design-review-workspace__empty-state--compact">
@@ -1253,6 +1511,7 @@ const DesignReviewWorkspace = ({ apiBase, onBack, onEnterExpert }: DesignReviewW
                     >
                       <span className={`design-review-workspace__issue-tone design-review-workspace__issue-tone--${finding.tone}`} />
                       <span className="design-review-workspace__issue-route">{finding.processLabel}</span>
+                      {finding.locationHint ? <span className="design-review-workspace__issue-location">{finding.locationHint}</span> : null}
                       <strong title={finding.title}>{finding.title}</strong>
                       <p>{finding.summary}</p>
                     </button>

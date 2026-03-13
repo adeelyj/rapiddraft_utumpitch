@@ -1301,6 +1301,7 @@ body {
 }
 
 .design-review-workspace__chip-row,
+.design-review-workspace__benchmark-meta,
 .design-review-workspace__impact-list,
 .design-review-workspace__spotlight-meta {
   display: flex;
@@ -1309,6 +1310,7 @@ body {
 }
 
 .design-review-workspace__chip,
+.design-review-workspace__benchmark-meta span,
 .design-review-workspace__impact-list span,
 .design-review-workspace__spotlight-meta span {
   display: inline-flex;
@@ -1488,6 +1490,12 @@ body {
   color: var(--text-3);
 }
 
+.design-review-workspace__issue-location {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #5d7694;
+}
+
 .design-review-workspace__issue-card strong,
 .design-review-workspace__empty-state strong,
 .design-review-workspace__timeline-card strong {
@@ -1498,6 +1506,17 @@ body {
   margin: 0;
   color: var(--text-2);
   line-height: 1.52;
+}
+
+.design-review-workspace__benchmark-banner {
+  margin: 0 18px 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(239, 101, 26, 0.08);
+  border: 1px solid rgba(239, 101, 26, 0.18);
+  color: #9b4f19;
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .design-review-workspace__chat-shell {
@@ -2077,6 +2096,7 @@ body {
   margin-top: 6px;
 }
 
+.design-review-workspace__benchmark-meta,
 .design-review-workspace__spotlight-meta,
 .design-review-workspace__impact-list {
   gap: 8px;
@@ -2125,6 +2145,10 @@ body {
   font-size: 0.66rem;
 }
 
+.design-review-workspace__issue-location {
+  font-size: 0.64rem;
+}
+
 .design-review-workspace__issue-card strong {
   font-size: 0.9rem;
   line-height: 1.32;
@@ -2141,6 +2165,13 @@ body {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   overflow: hidden;
+}
+
+.design-review-workspace__benchmark-banner {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 0.76rem;
 }
 
 .design-review-workspace__chat-shell {
