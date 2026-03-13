@@ -1,7 +1,8 @@
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Component, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { Center, Environment, GizmoHelper, GizmoViewport, Html, Line, OrbitControls } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { Box3, BoxGeometry, EdgesGeometry, MOUSE, Object3D, Vector2, Vector3 } from "three";
 import ReviewPins from "./ReviewPins";
 import type { AnalysisFocusPayload } from "../types/analysis";
@@ -77,11 +78,22 @@ type ModelViewerProps = {
   }) => void;
   analysisFocus?: AnalysisFocusPayload | null;
   onClearAnalysisFocus?: () => void;
+  showInspectorPanels?: boolean;
+  chromeDensity?: "default" | "compact";
 };
 
 type CameraSnapshot = {
   position: [number, number, number];
   target: [number, number, number];
+};
+
+type ViewerErrorBoundaryProps = {
+  resetKey: string | null;
+  children: ReactNode;
+};
+
+type ViewerErrorBoundaryState = {
+  error: Error | null;
 };
 
 type OrbitControlsLike = {
@@ -91,6 +103,32 @@ type OrbitControlsLike = {
   dollyIn?: (scale: number) => void;
   dollyOut?: (scale: number) => void;
 };
+
+class ViewerErrorBoundary extends Component<ViewerErrorBoundaryProps, ViewerErrorBoundaryState> {
+  state: ViewerErrorBoundaryState = { error: null };
+
+  static getDerivedStateFromError(error: Error): ViewerErrorBoundaryState {
+    return { error };
+  }
+
+  componentDidUpdate(prevProps: ViewerErrorBoundaryProps): void {
+    if (prevProps.resetKey !== this.props.resetKey && this.state.error) {
+      this.setState({ error: null });
+    }
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="viewer__error" role="alert">
+          <strong>Model preview could not be rendered.</strong>
+          <p>{this.state.error.message || "The preview loader failed before the 3D view could be displayed."}</p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const joinApiUrl = (base: string, path: string): string => {
   const normalizedBase = base.replace(/\/$/, "");
@@ -263,6 +301,7 @@ const ModelContents = ({
   onFitCaptured?: (snapshot: CameraSnapshot) => void;
 }) => {
   const gltf = useLoader(GLTFLoader, previewUrl);
+  const scene = useMemo(() => clone(gltf.scene), [gltf.scene]);
   const camera = useThree((state) => state.camera);
   const raycaster = useThree((state) => state.raycaster);
   const gl = useThree((state) => state.gl);
@@ -287,8 +326,8 @@ const ModelContents = ({
     const requestedNode = analysisFocus.component_node_name || null;
     const fallbackNode = components[0]?.nodeName ?? null;
     const targetNodeName = requestedNode || fallbackNode;
-    const targetObject = targetNodeName ? gltf.scene.getObjectByName(targetNodeName) : null;
-    const focusTarget = analysisFocusCenter(analysisFocus, targetObject || gltf.scene);
+    const targetObject = targetNodeName ? scene.getObjectByName(targetNodeName) : null;
+    const focusTarget = analysisFocusCenter(analysisFocus, targetObject || scene);
     if (!focusTarget) return;
     if (!analysisFocus.position_mm && !analysisFocus.bbox_bounds_mm) return;
 
@@ -316,7 +355,7 @@ const ModelContents = ({
     if (controls) {
       controls.enabled = false;
     }
-  }, [analysisFocus?.id, analysisFocus, camera, components, controls, gltf.scene]);
+  }, [analysisFocus?.id, analysisFocus, camera, components, controls, scene]);
 
   useEffect(() => {
     if (pinMode === "none" || (!onCommentPin && !onReviewPin)) {
@@ -332,7 +371,7 @@ const ModelContents = ({
         -((event.clientY - rect.top) / rect.height) * 2 + 1
       );
       raycaster.setFromCamera(ndc, camera);
-      const hits = raycaster.intersectObject(gltf.scene, true);
+      const hits = raycaster.intersectObject(scene, true);
       if (!hits.length) return;
       const hit = hits[0];
       const point = hit.point;
@@ -362,7 +401,7 @@ const ModelContents = ({
       gl.domElement.removeEventListener("pointerup", handlePointerUp);
       gl.domElement.style.cursor = "default";
     };
-  }, [pinMode, onCommentPin, onReviewPin, gl, camera, raycaster, controls, gltf.scene]);
+  }, [pinMode, onCommentPin, onReviewPin, gl, camera, raycaster, controls, scene]);
 
   useEffect(() => {
     if (!controls || zoomInTrigger <= 0 || typeof controls.dollyIn !== "function") return;
@@ -404,11 +443,11 @@ const ModelContents = ({
   useEffect(() => {
     if (!components.length) return;
     components.forEach((component) => {
-      const node = gltf.scene.getObjectByName(component.nodeName);
+      const node = scene.getObjectByName(component.nodeName);
       if (!node) return;
       node.visible = componentVisibility[component.nodeName] ?? true;
     });
-  }, [components, componentVisibility, gltf.scene]);
+  }, [components, componentVisibility, scene]);
 
   useFrame(() => {
     const animation = flyRef.current;
@@ -435,8 +474,8 @@ const ModelContents = ({
     const requestedNode = analysisFocus.component_node_name || null;
     const fallbackNode = components[0]?.nodeName ?? null;
     const targetNodeName = requestedNode || fallbackNode;
-    const targetObject = targetNodeName ? gltf.scene.getObjectByName(targetNodeName) : null;
-    const focusTarget = analysisFocusCenter(analysisFocus, targetObject || gltf.scene);
+    const targetObject = targetNodeName ? scene.getObjectByName(targetNodeName) : null;
+    const focusTarget = analysisFocusCenter(analysisFocus, targetObject || scene);
     if (!focusTarget) return null;
     const center = focusTarget.center;
     const extent = focusTarget.extent;
@@ -452,7 +491,7 @@ const ModelContents = ({
       lineEnd: [center.x, center.y, center.z] as [number, number, number],
       tone: analysisTone(analysisFocus.severity),
     };
-  }, [analysisFocus, camera, components, gltf.scene]);
+  }, [analysisFocus, camera, components, scene]);
 
   const analysisBoundsOverlay = useMemo(() => {
     if (!analysisFocus || !isFiniteTuple(analysisFocus.bbox_bounds_mm, 6)) return null;
@@ -494,10 +533,10 @@ const ModelContents = ({
 
   return (
     <>
-      <FitCamera object={gltf.scene} trigger={fitTrigger} onFitted={onFitCaptured} />
+      <FitCamera object={scene} trigger={fitTrigger} onFitted={onFitCaptured} />
       <Center disableY>
         <group>
-          <primitive object={gltf.scene} dispose={null} />
+          <primitive object={scene} dispose={null} />
         </group>
       </Center>
       <ReviewPins
@@ -590,9 +629,13 @@ const ModelViewer = ({
   onReviewPin,
   analysisFocus = null,
   onClearAnalysisFocus = () => undefined,
+  showInspectorPanels = true,
+  chromeDensity = "default",
 }: ModelViewerProps) => {
-  const overlayMessage = message ?? (previewUrl ? "Loading preview..." : "Import a STEP file to begin.");
-  const hasLeftPanels = Boolean(previewUrl && components.length > 0);
+  const resolvedPreviewUrl = useMemo(() => (previewUrl ? joinApiUrl(apiBase, previewUrl) : null), [apiBase, previewUrl]);
+  const overlayMessage = message ?? (resolvedPreviewUrl ? "Loading preview..." : "Import a STEP file to begin.");
+  const hasLeftPanels = Boolean(showInspectorPanels && resolvedPreviewUrl && components.length > 0);
+  const showViewerOverlay = !resolvedPreviewUrl || (!hasLeftPanels && (components.length === 0 || Boolean(message?.trim())));
   const panelStatusMessage = message?.trim() ?? "";
   const [navigationMode, setNavigationMode] = useState<"rotate" | "pan">("rotate");
   const [zoomInTrigger, setZoomInTrigger] = useState(0);
@@ -628,7 +671,7 @@ const ModelViewer = ({
     setZoomOutTrigger(0);
     setHomeTrigger(0);
     setHomeView(null);
-  }, [previewUrl]);
+  }, [resolvedPreviewUrl]);
 
   const fetchPartFacts = async (refresh: boolean) => {
     if (!modelId || !selectedComponent?.nodeName) {
@@ -671,55 +714,61 @@ const ModelViewer = ({
   };
 
   useEffect(() => {
-    if (!previewUrl || !selectedComponent?.nodeName || !modelId) {
+    if (!showInspectorPanels || !resolvedPreviewUrl || !selectedComponent?.nodeName || !modelId) {
       setPartFacts(null);
       setPartFactsError(null);
       return;
     }
     fetchPartFacts(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [previewUrl, selectedComponent?.nodeName, modelId, apiBase]);
+  }, [resolvedPreviewUrl, selectedComponent?.nodeName, modelId, apiBase, showInspectorPanels]);
 
   return (
-    <section className="viewer-area">
-      {previewUrl ? (
+    <section className={`viewer-area ${chromeDensity === "compact" ? "viewer-area--compact" : ""}`}>
+      {resolvedPreviewUrl ? (
         <>
-          <Canvas camera={{ position: [4, 4, 4], fov: 45 }}>
-            <ambientLight intensity={0.7} />
-            <directionalLight position={[5, 5, 5]} intensity={0.9} />
-            <Suspense fallback={null}>
-              <ModelContents
-                previewUrl={previewUrl}
-                fitTrigger={fitTrigger}
-                items={items}
-                selectedItemId={selectedItemId}
-                onSelectTicket={onSelectTicket}
-                pinMode={pinMode}
-                onCommentPin={onCommentPin}
-                onReviewPin={onReviewPin}
-                showReviewCards={showReviewCards}
-                components={components}
-                componentVisibility={componentVisibility}
-                analysisFocus={analysisFocus}
-                zoomInTrigger={zoomInTrigger}
-                zoomOutTrigger={zoomOutTrigger}
-                homeTrigger={homeTrigger}
-                homeView={homeView}
-                onFitCaptured={handleFitCaptured}
-              />
-            </Suspense>
-            <Environment preset="city" />
-            <OrbitControls makeDefault enabled={pinMode === "none"} mouseButtons={orbitMouseButtons} />
-            <GizmoHelper alignment="bottom-right" margin={[128, 128]}>
-              <GizmoViewport axisColors={["#ef4444", "#22c55e", "#3b82f6"]} labelColor="#0f172a" />
-            </GizmoHelper>
-          </Canvas>
+          <ViewerErrorBoundary resetKey={resolvedPreviewUrl}>
+            <Canvas camera={{ position: [4, 4, 4], fov: 45 }}>
+              <ambientLight intensity={0.7} />
+              <directionalLight position={[5, 5, 5]} intensity={0.9} />
+              <Suspense fallback={null}>
+                <ModelContents
+                  previewUrl={resolvedPreviewUrl}
+                  fitTrigger={fitTrigger}
+                  items={items}
+                  selectedItemId={selectedItemId}
+                  onSelectTicket={onSelectTicket}
+                  pinMode={pinMode}
+                  onCommentPin={onCommentPin}
+                  onReviewPin={onReviewPin}
+                  showReviewCards={showReviewCards}
+                  components={components}
+                  componentVisibility={componentVisibility}
+                  analysisFocus={analysisFocus}
+                  zoomInTrigger={zoomInTrigger}
+                  zoomOutTrigger={zoomOutTrigger}
+                  homeTrigger={homeTrigger}
+                  homeView={homeView}
+                  onFitCaptured={handleFitCaptured}
+                />
+              </Suspense>
+              <Environment preset="city" />
+              <OrbitControls makeDefault enabled={pinMode === "none"} mouseButtons={orbitMouseButtons} />
+              <GizmoHelper alignment="bottom-right" margin={[128, 128]}>
+                <GizmoViewport axisColors={["#ef4444", "#22c55e", "#3b82f6"]} labelColor="#0f172a" />
+              </GizmoHelper>
+            </Canvas>
+          </ViewerErrorBoundary>
         </>
       ) : (
         <Placeholder />
       )}
-      {previewUrl ? (
-        <div className="viewer-nav-controls" role="toolbar" aria-label="3D view controls">
+      {resolvedPreviewUrl ? (
+        <div
+          className={`viewer-nav-controls ${chromeDensity === "compact" ? "viewer-nav-controls--compact" : ""}`}
+          role="toolbar"
+          aria-label="3D view controls"
+        >
           <button
             type="button"
             className={`viewer-nav-controls__button ${navigationMode === "rotate" ? "viewer-nav-controls__button--active" : ""}`}
@@ -778,9 +827,13 @@ const ModelViewer = ({
           </button>
         </div>
       ) : null}
-      {!hasLeftPanels ? <div className="viewer-overlay">{overlayMessage}</div> : null}
-      {previewUrl && analysisFocus ? (
-        <div className={`analysis-focus-overlay analysis-focus-overlay--${analysisTone(analysisFocus.severity)}`}>
+      {showViewerOverlay ? <div className={`viewer-overlay ${chromeDensity === "compact" ? "viewer-overlay--compact" : ""}`}>{overlayMessage}</div> : null}
+      {resolvedPreviewUrl && analysisFocus ? (
+        <div
+          className={`analysis-focus-overlay analysis-focus-overlay--${analysisTone(analysisFocus.severity)} ${
+            chromeDensity === "compact" ? "analysis-focus-overlay--compact" : ""
+          }`}
+        >
           <div className="analysis-focus-overlay__header">
             <span className="analysis-focus-overlay__source">{analysisFocus.source.toUpperCase()} finding</span>
             <button type="button" onClick={onClearAnalysisFocus}>

@@ -1,4 +1,4 @@
-export type AnalysisFocusSource = "vision" | "fusion" | "dfm_benchmark";
+export type AnalysisFocusSource = "vision" | "fusion" | "dfm" | "dfm_benchmark";
 
 export type AnalysisFocusAnchorKind = "point" | "region" | "multi" | "part";
 
