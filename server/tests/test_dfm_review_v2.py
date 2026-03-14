@@ -1149,6 +1149,160 @@ def test_review_v2_geometry_evidence_surfaces_localized_feature_items():
     assert boss_item["geometry_anchor"]["face_indices"] == [13, 14]
 
 
+def test_review_v2_geometry_evidence_surfaces_turning_and_milled_localized_feature_items():
+    bundle = _bundle()
+
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="geometry-evidence-turning-milled-localized-items",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Turning And Milled Part",
+            "profile": {
+                "material": "Aluminum",
+                "manufacturingProcess": "CNC Turning",
+                "industry": "Aerospace",
+            },
+            "geometry_feature_inventory": {
+                "face_inventory": [
+                    {
+                        "face_index": 20,
+                        "centroid_mm": [10.0, 0.0, 0.0],
+                        "bbox_bounds": [8.0, -2.0, -2.0, 12.0, 2.0, 2.0],
+                        "sample_point_mm": [10.0, 0.0, 0.0],
+                        "sample_normal": [1.0, 0.0, 0.0],
+                    },
+                    {
+                        "face_index": 21,
+                        "centroid_mm": [15.0, 0.0, 0.0],
+                        "bbox_bounds": [13.0, -2.0, -2.0, 17.0, 2.0, 2.0],
+                        "sample_point_mm": [15.0, 0.0, 0.0],
+                        "sample_normal": [1.0, 0.0, 0.0],
+                    },
+                    {
+                        "face_index": 22,
+                        "centroid_mm": [1.0, 0.0, 0.0],
+                        "bbox_bounds": [0.0, -3.0, -3.0, 2.0, 3.0, 3.0],
+                        "sample_point_mm": [1.0, 0.0, 0.0],
+                        "sample_normal": [-1.0, 0.0, 0.0],
+                    },
+                    {
+                        "face_index": 23,
+                        "centroid_mm": [1.5, 0.0, 0.0],
+                        "bbox_bounds": [0.5, -3.0, -3.0, 2.5, 3.0, 3.0],
+                        "sample_point_mm": [1.5, 0.0, 0.0],
+                        "sample_normal": [-1.0, 0.0, 0.0],
+                    },
+                    {
+                        "face_index": 24,
+                        "centroid_mm": [30.0, 5.0, 5.0],
+                        "bbox_bounds": [28.0, 4.0, 4.0, 32.0, 6.0, 6.0],
+                        "sample_point_mm": [30.0, 5.0, 5.0],
+                        "sample_normal": [0.0, 1.0, 0.0],
+                    },
+                    {
+                        "face_index": 25,
+                        "centroid_mm": [34.0, 5.0, 5.0],
+                        "bbox_bounds": [32.0, 4.0, 4.0, 36.0, 6.0, 6.0],
+                        "sample_point_mm": [34.0, 5.0, 5.0],
+                        "sample_normal": [0.0, 1.0, 0.0],
+                    },
+                    {
+                        "face_index": 26,
+                        "centroid_mm": [42.0, 8.0, 8.0],
+                        "bbox_bounds": [40.0, 6.0, 6.0, 44.0, 10.0, 10.0],
+                        "sample_point_mm": [42.0, 8.0, 8.0],
+                        "sample_normal": [0.0, 0.0, 1.0],
+                    },
+                ],
+                "turning_detection": {
+                    "primary_cluster": {
+                        "face_indices": [20, 21],
+                        "dominant_axis_ratio": 0.94,
+                        "exterior_revolved_area_ratio": 0.88,
+                    },
+                    "turned_diameter_groups": [
+                        {
+                            "face_indices": [20, 21],
+                            "radius_mm": 15.0,
+                        }
+                    ],
+                    "turned_end_face_indices": [22, 23],
+                    "turned_end_clusters": [
+                        {
+                            "face_indices": [22, 23],
+                            "max_adjacent_radius_mm": 18.0,
+                            "touches_part_end": True,
+                        }
+                    ],
+                    "outer_diameter_groove_groups": [],
+                    "end_face_groove_groups": [],
+                },
+                "hole_detection": {"candidates": []},
+                "pocket_detection": {
+                    "open_pocket_feature_groups": [],
+                    "closed_pocket_feature_groups": [],
+                },
+                "boss_detection": {"candidates": []},
+                "milled_face_detection": {
+                    "face_indices": [24, 25, 26],
+                    "flat_milled_feature_groups": [[24, 25]],
+                    "flat_side_milled_feature_groups": [],
+                    "curved_milled_feature_groups": [[26]],
+                    "circular_milled_feature_groups": [],
+                    "convex_profile_edge_milled_feature_groups": [],
+                    "concave_fillet_edge_milled_feature_groups": [],
+                },
+            },
+        },
+        planning_inputs={
+            "extracted_part_facts": {
+                "rotational_symmetry": True,
+                "turned_face_count": 4,
+                "turned_diameter_faces_count": 2,
+                "turned_end_faces_count": 1,
+                "milled_face_count": 3,
+                "flat_milled_face_count": 2,
+                "curved_milled_face_count": 1,
+            },
+            "analysis_mode": "geometry_dfm",
+            "selected_process_override": None,
+            "selected_overlay": None,
+            "process_selection_mode": "auto",
+            "overlay_selection_mode": "none",
+            "selected_role": "general_dfm",
+            "selected_template": "executive_1page",
+            "run_both_if_mismatch": False,
+        },
+        context_payload={},
+    )
+
+    groups = {entry["group_id"]: entry for entry in response["geometry_evidence"]["feature_groups"]}
+
+    turning_items = {item["label"]: item for item in groups["turning"]["localized_features"]}
+    milled_items = {item["label"]: item for item in groups["milled_faces"]["localized_features"]}
+
+    assert "Primary turning region" in turning_items
+    assert "Axis 0.94" in turning_items["Primary turning region"]["summary"]
+    assert turning_items["Primary turning region"]["geometry_anchor"]["face_indices"] == [20, 21]
+
+    assert "Turned diameter band 1" in turning_items
+    assert "R 15 mm" in turning_items["Turned diameter band 1"]["summary"]
+    assert turning_items["Turned diameter band 1"]["geometry_anchor"]["face_indices"] == [20, 21]
+
+    assert "Turned end face cluster 1" in turning_items
+    assert "Part-end cluster" in turning_items["Turned end face cluster 1"]["summary"]
+    assert turning_items["Turned end face cluster 1"]["geometry_anchor"]["face_indices"] == [22, 23]
+
+    assert "Flat milled face region 1" in milled_items
+    assert milled_items["Flat milled face region 1"]["summary"] == "2 connected faces"
+    assert milled_items["Flat milled face region 1"]["geometry_anchor"]["face_indices"] == [24, 25]
+
+    assert "Curved milled face region 1" in milled_items
+    assert milled_items["Curved milled face region 1"]["summary"] == "1 connected face"
+    assert milled_items["Curved milled face region 1"]["geometry_anchor"]["face_indices"] == [26]
+
+
 def test_review_v2_response_includes_effective_context_when_provided():
     bundle = _bundle()
     response = generate_dfm_review_v2(

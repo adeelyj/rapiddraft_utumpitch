@@ -90,6 +90,48 @@ const localizedPocketFeature = {
   },
 };
 
+const turningFeatureGroupAnchor = {
+  anchor_id: "turning-primary",
+  component_node_name: COMPONENT_NODE_NAME,
+  anchor_kind: "region",
+  position_mm: [42, 12, 10],
+  bbox_bounds_mm: [38, 8, 6, 46, 16, 14],
+  face_indices: [31, 32],
+  label: "Primary turning region",
+};
+
+const localizedTurningFeature = {
+  feature_id: "turning-diameter-1",
+  label: "Turned diameter band 1",
+  summary: "R 15 mm | 2 faces",
+  geometry_anchor: {
+    ...turningFeatureGroupAnchor,
+    anchor_id: "turning-diameter-1",
+    label: "Turned diameter band 1",
+  },
+};
+
+const milledFeatureGroupAnchor = {
+  anchor_id: "milled-curved",
+  component_node_name: COMPONENT_NODE_NAME,
+  anchor_kind: "region",
+  position_mm: [58, 18, 16],
+  bbox_bounds_mm: [54, 14, 12, 62, 22, 20],
+  face_indices: [41, 42],
+  label: "Curved milled face region",
+};
+
+const localizedMilledFeature = {
+  feature_id: "milled-curved-1",
+  label: "Curved milled face region 1",
+  summary: "2 connected faces",
+  geometry_anchor: {
+    ...milledFeatureGroupAnchor,
+    anchor_id: "milled-curved-1",
+    label: "Curved milled face region 1",
+  },
+};
+
 const benchmarkReviewWithFeatureGroupAnchor: Record<string, any> = {
   ...benchmarkReviewPayload,
   geometry_evidence: {
@@ -109,6 +151,36 @@ const benchmarkReviewWithFeatureGroupAnchor: Record<string, any> = {
             label: "Pocket features",
             value: 2,
             geometry_anchor: pocketFeatureGroupAnchor,
+          },
+        ],
+      },
+      {
+        group_id: "turning",
+        label: "Turning features",
+        summary: "1 turned diameter band with a strong primary turning region.",
+        geometry_anchor: turningFeatureGroupAnchor,
+        localized_features: [localizedTurningFeature],
+        metrics: [
+          {
+            key: "turned_face_count",
+            label: "Turned faces",
+            value: 2,
+            geometry_anchor: turningFeatureGroupAnchor,
+          },
+        ],
+      },
+      {
+        group_id: "milled_faces",
+        label: "Milled-face features",
+        summary: "1 curved milled region detected on the side wall.",
+        geometry_anchor: milledFeatureGroupAnchor,
+        localized_features: [localizedMilledFeature],
+        metrics: [
+          {
+            key: "milled_face_count",
+            label: "Milled faces",
+            value: 2,
+            geometry_anchor: milledFeatureGroupAnchor,
           },
         ],
       },
@@ -479,6 +551,30 @@ test("focuses a localized feature-recognition item from its geometry anchor", as
   await expect(overlay).toBeVisible();
   await expect(overlay.locator(".analysis-focus-overlay__title")).toHaveText("Open pocket 1");
   await expect(overlay.locator(".analysis-focus-overlay__details")).toContainText("Pocket features");
+  await expect(overlay.locator(".analysis-focus-overlay__details")).toContainText("2 connected faces");
+});
+
+test("focuses turning and milled localized feature-recognition items from their geometry anchors", async ({ page }) => {
+  await mockApi(page, { reviewPayload: benchmarkReviewWithFeatureGroupAnchor });
+  await seedCachedBenchmarkReview(page, benchmarkReviewWithFeatureGroupAnchor);
+  await importBenchmarkModel(page);
+
+  const benchmarkSidebar = await openBenchmarkSidebar(page);
+  const featureRecognition = benchmarkSidebar.locator(".dfm-sidebar__evidence");
+  await featureRecognition.locator("summary").click();
+
+  await benchmarkSidebar.getByRole("button", { name: "Show turned diameter band 1 in model" }).click();
+
+  const overlay = page.locator(".analysis-focus-overlay");
+  await expect(overlay).toBeVisible();
+  await expect(overlay.locator(".analysis-focus-overlay__title")).toHaveText("Turned diameter band 1");
+  await expect(overlay.locator(".analysis-focus-overlay__details")).toContainText("Turning features");
+  await expect(overlay.locator(".analysis-focus-overlay__details")).toContainText("R 15 mm");
+
+  await benchmarkSidebar.getByRole("button", { name: "Show curved milled face region 1 in model" }).click();
+
+  await expect(overlay.locator(".analysis-focus-overlay__title")).toHaveText("Curved milled face region 1");
+  await expect(overlay.locator(".analysis-focus-overlay__details")).toContainText("Milled-face features");
   await expect(overlay.locator(".analysis-focus-overlay__details")).toContainText("2 connected faces");
 });
 

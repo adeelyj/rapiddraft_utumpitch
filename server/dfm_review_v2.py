@@ -711,8 +711,44 @@ def _build_geometry_localized_feature_lookup(component_context: dict[str, Any]) 
     hole_detection = inventory.get("hole_detection")
     pocket_detection = inventory.get("pocket_detection")
     boss_detection = inventory.get("boss_detection")
+    milled_face_detection = inventory.get("milled_face_detection")
+    primary_turning_cluster = (
+        turning_detection.get("primary_cluster") if isinstance(turning_detection, dict) else None
+    )
 
     localized_features = {
+        "turning": [
+            *_geometry_feature_items_from_payloads(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                payloads=[primary_turning_cluster] if isinstance(primary_turning_cluster, dict) else None,
+                anchor_prefix="turning-primary",
+                feature_type="turning",
+                feature_subtype="primary_cluster",
+                label_builder=lambda _payload, _index: "Primary turning region",
+                summary_builder=_turning_primary_feature_summary,
+            ),
+            *_geometry_feature_items_from_payloads(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                payloads=turning_detection.get("turned_diameter_groups") if isinstance(turning_detection, dict) else None,
+                anchor_prefix="turning-diameter",
+                feature_type="turning",
+                feature_subtype="diameter_band",
+                label_builder=lambda _payload, index: f"Turned diameter band {index}",
+                summary_builder=_turning_diameter_feature_summary,
+            ),
+            *_geometry_feature_items_from_payloads(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                payloads=turning_detection.get("turned_end_clusters") if isinstance(turning_detection, dict) else None,
+                anchor_prefix="turning-end-cluster",
+                feature_type="turning",
+                feature_subtype="end_cluster",
+                label_builder=lambda _payload, index: f"Turned end face cluster {index}",
+                summary_builder=_turning_end_feature_summary,
+            ),
+        ],
         "holes": _geometry_feature_items_from_payloads(
             component_node_name=component_node_name or None,
             face_lookup=face_lookup,
@@ -775,6 +811,72 @@ def _build_geometry_localized_feature_lookup(component_context: dict[str, Any]) 
             label_builder=lambda _payload, index: f"Boss {index}",
             summary_builder=_boss_feature_item_summary,
         ),
+        "milled_faces": [
+            *_geometry_feature_items_from_payloads(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                payloads=milled_face_detection.get("flat_milled_feature_groups") if isinstance(milled_face_detection, dict) else None,
+                anchor_prefix="milled-flat",
+                feature_type="milled_face",
+                feature_subtype="flat",
+                label_builder=lambda _payload, index: f"Flat milled face region {index}",
+                summary_builder=_milled_feature_item_summary,
+            ),
+            *_geometry_feature_items_from_payloads(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                payloads=milled_face_detection.get("flat_side_milled_feature_groups") if isinstance(milled_face_detection, dict) else None,
+                anchor_prefix="milled-flat-side",
+                feature_type="milled_face",
+                feature_subtype="flat_side",
+                label_builder=lambda _payload, index: f"Flat-side milled face region {index}",
+                summary_builder=_milled_feature_item_summary,
+            ),
+            *_geometry_feature_items_from_payloads(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                payloads=milled_face_detection.get("curved_milled_feature_groups") if isinstance(milled_face_detection, dict) else None,
+                anchor_prefix="milled-curved",
+                feature_type="milled_face",
+                feature_subtype="curved",
+                label_builder=lambda _payload, index: f"Curved milled face region {index}",
+                summary_builder=_milled_feature_item_summary,
+            ),
+            *_geometry_feature_items_from_payloads(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                payloads=milled_face_detection.get("circular_milled_feature_groups") if isinstance(milled_face_detection, dict) else None,
+                anchor_prefix="milled-circular",
+                feature_type="milled_face",
+                feature_subtype="circular",
+                label_builder=lambda _payload, index: f"Circular milled face {index}",
+                summary_builder=_milled_feature_item_summary,
+            ),
+            *_geometry_feature_items_from_payloads(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                payloads=milled_face_detection.get("convex_profile_edge_milled_feature_groups")
+                if isinstance(milled_face_detection, dict)
+                else None,
+                anchor_prefix="milled-convex-profile",
+                feature_type="milled_face",
+                feature_subtype="convex_profile_edge",
+                label_builder=lambda _payload, index: f"Convex profile-edge milled face {index}",
+                summary_builder=_milled_feature_item_summary,
+            ),
+            *_geometry_feature_items_from_payloads(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                payloads=milled_face_detection.get("concave_fillet_edge_milled_feature_groups")
+                if isinstance(milled_face_detection, dict)
+                else None,
+                anchor_prefix="milled-concave-fillet",
+                feature_type="milled_face",
+                feature_subtype="concave_fillet_edge",
+                label_builder=lambda _payload, index: f"Concave fillet-edge milled face {index}",
+                summary_builder=_milled_feature_item_summary,
+            ),
+        ],
     }
 
     return {
@@ -831,6 +933,50 @@ def _hole_feature_item_label(payload: Any, index: int) -> str:
     return f"{normalized_subtype} {index}"
 
 
+def _turning_primary_feature_summary(payload: Any) -> str | None:
+    if not isinstance(payload, dict):
+        return None
+    fragments = []
+    face_count = len(_extract_face_indices(payload))
+    dominant_axis_ratio = _optional_float(payload.get("dominant_axis_ratio"))
+    exterior_area_ratio = _optional_float(payload.get("exterior_revolved_area_ratio"))
+    if face_count > 0:
+        fragments.append(f"{face_count} face{'s' if face_count != 1 else ''}")
+    if dominant_axis_ratio is not None and dominant_axis_ratio > 0:
+        fragments.append(f"Axis {_format_geometry_number(dominant_axis_ratio)}")
+    if exterior_area_ratio is not None and exterior_area_ratio > 0:
+        fragments.append(f"Exterior area {_format_geometry_number(exterior_area_ratio)}")
+    return " | ".join(fragments) or None
+
+
+def _turning_diameter_feature_summary(payload: Any) -> str | None:
+    if not isinstance(payload, dict):
+        return None
+    fragments = []
+    radius_mm = _optional_float(payload.get("radius_mm"))
+    face_count = len(_extract_face_indices(payload))
+    if radius_mm is not None and radius_mm > 0:
+        fragments.append(f"R {_format_geometry_number(radius_mm)} mm")
+    if face_count > 0:
+        fragments.append(f"{face_count} face{'s' if face_count != 1 else ''}")
+    return " | ".join(fragments) or None
+
+
+def _turning_end_feature_summary(payload: Any) -> str | None:
+    if not isinstance(payload, dict):
+        return None
+    fragments = []
+    max_adjacent_radius_mm = _optional_float(payload.get("max_adjacent_radius_mm"))
+    face_count = len(_extract_face_indices(payload))
+    if max_adjacent_radius_mm is not None and max_adjacent_radius_mm > 0:
+        fragments.append(f"Adj radius {_format_geometry_number(max_adjacent_radius_mm)} mm")
+    if face_count > 0:
+        fragments.append(f"{face_count} face{'s' if face_count != 1 else ''}")
+    if payload.get("touches_part_end") is True:
+        fragments.append("Part-end cluster")
+    return " | ".join(fragments) or None
+
+
 def _hole_feature_item_summary(payload: Any) -> str | None:
     if not isinstance(payload, dict):
         return None
@@ -851,6 +997,14 @@ def _hole_feature_item_summary(payload: Any) -> str | None:
 
 
 def _pocket_feature_item_summary(payload: Any) -> str | None:
+    return _connected_face_summary(payload)
+
+
+def _milled_feature_item_summary(payload: Any) -> str | None:
+    return _connected_face_summary(payload)
+
+
+def _connected_face_summary(payload: Any) -> str | None:
     face_count = len(_extract_face_indices(payload))
     if face_count <= 0:
         return None
