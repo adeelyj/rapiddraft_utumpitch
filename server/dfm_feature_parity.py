@@ -21,7 +21,7 @@ def generate_feature_parity_report(
     run_label: str | None = None,
 ) -> dict[str, Any]:
     manifest = load_benchmark_manifest(manifest_path)
-    repo_root = manifest.manifest_path.parent.parent
+    repo_root = manifest.repo_root
     bundle = load_dfm_bundle(bundle_dir=repo_root / "server" / "dfm", repo_root=repo_root)
 
     timestamp = datetime.now(timezone.utc)

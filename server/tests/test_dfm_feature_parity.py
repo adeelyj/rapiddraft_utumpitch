@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import sys
+from types import SimpleNamespace
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+import server.dfm_feature_parity as parity
 from server.dfm_feature_parity import assess_feature_group, render_feature_parity_markdown
 
 
@@ -268,3 +270,39 @@ def test_render_feature_parity_markdown_surfaces_exact_matches_and_drifts():
     assert "Exact count matches: 1/2 countable groups" in markdown
     assert "sample_2 / Turn Diameter Face(s): Cadex 4, Product 17, delta +13" in markdown
     assert "count: Cadex 29, Product 29, delta +0 (exact_match)" in markdown
+
+
+def test_generate_feature_parity_report_uses_resolved_repo_root(monkeypatch, tmp_path: Path):
+    manifest_path = tmp_path / "plans" / "20260314" / "manifest.json"
+    repo_root = tmp_path / "repo"
+    output_root = repo_root / "output" / "dfm_feature_parity" / "parity-root-check"
+    observed: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        parity,
+        "load_benchmark_manifest",
+        lambda path: SimpleNamespace(manifest_path=manifest_path, repo_root=repo_root, cases=[]),
+    )
+
+    def _fake_load_dfm_bundle(*, bundle_dir: Path, repo_root: Path):
+        observed["bundle_dir"] = bundle_dir
+        observed["repo_root"] = repo_root
+        return object()
+
+    class _FakePartFactsService:
+        def __init__(self, *, root: Path, bundle):
+            observed["part_facts_root"] = root
+            observed["bundle"] = bundle
+
+    monkeypatch.setattr(parity, "load_dfm_bundle", _fake_load_dfm_bundle)
+    monkeypatch.setattr(parity, "PartFactsService", _FakePartFactsService)
+
+    report = parity.generate_feature_parity_report(
+        manifest_path,
+        run_label="parity-root-check",
+    )
+
+    assert observed["bundle_dir"] == repo_root / "server" / "dfm"
+    assert observed["repo_root"] == repo_root
+    assert observed["part_facts_root"] == output_root / "_runtime"
+    assert report["output_root"] == str(output_root)
