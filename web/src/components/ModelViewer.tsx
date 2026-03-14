@@ -667,6 +667,8 @@ const ModelViewer = ({
     [navigationMode],
   );
   const profile = selectedComponentProfile ?? { material: "", manufacturingProcess: "", industry: "" };
+  const visibleIndustryStandards = useMemo(() => selectedIndustryStandards.slice(0, 3), [selectedIndustryStandards]);
+  const hiddenIndustryStandardsCount = Math.max(0, selectedIndustryStandards.length - visibleIndustryStandards.length);
   const [partFacts, setPartFacts] = useState<PartFactsResponse | null>(null);
   const [partFactsLoading, setPartFactsLoading] = useState(false);
   const [partFactsRefreshing, setPartFactsRefreshing] = useState(false);
@@ -975,8 +977,38 @@ const ModelViewer = ({
                   </select>
                 </label>
                 <div className="component-profile-panel__standards">
-                  <span>Standards:</span>
-                  <p>{selectedIndustryStandards.length ? selectedIndustryStandards.join(", ") : "None"}</p>
+                  <div className="component-profile-panel__standards-header">
+                    <span>Standards</span>
+                    <strong className="component-profile-panel__standards-count">
+                      {selectedIndustryStandards.length ? `${selectedIndustryStandards.length} mapped` : "None mapped"}
+                    </strong>
+                  </div>
+                  {visibleIndustryStandards.length ? (
+                    <>
+                      <div className="component-profile-panel__standards-chips">
+                        {visibleIndustryStandards.map((standard) => (
+                          <span key={standard} className="component-profile-panel__standards-chip" title={standard}>
+                            {standard}
+                          </span>
+                        ))}
+                        {hiddenIndustryStandardsCount ? (
+                          <span className="component-profile-panel__standards-chip component-profile-panel__standards-chip--muted">
+                            +{hiddenIndustryStandardsCount} more
+                          </span>
+                        ) : null}
+                      </div>
+                      {hiddenIndustryStandardsCount ? (
+                        <details className="component-profile-panel__standards-details">
+                          <summary>Show full standards list</summary>
+                          <p>{selectedIndustryStandards.join(", ")}</p>
+                        </details>
+                      ) : null}
+                    </>
+                  ) : (
+                    <p className="component-profile-panel__standards-empty">
+                      {profile.industry ? "No mapped standards for the selected industry." : "Pick an industry to load mapped standards."}
+                    </p>
+                  )}
                 </div>
                 {profileError ? <p className="component-profile-panel__error">{profileError}</p> : null}
               </section>

@@ -6501,18 +6501,77 @@ h4 {
 }
 
 .component-profile-panel__standards {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   font-size: 0.8rem;
   color: #2f4362;
 }
 
-.component-profile-panel__standards span {
+.component-profile-panel__standards-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.component-profile-panel__standards-header span {
   color: #2f4362;
   font-weight: 600;
 }
 
-.component-profile-panel__standards p {
-  margin: 4px 0 0;
+.component-profile-panel__standards-count {
+  font-size: 0.72rem;
+  color: #5b6d86;
+}
+
+.component-profile-panel__standards-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.component-profile-panel__standards-chip {
+  max-width: 100%;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(132, 164, 205, 0.72);
+  background: rgba(230, 238, 250, 0.92);
+  color: #203551;
+  font-size: 0.74rem;
+  line-height: 1.25;
+}
+
+.component-profile-panel__standards-chip--muted {
+  border-style: dashed;
+  background: rgba(244, 247, 252, 0.96);
+  color: #5b6d86;
+}
+
+.component-profile-panel__standards-details {
+  border-top: 1px solid rgba(202, 213, 230, 0.75);
+  padding-top: 6px;
+}
+
+.component-profile-panel__standards-details > summary {
+  cursor: pointer;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #38527a;
+}
+
+.component-profile-panel__standards-details p,
+.component-profile-panel__standards-empty {
+  margin: 0;
   line-height: 1.35;
+}
+
+.component-profile-panel__standards-details p {
+  padding-top: 6px;
+}
+
+.component-profile-panel__standards-empty {
+  color: #5b6d86;
 }
 
 .component-profile-panel__error {
