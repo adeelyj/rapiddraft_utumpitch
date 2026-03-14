@@ -2,7 +2,7 @@
 
 ## Summary
 
-This plan translates the backend architecture described in `plans/plan_draftlint.md` into a convincing, production-looking frontend demo flow. The goal is a recording-ready customer experience where the product appears to scan drawings end to end, including staged processing feedback, localized issue highlights, and downloadable outputs, while using deterministic mock behavior for now.
+This plan translates the backend architecture described in `plans/20260313/plan_draftlint.md` into a convincing, production-looking frontend demo flow. The goal is a recording-ready customer experience where the product appears to scan drawings end to end, including staged processing feedback, localized issue highlights, and downloadable outputs, while using deterministic mock behavior for now.
 
 The first release intentionally focuses on one polished scenario that behaves consistently across repeated demo runs.
 
@@ -88,6 +88,6 @@ The feature is integrated as a new right-rail tab in the current app shell.
 
 The demo scope is one polished deterministic scenario.
 
-The dummy backend contract is temporary but stable and intentionally aligned to the canonical data model in `plans/plan_draftlint.md` to reduce integration risk later.
+The dummy backend contract is temporary but stable and intentionally aligned to the canonical data model in `plans/20260313/plan_draftlint.md` to reduce integration risk later.
 
 Existing DFM, Vision, Fusion, CNC, and review flows remain unchanged.

@@ -68,12 +68,12 @@ Manual script:
 - Disable v2 flag and verify legacy path still works.
 
 ## Exit Artifacts
-- `plans/dfm_plan_04_ui_manual_test_script.md`
-- `plans/dfm_plan_04_ui_behavior_checklist.md`
+- `plans/20260313/dfm_plan_04_ui_manual_test_script.md`
+- `plans/20260313/dfm_plan_04_ui_behavior_checklist.md`
 
 ## Rollback
 - Flip feature flag off to return to legacy UI behavior while backend v2 remains deployed.
 
 ## Execution Status
 - Status: **completed**
-- Validation summary: `plans/dfm_plan_04_validation_results.md`
+- Validation summary: `plans/20260313/dfm_plan_04_validation_results.md`

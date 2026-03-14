@@ -1,10 +1,11 @@
-# RapidDraft Phase Handoff Template
+# RapidDraft Phase Handover Template
 
 Use this template at the end of each implementation phase (Phase 0/1/2/3).  
-Save filled versions in `plans/` using the phase name, for example:
-- `plans/dfm_phase1_handoff.md`
-- `plans/dfm_phase2_handoff.md`
-- `plans/dfm_phase3_handoff.md`
+Save filled versions in `plans/handover/` using this filename pattern:
+- `YYYY-MM-DD_handover.md`
+
+Example:
+- `plans/handover/2026-03-14_handover.md`
 
 ## 1) Phase Metadata
 - Phase name:
@@ -53,7 +54,7 @@ Save filled versions in `plans/` using the phase name, for example:
 - Known bugs:
 - Deferred improvements:
 
-## 10) Next Phase Handoff Checklist
+## 10) Next Phase Handover Checklist
 - Ready-for-next-phase items:
 - Blocking issues for next phase:
 - Recommended first steps for next phase:

@@ -63,8 +63,8 @@ python -m pytest -q server/tests/test_dfm_review_v2_golden_payloads.py
 ```
 
 ## Exit Artifacts
-- `plans/dfm_plan_03_review_golden_examples.json`
-- `plans/dfm_plan_03_standards_traceability.md`
+- `plans/20260313/dfm_plan_03_review_golden_examples.json`
+- `plans/20260313/dfm_plan_03_standards_traceability.md`
 
 ## Rollback
 - Keep new endpoint behind feature flag if issues arise.
@@ -72,4 +72,4 @@ python -m pytest -q server/tests/test_dfm_review_v2_golden_payloads.py
 
 ## Execution Status
 - Status: **completed**
-- Validation summary: `plans/dfm_plan_03_validation_results.md`
+- Validation summary: `plans/20260313/dfm_plan_03_validation_results.md`

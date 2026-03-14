@@ -12,7 +12,7 @@ Fix file and contract integrity before runtime changes so later phases do not fa
 ## Inputs
 - `server/dfm/*.json`
 - `server/dfm/schemas/*.json`
-- `plans/handoff_template.md`
+- `plans/handover/handover_template.md`
 
 ## Out of Scope
 - No API or UI behavior changes.
@@ -66,7 +66,7 @@ Fix file and contract integrity before runtime changes so later phases do not fa
 - All `server/dfm/*.json` parse as valid JSON.
 - All `server/dfm/schemas/*.json` parse as valid JSON.
 - Prompt files have no duplicate critical instruction lines.
-- Only expected unresolved paths are future handoff/discovery outputs.
+- Only expected unresolved paths are future handover/discovery outputs.
 
 ## Intermediate Test Gate
 Run:
@@ -88,8 +88,8 @@ print("json-parse-ok")
 ```
 
 ## Exit Artifacts
-- `plans/dfm_plan_00_integrity_report.md`
-- `plans/dfm_plan_00_integrity_report.json`
+- `plans/20260313/dfm_plan_00_integrity_report.md`
+- `plans/20260313/dfm_plan_00_integrity_report.json`
 
 ## Rollback
 - Revert only manifest/prompt/schema edits from this phase if any integrity check fails.

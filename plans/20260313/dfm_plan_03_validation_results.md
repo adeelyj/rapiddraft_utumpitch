@@ -33,13 +33,13 @@ Warning detail:
 - Pending deprecation warning from `python-multipart` import alias in dependency smoke test.
 
 ## Exit Artifacts
-- `plans/dfm_plan_03_review_golden_examples.json`
-- `plans/dfm_plan_03_standards_traceability.md`
+- `plans/20260313/dfm_plan_03_review_golden_examples.json`
+- `plans/20260313/dfm_plan_03_standards_traceability.md`
 
 ## Golden Maintenance Policy
 `server/tests/test_dfm_review_v2_golden_payloads.py` remains a strict full-payload contract check.  
 When `server/dfm/references.json` is updated (for example standards title/notes/url metadata refresh),
 the expected golden artifact may legitimately drift. In that case, refresh
-`plans/dfm_plan_03_review_golden_examples.json` using
+`plans/20260313/dfm_plan_03_review_golden_examples.json` using
 `scripts/rebaseline_dfm_review_v2_golden.py` and re-run the DFM test gate.
 Do not relax equality assertions in the golden test.

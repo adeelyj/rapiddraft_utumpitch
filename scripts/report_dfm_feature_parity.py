@@ -12,7 +12,9 @@ if str(REPO_ROOT) not in sys.path:
 from server.dfm_feature_parity import generate_feature_parity_report
 
 
-DEFAULT_MANIFEST = REPO_ROOT / "plans" / "dfm_mtk_benchmark_manifest.local.json"
+PREFERRED_MANIFEST = REPO_ROOT / "plans" / "20260313" / "dfm_mtk_benchmark_manifest.local.json"
+LEGACY_MANIFEST = REPO_ROOT / "plans" / "dfm_mtk_benchmark_manifest.local.json"
+DEFAULT_MANIFEST = PREFERRED_MANIFEST if PREFERRED_MANIFEST.exists() else LEGACY_MANIFEST
 
 
 def _parser() -> argparse.ArgumentParser:

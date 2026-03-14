@@ -80,4 +80,4 @@ Legacy endpoints retained at Plan 02 time (later removed in Plan 06 N+2):
 - `execution_plans` returns one or two routes depending on mismatch and toggle/policy.
 
 Concrete payload examples are stored in:
-- `plans/dfm_plan_02_plan_endpoint_examples.json`
+- `plans/20260313/dfm_plan_02_plan_endpoint_examples.json`

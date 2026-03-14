@@ -19,5 +19,5 @@ Result:
 - Bundle warning remains for large chunk size (non-blocking, pre-existing pattern).
 
 ## Artifacts
-- `plans/dfm_plan_04_ui_manual_test_script.md`
-- `plans/dfm_plan_04_ui_behavior_checklist.md`
+- `plans/20260313/dfm_plan_04_ui_manual_test_script.md`
+- `plans/20260313/dfm_plan_04_ui_behavior_checklist.md`

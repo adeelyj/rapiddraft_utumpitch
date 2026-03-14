@@ -21,7 +21,7 @@ Blocked path:
 - If no findings fire, standards list is explicitly empty.
 
 ## Golden Scenario Evidence
-Source: `plans/dfm_plan_03_review_golden_examples.json`
+Source: `plans/20260313/dfm_plan_03_review_golden_examples.json`
 
 | Scenario | Routes | Finding Count | Standards Count |
 | --- | --- | --- | --- |

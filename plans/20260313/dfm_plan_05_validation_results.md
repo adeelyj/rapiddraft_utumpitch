@@ -40,5 +40,5 @@ Warning detail:
 - Pending deprecation warning from `python-multipart` import alias in dependency smoke test.
 
 ## Exit Artifacts
-- `plans/dfm_plan_05_cost_contract_examples.json`
-- `plans/dfm_plan_05_cost_scenario_matrix.md`
+- `plans/20260313/dfm_plan_05_cost_contract_examples.json`
+- `plans/20260313/dfm_plan_05_cost_scenario_matrix.md`

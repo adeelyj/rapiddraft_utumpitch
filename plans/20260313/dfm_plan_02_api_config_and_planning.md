@@ -65,8 +65,8 @@ curl http://localhost:8000/api/dfm/config
 ```
 
 ## Exit Artifacts
-- `plans/dfm_plan_02_api_contract_examples.md`
-- `plans/dfm_plan_02_plan_endpoint_examples.json`
+- `plans/20260313/dfm_plan_02_api_contract_examples.md`
+- `plans/20260313/dfm_plan_02_plan_endpoint_examples.json`
 
 ## Rollback
 - Disable new endpoints only if needed.
@@ -74,5 +74,5 @@ curl http://localhost:8000/api/dfm/config
 
 ## Execution Status
 - Status: **completed**
-- Validation summary: `plans/dfm_plan_02_validation_results.md`
+- Validation summary: `plans/20260313/dfm_plan_02_validation_results.md`
 - Migration note: legacy endpoints listed above were removed in Plan 06 N+2.

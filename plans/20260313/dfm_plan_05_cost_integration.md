@@ -4,9 +4,9 @@
 - Status: Completed on 2026-02-16.
 - Cost outputs are live in review-v2 and can be disabled with `DFM_COST_ENABLED=false`.
 - Exit artifacts produced:
-  - `plans/dfm_plan_05_cost_contract_examples.json`
-  - `plans/dfm_plan_05_cost_scenario_matrix.md`
-  - `plans/dfm_plan_05_validation_results.md`
+  - `plans/20260313/dfm_plan_05_cost_contract_examples.json`
+  - `plans/20260313/dfm_plan_05_cost_scenario_matrix.md`
+  - `plans/20260313/dfm_plan_05_validation_results.md`
 
 ## Purpose
 Integrate quick should-cost into v2 review outputs and reporting with route comparison support.
@@ -69,8 +69,8 @@ Manual checks:
 - Missing supplier rates returns assumptions and lower confidence.
 
 ## Exit Artifacts
-- `plans/dfm_plan_05_cost_contract_examples.json`
-- `plans/dfm_plan_05_cost_scenario_matrix.md`
+- `plans/20260313/dfm_plan_05_cost_contract_examples.json`
+- `plans/20260313/dfm_plan_05_cost_scenario_matrix.md`
 
 ## Rollback
 - Keep cost feature behind server flag if needed.

@@ -27,8 +27,8 @@ Warning detail:
 - Pending deprecation warning from `python-multipart` import alias in dependency smoke test.
 
 ## Artifacts Produced
-- `plans/dfm_plan_02_api_contract_examples.md`
-- `plans/dfm_plan_02_plan_endpoint_examples.json`
+- `plans/20260313/dfm_plan_02_api_contract_examples.md`
+- `plans/20260313/dfm_plan_02_plan_endpoint_examples.json`
 
 ## Notes
 - API route tests were implemented as contract tests on planning/config functions plus route declaration checks, which avoids `httpx` dependency requirements from `fastapi.testclient` in the current FreeCAD-backed environment.

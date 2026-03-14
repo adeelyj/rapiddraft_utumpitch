@@ -9,7 +9,7 @@
 | Cost model schema gate | Cost model JSON and schema | Valid model passes; malformed fields fail validation | `server/tests/test_dfm_cost_model_validation.py` |
 
 ## Output Contracts
-- Example payloads are stored in `plans/dfm_plan_05_cost_contract_examples.json`.
+- Example payloads are stored in `plans/20260313/dfm_plan_05_cost_contract_examples.json`.
 - Response sections enabled in templates:
   - `cost_summary`
   - `cost_drivers`

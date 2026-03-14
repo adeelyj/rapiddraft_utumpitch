@@ -28,4 +28,4 @@
 
 ## Artifact Links
 
-- `plans/dfm_plan_00_integrity_report.json`
+- `plans/20260313/dfm_plan_00_integrity_report.json`

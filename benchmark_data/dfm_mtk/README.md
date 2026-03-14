@@ -22,13 +22,13 @@ benchmark_data/
 
 The manifest template that references these files is at:
 
-`plans/dfm_mtk_benchmark_manifest.template.json`
+`plans/20260313/dfm_mtk_benchmark_manifest.template.json`
 
-Copy that file to a working manifest (for example `plans/dfm_mtk_benchmark_manifest.local.json`) and fill the case paths.
+Copy that file to a working manifest (for example `plans/20260313/dfm_mtk_benchmark_manifest.local.json`) and fill the case paths.
 
 This workspace already includes a populated working manifest at:
 
-`plans/dfm_mtk_benchmark_manifest.local.json`
+`plans/20260313/dfm_mtk_benchmark_manifest.local.json`
 
 At the moment, that populated manifest contains seven real Cadex-labeled cases already in this workspace: `sample 2`, `sample 3`, `sample 4`, `sample 5`, `sample 6`, `sample 7`, and `sample 8`. Geometry regression coverage is also stronger because the turning detector has reduced real-data fixtures under `server/tests/fixtures/cnc_turning/`, but those fixtures are still a complement to, not a replacement for, real labeled benchmark cases.
 
@@ -40,13 +40,13 @@ Feature-detection hardening is now broader than turning. The repo also keeps red
 
 When you add a new real Cadex-labeled case, the intended workflow is:
 
-1. Add the case folder under `benchmark_data/dfm_mtk/cases/` and wire it into `plans/dfm_mtk_benchmark_manifest.local.json`.
+1. Add the case folder under `benchmark_data/dfm_mtk/cases/` and wire it into `plans/20260313/dfm_mtk_benchmark_manifest.local.json`.
 2. Run the parity report so it emits a fresh `sample_X_feature_inspection.json`.
 3. Generate a reduced regression fixture with `python scripts/regenerate_cnc_feature_fixture.py --inspection <inspection_json> --out server/tests/fixtures/cnc_feature_detection/<fixture_name>.json --case-id <case_id>`.
 4. Rerun `python scripts/run_dfm_feature_detection_gate.py` so the new case is immediately covered by the exact-count geometry regression path.
 
 The current runner can be invoked from the repo root with:
 
-`python scripts/run_dfm_mtk_benchmark.py --manifest plans/dfm_mtk_benchmark_manifest.local.json`
+`python scripts/run_dfm_mtk_benchmark.py --manifest plans/20260313/dfm_mtk_benchmark_manifest.local.json`
 
 If you want the benchmark philosophy, current dataset status, backend touchpoints, and a copy-paste opening brief for a fresh Codex Windows app session, read `benchmark_data/dfm_mtk/CODEX_HANDOFF.md`.

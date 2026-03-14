@@ -13,9 +13,9 @@
   - Removed temporary deprecation/telemetry compatibility layer after cutover.
   - Added bundle-derived component profile options into `GET /api/dfm/config` (`profile_options`).
 - Current artifacts:
-  - `plans/dfm_plan_06_deprecation_checklist.md`
-  - `plans/dfm_plan_06_cleanup_diff_summary.md`
-  - `plans/dfm_plan_06_validation_results.md`
+  - `plans/20260313/dfm_plan_06_deprecation_checklist.md`
+  - `plans/20260313/dfm_plan_06_cleanup_diff_summary.md`
+  - `plans/20260313/dfm_plan_06_validation_results.md`
 
 ## Purpose
 Complete migration to the new DFM procedure and safely remove legacy profile-options flow after a two-milestone compatibility window.
@@ -50,7 +50,7 @@ Complete migration to the new DFM procedure and safely remove legacy profile-opt
 
 3. Milestone N+2:
 - remove old endpoint logic and old data dependency
-- keep migration notes in changelog and handoff
+- keep migration notes in changelog and handover
 
 ## Implementation Tasks
 1. Add telemetry counters for old endpoint usage.
@@ -58,7 +58,7 @@ Complete migration to the new DFM procedure and safely remove legacy profile-opt
 3. Add readiness threshold:
 - old endpoint usage near zero over agreed observation window
 4. Remove legacy code paths and tests tied only to old flow.
-5. Update docs and handoff templates to reflect completed migration.
+5. Update docs and handover templates to reflect completed migration.
 
 ## Acceptance Checks
 - Telemetry confirms low or zero old endpoint usage before removal.
@@ -79,8 +79,8 @@ python -m pytest -q server/tests -k dfm
 ```
 
 ## Exit Artifacts
-- `plans/dfm_plan_06_deprecation_checklist.md`
-- `plans/dfm_plan_06_cleanup_diff_summary.md`
+- `plans/20260313/dfm_plan_06_deprecation_checklist.md`
+- `plans/20260313/dfm_plan_06_cleanup_diff_summary.md`
 
 ## Rollback
 - Reintroduce legacy endpoints in a temporary patch only if a hard blocker is found in production clients.

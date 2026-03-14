@@ -15,7 +15,7 @@ Integrate pilot standards/rules authored in DeepResearch into the existing DFM v
 - Source artifacts:
   - `server/dfm/pilot_deep_research_source.json`
   - `server/dfm/pilot_deep_research_compiled.json`
-  - `plans/dfm_plan_07_pilot_deep_research_mapping_contract.json`
+  - `plans/20260313/dfm_plan_07_pilot_deep_research_mapping_contract.json`
 
 ## Bundle Updates
 - `server/dfm/references.json` patched with pilot refs (including `REF-GPS-6`, `REF-GPS-7`).

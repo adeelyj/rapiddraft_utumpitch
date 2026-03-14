@@ -75,8 +75,8 @@ python -m pytest -q server/tests/test_dfm_bundle_cross_validation.py
 ```
 
 ## Exit Artifacts
-- `plans/dfm_plan_01_loader_contract.md`
-- `plans/dfm_plan_01_validation_results.md`
+- `plans/20260313/dfm_plan_01_loader_contract.md`
+- `plans/20260313/dfm_plan_01_validation_results.md`
 
 ## Rollback
 - Keep bundle files intact.
