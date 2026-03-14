@@ -26,7 +26,7 @@ const componentProfiles = {
   },
 };
 
-const benchmarkReviewPayload = {
+const benchmarkReviewPayload: Record<string, any> = {
   routes: [
     {
       plan_id: "plan-cnc-milling",
@@ -65,6 +65,42 @@ const benchmarkReviewPayload = {
       effective_process_label: "CNC Milling",
     },
     feature_groups: [],
+    detail_metrics: [],
+  },
+};
+
+const pocketFeatureGroupAnchor = {
+  anchor_id: "pocket-open",
+  component_node_name: COMPONENT_NODE_NAME,
+  anchor_kind: "region",
+  position_mm: [14, 24, 7],
+  bbox_bounds_mm: [10, 20, 3, 18, 28, 11],
+  face_indices: [17, 18],
+  label: "Open pocket",
+};
+
+const benchmarkReviewWithFeatureGroupAnchor: Record<string, any> = {
+  ...benchmarkReviewPayload,
+  geometry_evidence: {
+    process_summary: {
+      effective_process_label: "CNC Milling",
+    },
+    feature_groups: [
+      {
+        group_id: "pockets",
+        label: "Pocket features",
+        summary: "2 pockets detected, including 1 open pocket candidate.",
+        geometry_anchor: pocketFeatureGroupAnchor,
+        metrics: [
+          {
+            key: "pocket_count",
+            label: "Pocket features",
+            value: 2,
+            geometry_anchor: pocketFeatureGroupAnchor,
+          },
+        ],
+      },
+    ],
     detail_metrics: [],
   },
 };
@@ -394,6 +430,26 @@ test("keeps the compact benchmark overlay anchored to the viewer top-right from 
     title: "Corner radius consistency across pockets",
     location: "top-right-front pocket corner",
   });
+});
+
+test("focuses a feature-recognition group from its geometry anchor", async ({ page }) => {
+  await mockApi(page, { reviewPayload: benchmarkReviewWithFeatureGroupAnchor });
+  await seedCachedBenchmarkReview(page, benchmarkReviewWithFeatureGroupAnchor);
+  await importBenchmarkModel(page);
+
+  const benchmarkSidebar = await openBenchmarkSidebar(page);
+  const featureRecognition = benchmarkSidebar.locator(".dfm-sidebar__evidence");
+  await featureRecognition.locator("summary").click();
+
+  await benchmarkSidebar.getByRole("button", { name: "Show pocket features in model" }).click();
+
+  const overlay = page.locator(".analysis-focus-overlay");
+  await expect(overlay).toBeVisible();
+  await expect(overlay.locator(".analysis-focus-overlay__title")).toHaveText("Pocket features");
+  await expect(overlay.locator(".analysis-focus-overlay__details")).toContainText(
+    "2 pockets detected, including 1 open pocket candidate.",
+  );
+  await expect(overlay.locator(".analysis-focus-overlay__details")).toContainText("Open pocket");
 });
 
 test("runs the benchmark generate review flow before showing the compact overlay", async ({ page }) => {

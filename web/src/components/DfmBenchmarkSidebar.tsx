@@ -38,6 +38,14 @@ type GeometryAnchor = {
   label?: string | null;
 };
 
+type GeometryFeatureGroup = {
+  group_id: string;
+  label: string;
+  summary: string;
+  metrics: GeometryMetric[];
+  geometry_anchor?: GeometryAnchor | null;
+};
+
 type DfmFindingAnchor = GeometryAnchor;
 
 type DfmFindingBlameMap = {
@@ -189,6 +197,14 @@ const instanceMetricFragments = (instance: DfmViolatingInstance): string[] =>
       ? `D/D ${formatCompactNumber(instance.depth_to_diameter_ratio, 2)}`
       : null,
   ].filter((value): value is string => Boolean(value && value.trim()));
+
+const hasAnchorFocusData = (anchor: GeometryAnchor | null | undefined): anchor is GeometryAnchor =>
+  Boolean(
+    anchor &&
+      ((anchor.position_mm && anchor.position_mm.length === 3) ||
+        (anchor.bbox_bounds_mm && anchor.bbox_bounds_mm.length === 6) ||
+        anchor.component_node_name),
+  );
 
 const blameMapLabel = (blameMap: DfmFindingBlameMap | undefined): string | null => {
   switch (blameMap?.localization_status) {
@@ -741,10 +757,37 @@ const DfmBenchmarkSidebar = ({
   const geometryEvidence = reviewResult?.geometry_evidence as
     | {
         process_summary?: { effective_process_label?: string | null; ai_process_label?: string | null };
-        feature_groups?: Array<{ group_id: string; label: string; summary: string; metrics: GeometryMetric[] }>;
+        feature_groups?: GeometryFeatureGroup[];
         detail_metrics?: GeometryMetric[];
       }
     | undefined;
+
+  const focusFeatureGroup = (group: GeometryFeatureGroup) => {
+    if (!onFocusInModel) return;
+
+    const anchor = hasAnchorFocusData(group.geometry_anchor) ? group.geometry_anchor : null;
+    const componentNodeName = anchor?.component_node_name ?? selectedComponent?.nodeName ?? null;
+    if (!anchor && !componentNodeName) return;
+
+    const details = [group.summary, anchor?.label]
+      .filter((value): value is string => Boolean(value && value.trim()))
+      .filter((value, index, array) => array.indexOf(value) === index);
+
+    onFocusInModel({
+      id: anchor?.anchor_id || `dfm-benchmark-feature-group-${group.group_id}`,
+      source: "dfm_benchmark",
+      title: group.label,
+      details: details.join(" | ") || undefined,
+      severity: "info",
+      overlay_location: compactOverlayLocation(anchor?.label),
+      component_node_name: componentNodeName,
+      anchor_kind: anchor?.anchor_kind ?? "part",
+      position_mm: anchor?.position_mm ?? null,
+      normal: anchor?.normal ?? null,
+      bbox_bounds_mm: anchor?.bbox_bounds_mm ?? null,
+      face_indices: anchor?.face_indices ?? [],
+    });
+  };
 
   const focusGeometryMetric = (
     metric: GeometryMetric,
@@ -943,10 +986,28 @@ const DfmBenchmarkSidebar = ({
               <div className="dfm-sidebar__feature-groups">
                 {geometryEvidence.feature_groups.map((group) => (
                   <section key={group.group_id} className="dfm-sidebar__feature-group">
-                    <div className="dfm-sidebar__feature-group-header">
-                      <strong>{group.label}</strong>
-                    </div>
-                    <p className="dfm-sidebar__feature-group-summary">{group.summary}</p>
+                    {onFocusInModel && (hasAnchorFocusData(group.geometry_anchor) || selectedComponent?.nodeName) ? (
+                      <button
+                        type="button"
+                        className="dfm-sidebar__feature-group-focus"
+                        onClick={() => focusFeatureGroup(group)}
+                        aria-label={`Show ${group.label.toLowerCase()} in model`}
+                        title={`Show ${group.label.toLowerCase()} in model`}
+                      >
+                        <div className="dfm-sidebar__feature-group-header">
+                          <strong>{group.label}</strong>
+                          <span className="dfm-sidebar__feature-group-action">Show in model</span>
+                        </div>
+                        <p className="dfm-sidebar__feature-group-summary">{group.summary}</p>
+                      </button>
+                    ) : (
+                      <>
+                        <div className="dfm-sidebar__feature-group-header">
+                          <strong>{group.label}</strong>
+                        </div>
+                        <p className="dfm-sidebar__feature-group-summary">{group.summary}</p>
+                      </>
+                    )}
                     <div className="dfm-sidebar__metric-list">
                       {group.metrics.map((metric) =>
                         renderMetricRow(metric, {

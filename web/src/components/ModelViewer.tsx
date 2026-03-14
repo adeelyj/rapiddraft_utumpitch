@@ -336,7 +336,10 @@ const ModelContents = ({
     const targetObject = targetNodeName ? scene.getObjectByName(targetNodeName) : null;
     const focusTarget = analysisFocusCenter(analysisFocus, targetObject || scene);
     if (!focusTarget) return;
-    if (!analysisFocus.position_mm && !analysisFocus.bbox_bounds_mm) return;
+    const hasLocalizedFocusTarget =
+      (analysisFocus.position_mm && analysisFocus.position_mm.length === 3) ||
+      (analysisFocus.bbox_bounds_mm && analysisFocus.bbox_bounds_mm.length === 6);
+    if (!hasLocalizedFocusTarget && !targetObject) return;
 
     const startTarget = (controls?.target ?? new Vector3()).clone();
     const direction = camera.position.clone().sub(startTarget);

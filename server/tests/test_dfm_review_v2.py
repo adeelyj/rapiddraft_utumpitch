@@ -967,6 +967,8 @@ def test_review_v2_geometry_evidence_can_emit_feature_anchors():
 
     geometry_evidence = response["geometry_evidence"]
     groups = {entry["group_id"]: entry for entry in geometry_evidence["feature_groups"]}
+    turning_group_anchor = groups["turning"]["geometry_anchor"]
+    holes_group_anchor = groups["holes"]["geometry_anchor"]
 
     turning_anchor = next(
         metric["geometry_anchor"]
@@ -982,10 +984,14 @@ def test_review_v2_geometry_evidence_can_emit_feature_anchors():
     assert turning_anchor["component_node_name"] == "component_1"
     assert turning_anchor["face_indices"] == [8]
     assert turning_anchor["position_mm"] == [40.0, 25.0, 15.0]
+    assert turning_group_anchor["anchor_id"] == "turning-primary"
+    assert turning_group_anchor["position_mm"] == [40.0, 25.0, 15.0]
 
     assert bore_anchor["component_node_name"] == "component_1"
     assert bore_anchor["face_indices"] == [7]
     assert bore_anchor["bbox_bounds_mm"] == [8.0, 18.0, 28.0, 12.0, 22.0, 32.0]
+    assert holes_group_anchor["anchor_id"] == "hole-any"
+    assert holes_group_anchor["face_indices"] == [7]
 
 
 def test_review_v2_response_includes_effective_context_when_provided():

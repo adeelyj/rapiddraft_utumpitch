@@ -499,74 +499,86 @@ def _build_geometry_evidence(
     feature_groups: list[dict[str, Any]] = []
     if turning_metrics:
         feature_groups.append(
-            {
-                "group_id": "turning",
-                "label": "Turning features",
-                "summary": _turning_summary(
+            _geometry_feature_group(
+                "turning",
+                "Turning features",
+                _turning_summary(
                     rotational_symmetry=bool(rotational_symmetry),
                     turned_face_count=turned_face_count,
                 ),
-                "metrics": turning_metrics,
-            }
+                turning_metrics,
+                geometry_anchor=_first_geometry_anchor(
+                    geometry_anchors.get("turned_face_count"),
+                    geometry_anchors.get("rotational_symmetry"),
+                ),
+            )
         )
     if hole_metrics:
         feature_groups.append(
-            {
-                "group_id": "holes",
-                "label": "Hole features",
-                "summary": _hole_summary(
+            _geometry_feature_group(
+                "holes",
+                "Hole features",
+                _hole_summary(
                     hole_count=hole_count,
                     through_hole_count=through_hole_count,
                     bore_count=bore_count,
                 ),
-                "metrics": hole_metrics,
-            }
+                hole_metrics,
+                geometry_anchor=geometry_anchors.get("hole_count"),
+            )
         )
     if pocket_metrics:
         feature_groups.append(
-            {
-                "group_id": "pockets",
-                "label": "Pocket features",
-                "summary": _pocket_summary(
+            _geometry_feature_group(
+                "pockets",
+                "Pocket features",
+                _pocket_summary(
                     pocket_count=pocket_count,
                     open_pocket_count=open_pocket_count,
                     closed_pocket_count=closed_pocket_count,
                 ),
-                "metrics": pocket_metrics,
-            }
+                pocket_metrics,
+                geometry_anchor=geometry_anchors.get("pocket_count"),
+            )
         )
     if groove_metrics:
         feature_groups.append(
-            {
-                "group_id": "grooves",
-                "label": "Groove features",
-                "summary": _groove_summary(
+            _geometry_feature_group(
+                "grooves",
+                "Groove features",
+                _groove_summary(
                     outer_diameter_groove_count=outer_diameter_groove_count,
                     end_face_groove_count=end_face_groove_count,
                 ),
-                "metrics": groove_metrics,
-            }
+                groove_metrics,
+                geometry_anchor=_first_geometry_anchor(
+                    geometry_anchors.get("outer_diameter_groove_count"),
+                    geometry_anchors.get("end_face_groove_count"),
+                ),
+            )
         )
     if milled_metrics:
         feature_groups.append(
-            {
-                "group_id": "milled_faces",
-                "label": "Milled-face features",
-                "summary": _milled_summary(
+            _geometry_feature_group(
+                "milled_faces",
+                "Milled-face features",
+                _milled_summary(
                     milled_face_count=milled_face_count,
                     circular_milled_face_count=circular_milled_face_count,
                 ),
-                "metrics": milled_metrics,
-            }
+                milled_metrics,
+                geometry_anchor=geometry_anchors.get("milled_face_count"),
+            )
         )
     if boss_metrics:
         feature_groups.append(
-            {
-                "group_id": "bosses",
-                "label": "Boss features",
-                "summary": _boss_summary(boss_count=boss_count),
-                "metrics": boss_metrics,
-            }
+            _geometry_feature_group(
+                "bosses",
+                "Boss features",
+                _boss_summary(boss_count=boss_count),
+                boss_metrics,
+                geometry_anchor=geometry_anchors.get("boss_count"),
+            )
         )
 
     detail_metrics = [
@@ -618,6 +630,23 @@ def _geometry_metric(
         "label": label,
         "value": _normalize_geometry_metric_value(value),
         "unit": unit,
+        "geometry_anchor": geometry_anchor,
+    }
+
+
+def _geometry_feature_group(
+    group_id: str,
+    label: str,
+    summary: str,
+    metrics: list[dict[str, Any]],
+    *,
+    geometry_anchor: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    return {
+        "group_id": group_id,
+        "label": label,
+        "summary": summary,
+        "metrics": metrics,
         "geometry_anchor": geometry_anchor,
     }
 
