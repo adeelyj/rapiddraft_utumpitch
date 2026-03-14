@@ -1,8 +1,15 @@
-import { expect, test, type Page, type Route } from "@playwright/test";
+import { expect, test, type Locator, type Page, type Route } from "@playwright/test";
 
 const MODEL_ID = "benchmark-overlay-model";
 const COMPONENT_NODE_NAME = "Part__sample_2";
 const BENCHMARK_REVIEW_CACHE_KEY = `dfm_benchmark_sidebar_review_last_v1:${MODEL_ID}:${COMPONENT_NODE_NAME}`;
+const DEFAULT_INDUSTRY_STANDARDS = [
+  "ASME Y14.5",
+  "ISO 2768",
+  "NADCAP AC7108",
+  "SAE AS9100D",
+  "MIL-STD-31000",
+];
 
 const minimalPreviewScene = JSON.stringify({
   asset: { version: "2.0" },
@@ -19,79 +26,52 @@ const componentProfiles = {
   },
 };
 
-const cachedBenchmarkReview = {
-  saved_at: "2026-03-14T19:00:00.000Z",
-  payload: {
-    routes: [
-      {
-        plan_id: "plan-cnc-milling",
-        process_id: "cnc_milling",
-        process_label: "CNC Milling",
-        findings: [
-          {
-            rule_id: "corner_radius_consistency",
-            pack_id: "pack-1",
-            finding_type: "rule_violation",
-            title: "Corner radius consistency across pockets",
-            severity: "warning",
-            description: "Mixed internal corner radii create avoidable tool changes and setup friction.",
-            recommended_action: "Normalize the inside pocket radius so the same cutter can finish each corner.",
-            expected_impact: {
-              risk_reduction: "Medium",
-              cost_impact: "Medium",
-              lead_time_impact: "Low",
-            },
-            evidence: {
-              violating_instances: [
-                {
-                  instance_id: "top-right-front-pocket-corner",
-                  location_description: "top-right-front pocket corner",
-                  radius_mm: 1.5,
-                  bbox_bounds_mm: [10, 20, 3, 18, 28, 11],
-                },
-              ],
-            },
+const benchmarkReviewPayload = {
+  routes: [
+    {
+      plan_id: "plan-cnc-milling",
+      process_id: "cnc_milling",
+      process_label: "CNC Milling",
+      findings: [
+        {
+          rule_id: "corner_radius_consistency",
+          pack_id: "pack-1",
+          finding_type: "rule_violation",
+          title: "Corner radius consistency across pockets",
+          severity: "warning",
+          description: "Mixed internal corner radii create avoidable tool changes and setup friction.",
+          recommended_action: "Normalize the inside pocket radius so the same cutter can finish each corner.",
+          expected_impact: {
+            risk_reduction: "Medium",
+            cost_impact: "Medium",
+            lead_time_impact: "Low",
           },
-        ],
-      },
-    ],
-    geometry_evidence: {
-      process_summary: {
-        effective_process_label: "CNC Milling",
-      },
-      feature_groups: [],
-      detail_metrics: [],
+          evidence: {
+            violating_instances: [
+              {
+                instance_id: "top-right-front-pocket-corner",
+                location_description: "top-right-front pocket corner",
+                radius_mm: 1.5,
+                bbox_bounds_mm: [10, 20, 3, 18, 28, 11],
+              },
+            ],
+          },
+        },
+      ],
     },
+  ],
+  geometry_evidence: {
+    process_summary: {
+      effective_process_label: "CNC Milling",
+    },
+    feature_groups: [],
+    detail_metrics: [],
   },
 };
 
-const dfmConfigResponse = {
-  profile_options: {
-    materials: [{ id: "al_6061", label: "Aluminum 6061" }],
-    manufacturingProcesses: [{ id: "cnc_milling", label: "CNC Milling" }],
-    industries: [
-      {
-        id: "aerospace",
-        label: "Aerospace",
-        standards: ["ASME Y14.5", "ISO 2768", "NADCAP AC7108"],
-      },
-    ],
-  },
-  processes: [{ process_id: "cnc_milling", label: "CNC Milling" }],
-  roles: [{ role_id: "general_dfm", label: "General DFM" }],
-  ui_bindings: {
-    screens: {
-      dfm_review_panel: {
-        flow_order: ["generate_review"],
-        controls: [
-          {
-            control_id: "generate_review",
-            label: "Generate review",
-          },
-        ],
-      },
-    },
-  },
+const cachedBenchmarkReview = {
+  saved_at: "2026-03-14T19:00:00.000Z",
+  payload: benchmarkReviewPayload,
 };
 
 const modelTemplatesResponse = {
@@ -150,6 +130,53 @@ const corsHeaders = {
   "access-control-allow-headers": "*",
 };
 
+type MockApiOptions = {
+  industryStandards?: string[];
+  reviewPayload?: typeof benchmarkReviewPayload;
+  onReviewRequest?: (payload: unknown) => void;
+};
+
+type ReviewRequestPayload = {
+  component_node_name?: string;
+  planning_inputs?: {
+    selected_role?: string;
+    selected_template?: string;
+    run_both_if_mismatch?: boolean;
+  };
+  context_payload?: {
+    include_geometry_anchors?: boolean;
+  };
+};
+
+const buildDfmConfigResponse = (industryStandards: string[]) => ({
+  profile_options: {
+    materials: [{ id: "al_6061", label: "Aluminum 6061" }],
+    manufacturingProcesses: [{ id: "cnc_milling", label: "CNC Milling" }],
+    industries: [
+      {
+        id: "aerospace",
+        label: "Aerospace",
+        standards: industryStandards,
+      },
+    ],
+  },
+  processes: [{ process_id: "cnc_milling", label: "CNC Milling" }],
+  roles: [{ role_id: "general_dfm", label: "General DFM" }],
+  ui_bindings: {
+    screens: {
+      dfm_review_panel: {
+        flow_order: ["generate_review"],
+        controls: [
+          {
+            control_id: "generate_review",
+            label: "Generate review",
+          },
+        ],
+      },
+    },
+  },
+});
+
 const fulfillJson = async (route: Route, payload: unknown, status = 200) => {
   await route.fulfill({
     status,
@@ -159,7 +186,10 @@ const fulfillJson = async (route: Route, payload: unknown, status = 200) => {
   });
 };
 
-const mockApi = async (page: Page) => {
+const mockApi = async (page: Page, options: MockApiOptions = {}) => {
+  const industryStandards = options.industryStandards ?? DEFAULT_INDUSTRY_STANDARDS;
+  const reviewPayload = options.reviewPayload ?? benchmarkReviewPayload;
+
   await page.route("**/api/**", async (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -176,7 +206,7 @@ const mockApi = async (page: Page) => {
     }
 
     if (pathname === "/api/dfm/config") {
-      await fulfillJson(route, dfmConfigResponse);
+      await fulfillJson(route, buildDfmConfigResponse(industryStandards));
       return;
     }
 
@@ -211,6 +241,18 @@ const mockApi = async (page: Page) => {
       return;
     }
 
+    if (pathname === `/api/models/${MODEL_ID}/dfm/review-v2` && request.method() === "POST") {
+      let requestPayload: unknown = null;
+      try {
+        requestPayload = request.postDataJSON();
+      } catch {
+        requestPayload = null;
+      }
+      options.onReviewRequest?.(requestPayload);
+      await fulfillJson(route, reviewPayload);
+      return;
+    }
+
     if (pathname === `/api/models/${MODEL_ID}/tickets`) {
       await fulfillJson(route, []);
       return;
@@ -240,20 +282,22 @@ const mockApi = async (page: Page) => {
   });
 };
 
-test.beforeEach(async ({ page }) => {
-  await mockApi(page);
+const seedCachedBenchmarkReview = async (page: Page, reviewPayload: typeof benchmarkReviewPayload = benchmarkReviewPayload) => {
   await page.addInitScript(
     ({ reviewCacheKey, cachedReviewValue }) => {
       window.localStorage.setItem(reviewCacheKey, JSON.stringify(cachedReviewValue));
     },
     {
       reviewCacheKey: BENCHMARK_REVIEW_CACHE_KEY,
-      cachedReviewValue: cachedBenchmarkReview,
+      cachedReviewValue: {
+        ...cachedBenchmarkReview,
+        payload: reviewPayload,
+      },
     },
   );
-});
+};
 
-test("keeps the compact benchmark overlay anchored to the viewer top-right", async ({ page }) => {
+const importBenchmarkModel = async (page: Page) => {
   await page.goto("/?mode=expert");
 
   await page.locator('input[type="file"]').first().setInputFiles({
@@ -262,28 +306,34 @@ test("keeps the compact benchmark overlay anchored to the viewer top-right", asy
     buffer: Buffer.from("ISO-10303-21;"),
   });
 
-  await expect(page.locator(".component-profile-panel")).toContainText("sample 2");
+  const profilePanel = page.locator(".component-profile-panel");
+  await expect(profilePanel).toContainText("sample 2");
+  return profilePanel;
+};
 
+const openBenchmarkSidebar = async (page: Page) => {
   await page
     .locator(".sidebar-rail--right .sidebar-rail__button")
     .filter({ hasText: "DFM Benchmark Bar" })
     .click();
 
   const benchmarkSidebar = page.locator(".dfm-sidebar").filter({ hasText: "DFM Benchmark Bar" });
-
   await expect(benchmarkSidebar).toBeVisible();
-  await expect(benchmarkSidebar.locator(".dfm-sidebar__issue-card")).toContainText("Corner radius consistency across pockets");
+  return benchmarkSidebar;
+};
 
-  await benchmarkSidebar.getByRole("button", { name: "Show in model" }).first().click();
-
+const expectCompactOverlayTopRight = async (
+  page: Page,
+  expectations: { title: string; location: string },
+) => {
   const overlay = page.locator(".analysis-focus-overlay.analysis-focus-overlay--compact");
   const overlayTitle = overlay.locator(".analysis-focus-overlay__title");
   const overlayLocationChip = overlay.locator(".analysis-focus-overlay__location-chip");
   const overlayDetails = overlay.locator(".analysis-focus-overlay__details");
 
   await expect(overlay).toBeVisible();
-  await expect(overlayTitle).toHaveText("Corner radius consistency across pockets");
-  await expect(overlayLocationChip).toHaveText("top-right-front pocket corner");
+  await expect(overlayTitle).toHaveText(expectations.title);
+  await expect(overlayLocationChip).toHaveText(expectations.location);
   await expect(overlayDetails).toHaveCount(0);
 
   const viewerBounds = await page.locator(".viewer-area").boundingBox();
@@ -304,4 +354,82 @@ test("keeps the compact benchmark overlay anchored to the viewer top-right", asy
   expect(overlayTopInset).toBeGreaterThanOrEqual(0);
   expect(overlayTopInset).toBeLessThanOrEqual(28);
   expect(overlayBounds.width).toBeLessThanOrEqual(190);
+};
+
+const standardChipTexts = async (locator: Locator) => locator.allTextContents();
+
+test("shows a compact standards preview before expanding the full list", async ({ page }) => {
+  await mockApi(page);
+  const profilePanel = await importBenchmarkModel(page);
+
+  const standardsBlock = profilePanel.locator(".component-profile-panel__standards");
+  const visibleStandardChips = standardsBlock.locator(
+    ".component-profile-panel__standards-chip:not(.component-profile-panel__standards-chip--muted)",
+  );
+  const hiddenSummaryChip = standardsBlock.locator(".component-profile-panel__standards-chip--muted");
+  const fullListDetails = standardsBlock.locator(".component-profile-panel__standards-details");
+
+  await expect(standardsBlock.locator(".component-profile-panel__standards-count")).toHaveText("5 mapped");
+  await expect(visibleStandardChips).toHaveCount(3);
+  expect(await standardChipTexts(visibleStandardChips)).toEqual(DEFAULT_INDUSTRY_STANDARDS.slice(0, 3));
+  await expect(hiddenSummaryChip).toHaveText("+2 more");
+  await expect(fullListDetails.locator("summary")).toHaveText("Show full standards list");
+
+  await fullListDetails.locator("summary").click();
+  await expect(fullListDetails.locator("p")).toHaveText(DEFAULT_INDUSTRY_STANDARDS.join(", "));
+});
+
+test("keeps the compact benchmark overlay anchored to the viewer top-right from cached benchmark state", async ({ page }) => {
+  await mockApi(page);
+  await seedCachedBenchmarkReview(page);
+  await importBenchmarkModel(page);
+
+  const benchmarkSidebar = await openBenchmarkSidebar(page);
+
+  await expect(benchmarkSidebar.locator(".dfm-sidebar__issue-card")).toContainText("Corner radius consistency across pockets");
+
+  await benchmarkSidebar.getByRole("button", { name: "Show in model" }).first().click();
+
+  await expectCompactOverlayTopRight(page, {
+    title: "Corner radius consistency across pockets",
+    location: "top-right-front pocket corner",
+  });
+});
+
+test("runs the benchmark generate review flow before showing the compact overlay", async ({ page }) => {
+  let observedReviewRequest: unknown = null;
+
+  await mockApi(page, {
+    onReviewRequest: (payload) => {
+      observedReviewRequest = payload;
+    },
+  });
+  await importBenchmarkModel(page);
+
+  const benchmarkSidebar = await openBenchmarkSidebar(page);
+  await expect(benchmarkSidebar).toContainText(
+    "Run a review to see design issues first, with feature recognition tucked into a collapsible section below.",
+  );
+  await expect(benchmarkSidebar.locator(".dfm-sidebar__issue-card")).toHaveCount(0);
+
+  await benchmarkSidebar.getByRole("button", { name: "Generate review" }).click();
+
+  await expect.poll(() => Boolean(observedReviewRequest)).toBe(true);
+
+  const requestPayload = observedReviewRequest as ReviewRequestPayload;
+  expect(requestPayload.component_node_name).toBe(COMPONENT_NODE_NAME);
+  expect(requestPayload.planning_inputs?.selected_role).toBe("general_dfm");
+  expect(requestPayload.planning_inputs?.selected_template).toBe("executive_1page");
+  expect(requestPayload.planning_inputs?.run_both_if_mismatch).toBe(true);
+  expect(requestPayload.context_payload?.include_geometry_anchors).toBe(true);
+
+  await expect(benchmarkSidebar.locator(".dfm-sidebar__issue-card")).toContainText("Corner radius consistency across pockets");
+  await expect(benchmarkSidebar).toContainText("1 design issue");
+
+  await benchmarkSidebar.getByRole("button", { name: "Show in model" }).first().click();
+
+  await expectCompactOverlayTopRight(page, {
+    title: "Corner radius consistency across pockets",
+    location: "top-right-front pocket corner",
+  });
 });
