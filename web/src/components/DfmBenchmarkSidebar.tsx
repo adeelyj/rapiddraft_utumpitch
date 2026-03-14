@@ -126,6 +126,27 @@ const metricValue = (metric: GeometryMetric): string => {
 const formatCompactNumber = (value: number, digits = 1): string =>
   Number.isInteger(value) ? value.toString() : value.toFixed(digits);
 
+const compactOverlayTitle = (value: string): string => {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  const withoutParenthetical = normalized.replace(/\s*\([^)]*\)/g, "").trim();
+  const firstClause = withoutParenthetical
+    .split("→")[0]
+    ?.split(";")[0]
+    ?.trim();
+  const compact = firstClause || withoutParenthetical || normalized;
+  return compact.length > 52 ? `${compact.slice(0, 49).trimEnd()}...` : compact;
+};
+
+const compactOverlayLocation = (...values: Array<string | null | undefined>): string | undefined => {
+  const candidate = values.find((value) => typeof value === "string" && value.trim());
+  if (!candidate) return undefined;
+  const compact = candidate
+    .split("|")[0]
+    .replace(/^Primary mapped region for [^:]+:\s*/i, "")
+    .trim();
+  return compact || undefined;
+};
+
 const formatViolationReason = (value: string): string => {
   if (value.startsWith("radius_below_")) {
     return `Radius below ${value.replace("radius_below_", "").replace("_mm", "")} mm`;
@@ -524,6 +545,8 @@ const DfmBenchmarkSidebar = ({
         severity: finding.severity ?? "info",
         camera_behavior: "preserve",
         overlay_variant: "compact",
+        overlay_title: compactOverlayTitle(finding.title ?? finding.rule_id ?? "DFM issue"),
+        overlay_location: compactOverlayLocation(anchor.label, blameMap?.explanation),
         component_node_name: anchor.component_node_name ?? selectedComponent?.nodeName ?? null,
         anchor_kind: anchor.anchor_kind,
         position_mm: anchor.position_mm ?? null,
@@ -556,6 +579,8 @@ const DfmBenchmarkSidebar = ({
         severity: finding.severity ?? "info",
         camera_behavior: "preserve",
         overlay_variant: "compact",
+        overlay_title: compactOverlayTitle(finding.title ?? finding.rule_id ?? "DFM issue"),
+        overlay_location: compactOverlayLocation(instance.location_description, instance.instance_id),
         component_node_name: selectedComponent?.nodeName ?? null,
         anchor_kind:
           instance.bbox_bounds_mm && instance.bbox_bounds_mm.length === 6 ? "region" : "point",

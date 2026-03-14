@@ -673,6 +673,8 @@ const ModelViewer = ({
   const [partFactsError, setPartFactsError] = useState<string | null>(null);
   const useCompactAnalysisOverlay =
     chromeDensity === "compact" || analysisFocus?.overlay_variant === "compact";
+  const overlayTitle = analysisFocus?.overlay_title ?? analysisFocus?.title ?? "";
+  const overlayLocation = analysisFocus?.overlay_location ?? "";
   const handleFitCaptured = useCallback((snapshot: CameraSnapshot) => {
     setHomeView((previous) => previous ?? snapshot);
   }, []);
@@ -848,13 +850,19 @@ const ModelViewer = ({
           }`}
         >
           <div className="analysis-focus-overlay__header">
-            <span className="analysis-focus-overlay__source">{analysisFocus.source.toUpperCase()} finding</span>
+            {useCompactAnalysisOverlay ? null : (
+              <span className="analysis-focus-overlay__source">{analysisFocus.source.toUpperCase()} finding</span>
+            )}
             <button type="button" onClick={onClearAnalysisFocus}>
               Clear
             </button>
           </div>
-          <p className="analysis-focus-overlay__title">{analysisFocus.title}</p>
-          {analysisFocus.details ? <p className="analysis-focus-overlay__details">{analysisFocus.details}</p> : null}
+          <p className="analysis-focus-overlay__title">{overlayTitle}</p>
+          {useCompactAnalysisOverlay ? (
+            overlayLocation ? <div className="analysis-focus-overlay__location-chip">{overlayLocation}</div> : null
+          ) : analysisFocus.details ? (
+            <p className="analysis-focus-overlay__details">{analysisFocus.details}</p>
+          ) : null}
         </div>
       ) : null}
       {hasLeftPanels && (

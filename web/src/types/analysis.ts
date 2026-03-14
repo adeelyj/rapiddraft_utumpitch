@@ -10,6 +10,8 @@ export type AnalysisFocusPayload = {
   severity?: string;
   camera_behavior?: "focus" | "preserve";
   overlay_variant?: "default" | "compact";
+  overlay_title?: string;
+  overlay_location?: string;
   component_node_name?: string | null;
   anchor_kind?: AnalysisFocusAnchorKind;
   position_mm?: [number, number, number] | null;

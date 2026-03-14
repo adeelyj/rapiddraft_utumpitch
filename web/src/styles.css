@@ -2374,28 +2374,72 @@ body {
   background: rgba(8, 18, 36, 0.62);
 }
 
-.analysis-focus-overlay--compact {
-  right: 12px;
-  top: auto;
-  bottom: 12px;
-  max-width: min(240px, calc(100% - 24px));
-  padding: 8px 9px;
-  border-radius: 12px;
-  box-shadow: 0 12px 22px rgba(8, 18, 36, 0.16);
+.analysis-focus-overlay.analysis-focus-overlay--compact {
+  inset: 12px 12px auto auto;
+  width: min(176px, calc(100% - 24px));
+  max-width: min(176px, calc(100% - 24px));
+  min-height: 0;
+  height: auto;
+  padding: 6px 7px;
+  border-radius: 10px;
+  box-shadow: 0 8px 14px rgba(8, 18, 36, 0.12);
+  gap: 4px;
 }
 
-.analysis-focus-overlay--compact .analysis-focus-overlay__title {
-  font-size: 0.75rem;
-  line-height: 1.3;
+.analysis-focus-overlay.analysis-focus-overlay--compact .analysis-focus-overlay__title {
+  font-size: 0.72rem;
+  line-height: 1.25;
+  margin-top: 0;
+  margin-bottom: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.analysis-focus-overlay--compact .analysis-focus-overlay__details {
+.analysis-focus-overlay.analysis-focus-overlay--compact .analysis-focus-overlay__details {
   font-size: 0.69rem;
   line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.analysis-focus-overlay.analysis-focus-overlay--compact .analysis-focus-overlay__header {
+  justify-content: flex-end;
+  margin-bottom: 3px;
+  gap: 4px;
+}
+
+.analysis-focus-overlay.analysis-focus-overlay--compact .analysis-focus-overlay__header button {
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+}
+
+.analysis-focus-overlay__location-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  margin-top: 6px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: rgba(239, 101, 26, 0.1);
+  border: 1px solid rgba(239, 101, 26, 0.18);
+  color: #6a3410;
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.analysis-focus-overlay.analysis-focus-overlay--compact .analysis-focus-overlay__location-chip {
+  margin-top: 4px;
+  padding: 3px 6px;
+  font-size: 0.62rem;
 }
 
 .viewer-nav-controls--compact {
