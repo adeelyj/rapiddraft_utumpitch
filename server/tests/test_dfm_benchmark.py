@@ -15,6 +15,7 @@ from server.dfm_benchmark import (
     compare_reasoning_reference,
     extract_cadex_dfm_reference,
     extract_rapiddraft_review_reference,
+    load_benchmark_manifest,
 )
 
 
@@ -217,3 +218,63 @@ def test_part_facts_warnings_surface_environment_and_coverage_limits():
     assert any("pythonOCC" in warning for warning in warnings)
     assert any("No geometry-derived facts were extracted" in warning for warning in warnings)
     assert any("overall confidence is low" in warning for warning in warnings)
+
+
+def test_load_benchmark_manifest_resolves_repo_root_from_dated_plans_folder(tmp_path: Path):
+    repo_root = tmp_path / "repo"
+    (repo_root / "server" / "dfm").mkdir(parents=True)
+    (repo_root / "benchmark_data" / "dfm_mtk" / "cases").mkdir(parents=True)
+    (repo_root / "output" / "dfm_mtk_benchmark").mkdir(parents=True)
+    manifest_path = repo_root / "plans" / "20260314" / "manifest.json"
+    manifest_path.parent.mkdir(parents=True)
+
+    payload = {
+        "benchmark_name": "dfm_mtk_benchmark",
+        "benchmark_version": "1.0",
+        "dataset_root": "benchmark_data/dfm_mtk",
+        "cases_root": "benchmark_data/dfm_mtk/cases",
+        "output_root": "output/dfm_mtk_benchmark",
+        "defaults": {
+            "selected_role": "general_dfm",
+            "selected_template": "executive_1page",
+            "selected_overlay": None,
+            "run_both_if_mismatch": True,
+            "analysis_mode_for_logic_only": "full",
+            "analysis_mode_for_end_to_end": "full",
+        },
+        "modes": {
+            "run_logic_only": True,
+            "run_end_to_end": True,
+        },
+        "normalization": {
+            "severity_map": {
+                "critical": ["critical"],
+                "major": ["major"],
+                "minor": ["minor"],
+            }
+        },
+        "cases": [
+            {
+                "case_id": "sample_2",
+                "label": "sample 2",
+                "step_file": "benchmark_data/dfm_mtk/cases/sample 2/sample 2.stp",
+                "cadex_features_file": "benchmark_data/dfm_mtk/cases/sample 2/sample2_features.json",
+                "cadex_dfm_file": "benchmark_data/dfm_mtk/cases/sample 2/sample2_dfm.json",
+                "component_node_name": None,
+                "component_profile": {
+                    "material": "",
+                    "manufacturingProcess": "CNC Machining",
+                    "industry": "",
+                },
+                "context_overrides": {},
+            }
+        ],
+    }
+    manifest_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    manifest = load_benchmark_manifest(manifest_path)
+
+    assert manifest.repo_root == repo_root
+    assert manifest.dataset_root == repo_root / "benchmark_data" / "dfm_mtk"
+    assert manifest.cases_root == repo_root / "benchmark_data" / "dfm_mtk" / "cases"
+    assert manifest.output_root == repo_root / "output" / "dfm_mtk_benchmark"

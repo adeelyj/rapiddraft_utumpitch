@@ -43,6 +43,7 @@ class BenchmarkDefaults:
 @dataclass(frozen=True)
 class BenchmarkManifest:
     manifest_path: Path
+    repo_root: Path
     benchmark_name: str
     benchmark_version: str
     dataset_root: Path
@@ -102,7 +103,7 @@ def load_benchmark_manifest(manifest_path: Path) -> BenchmarkManifest:
     if not isinstance(payload, dict):
         raise DfmBenchmarkError("Benchmark manifest must be a JSON object.")
 
-    repo_root = manifest_path.parent.parent
+    repo_root = _resolve_repo_root_from_manifest(manifest_path)
     defaults_payload = payload.get("defaults", {})
     if not isinstance(defaults_payload, dict):
         raise DfmBenchmarkError("Manifest.defaults must be an object.")
@@ -170,6 +171,7 @@ def load_benchmark_manifest(manifest_path: Path) -> BenchmarkManifest:
 
     return BenchmarkManifest(
         manifest_path=manifest_path,
+        repo_root=repo_root,
         benchmark_name=_required_string(payload, "benchmark_name"),
         benchmark_version=_required_string(payload, "benchmark_version"),
         dataset_root=_resolve_repo_path(repo_root, _required_string(payload, "dataset_root")),
@@ -194,8 +196,10 @@ def run_benchmark(
     normalizer = SeverityNormalizer.from_manifest(
         {"normalization": manifest.normalization}
     )
-    repo_root = manifest.manifest_path.parent.parent
-    bundle = load_dfm_bundle(bundle_dir=repo_root / "server" / "dfm", repo_root=repo_root)
+    bundle = load_dfm_bundle(
+        bundle_dir=manifest.repo_root / "server" / "dfm",
+        repo_root=manifest.repo_root,
+    )
 
     timestamp = datetime.now(timezone.utc)
     run_id = (
@@ -226,9 +230,9 @@ def run_benchmark(
         "generated_at": timestamp.isoformat(),
         "benchmark_name": manifest.benchmark_name,
         "benchmark_version": manifest.benchmark_version,
-        "manifest_path": _relative_to_repo(manifest.manifest_path, repo_root),
-        "dataset_root": _relative_to_repo(manifest.dataset_root, repo_root),
-        "output_root": _relative_to_repo(run_root, repo_root),
+        "manifest_path": _relative_to_repo(manifest.manifest_path, manifest.repo_root),
+        "dataset_root": _relative_to_repo(manifest.dataset_root, manifest.repo_root),
+        "output_root": _relative_to_repo(run_root, manifest.repo_root),
         "modes": manifest.modes,
         "dataset_validation": {
             "all_cases_valid": all(item.get("is_valid") for item in validation_cases),
@@ -1348,6 +1352,15 @@ def _resolve_repo_path(repo_root: Path, raw_path: str) -> Path:
     if path.is_absolute():
         return path
     return (repo_root / path).resolve()
+
+
+def _resolve_repo_root_from_manifest(manifest_path: Path) -> Path:
+    for candidate in manifest_path.parents:
+        if (candidate / "server" / "dfm").is_dir():
+            return candidate
+    raise DfmBenchmarkError(
+        f"Could not infer repo root from manifest path: {manifest_path}"
+    )
 
 
 def _safe_int(value: Any) -> int | None:
