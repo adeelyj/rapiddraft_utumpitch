@@ -478,6 +478,94 @@ def test_review_v2_deep_pocket_and_long_reach_findings_can_emit_violating_instan
     assert cnc_024_instances[1]["bbox_bounds_mm"] == [73.0, 83.0, 93.0, 77.0, 87.0, 97.0]
 
 
+def test_review_v2_pocket_findings_prefer_localized_feature_anchors_when_inventory_matches():
+    bundle = _bundle()
+    context_payload = _all_required_facts(bundle, ["A_DRAWING", "B_CNC"])
+    context_payload.update(
+        {
+            "material_spec": "Aluminum 6061",
+            "pocket_depth": True,
+            "pocket_corner_radius": True,
+            "max_pocket_depth_mm": 22.0,
+            "min_internal_radius_mm": 1.5,
+            "internal_radius_instances": [
+                {
+                    "instance_id": "P1",
+                    "edge_index": 21,
+                    "location_description": "deep rib pocket corner",
+                    "radius_mm": 1.5,
+                    "status": "WARNING",
+                    "recommendation": "Increase radius",
+                    "pocket_depth_mm": 22.0,
+                    "depth_to_radius_ratio": 14.6667,
+                    "aggravating_factor": True,
+                    "position_mm": [15.0, 25.0, 35.0],
+                    "bbox_bounds_mm": [13.5, 23.5, 33.5, 16.5, 26.5, 36.5],
+                }
+            ],
+        }
+    )
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="model-pocket-localized-feature-blame-map",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Part 1",
+            "profile": {},
+            "geometry_feature_inventory": {
+                "face_inventory": [
+                    {
+                        "face_index": 21,
+                        "centroid_mm": [14.5, 24.5, 34.5],
+                        "bbox_bounds": [13.0, 23.0, 33.0, 15.0, 26.0, 36.0],
+                        "sample_point_mm": [14.5, 24.5, 34.5],
+                        "sample_normal": [0.0, 0.0, 1.0],
+                    },
+                    {
+                        "face_index": 22,
+                        "centroid_mm": [16.0, 25.5, 35.5],
+                        "bbox_bounds": [15.0, 24.0, 34.0, 17.0, 27.0, 37.0],
+                        "sample_point_mm": [16.0, 25.5, 35.5],
+                        "sample_normal": [0.0, 0.0, 1.0],
+                    },
+                ],
+                "turning_detection": {},
+                "hole_detection": {"candidates": []},
+                "pocket_detection": {
+                    "open_pocket_feature_groups": [[21, 22]],
+                    "closed_pocket_feature_groups": [],
+                },
+                "boss_detection": {"candidates": []},
+                "milled_face_detection": {"face_indices": []},
+            },
+        },
+        execution_plans=[
+            {
+                "plan_id": "plan_1",
+                "route_source": "selected",
+                "process_id": "cnc_milling",
+                "pack_ids": ["A_DRAWING", "B_CNC"],
+                "overlay_id": None,
+                "role_id": "general_dfm",
+                "template_id": "executive_1page",
+            }
+        ],
+        context_payload=context_payload,
+    )
+
+    violations = {
+        finding["rule_id"]: finding
+        for finding in response["routes"][0]["findings"]
+        if finding.get("finding_type") == "rule_violation"
+    }
+    cnc_024_blame_map = violations["CNC-024"]["blame_map"]
+
+    assert cnc_024_blame_map["primary_anchor"]["anchor_id"] == "open-pocket-1"
+    assert cnc_024_blame_map["primary_anchor"]["label"] == "Open pocket 1"
+    assert cnc_024_blame_map["source_feature_refs"] == ["open-pocket-1"]
+    assert cnc_024_blame_map["secondary_anchors"] == []
+
+
 def test_review_v2_radius_consistency_findings_can_emit_violating_instances():
     bundle = _bundle()
     context_payload = _all_required_facts(bundle, ["A_DRAWING", "B_CNC"])
@@ -662,6 +750,106 @@ def test_review_v2_hole_findings_can_emit_violating_instances():
 
     assert [instance["instance_id"] for instance in cnc_003_instances] == ["H1"]
     assert cnc_003_instances[0]["violation_reasons"] == ["non_standard_hole_diameter"]
+
+
+def test_review_v2_hole_findings_prefer_localized_feature_anchors_when_inventory_matches():
+    bundle = _bundle()
+    context_payload = _all_required_facts(bundle, ["A_DRAWING", "B_CNC"])
+    context_payload.update(
+        {
+            "hole_features": True,
+            "hole_depth": True,
+            "hole_diameter": True,
+            "hole_depth_mm": 18.0,
+            "hole_diameter_mm": 1.3,
+            "min_hole_diameter_mm": 1.3,
+            "hole_instances": [
+                {
+                    "instance_id": "H1",
+                    "subtype": "through_hole",
+                    "location_description": "small deep pilot hole",
+                    "diameter_mm": 1.3,
+                    "depth_mm": 18.0,
+                    "depth_to_diameter_ratio": 13.8462,
+                    "position_mm": [15.0, 25.0, 35.0],
+                    "bbox_bounds_mm": [14.0, 24.0, 34.0, 16.0, 26.0, 36.0],
+                    "face_indices": [7, 8],
+                }
+            ],
+        }
+    )
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="model-hole-localized-feature-blame-map",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Part 1",
+            "profile": {},
+            "geometry_feature_inventory": {
+                "face_inventory": [
+                    {
+                        "face_index": 7,
+                        "centroid_mm": [15.0, 25.0, 35.0],
+                        "bbox_bounds": [14.0, 24.0, 34.0, 16.0, 26.0, 36.0],
+                        "sample_point_mm": [15.0, 25.0, 35.0],
+                        "sample_normal": [0.0, 0.0, 1.0],
+                    },
+                    {
+                        "face_index": 8,
+                        "centroid_mm": [15.0, 25.0, 35.0],
+                        "bbox_bounds": [14.0, 24.0, 34.0, 16.0, 26.0, 36.0],
+                        "sample_point_mm": [15.0, 25.0, 35.0],
+                        "sample_normal": [0.0, 0.0, 1.0],
+                    },
+                ],
+                "turning_detection": {},
+                "hole_detection": {
+                    "candidates": [
+                        {
+                            "group_face_indices": [7, 8],
+                            "bbox_bounds": [14.0, 24.0, 34.0, 16.0, 26.0, 36.0],
+                            "subtype": "through_hole",
+                            "selection_reason": "interior_cylinder",
+                            "diameter_mm": 1.3,
+                            "depth_mm": 18.0,
+                            "depth_to_diameter_ratio": 13.8462,
+                        }
+                    ]
+                },
+                "pocket_detection": {
+                    "open_pocket_feature_groups": [],
+                    "closed_pocket_feature_groups": [],
+                },
+                "boss_detection": {"candidates": []},
+                "milled_face_detection": {"face_indices": []},
+            },
+        },
+        execution_plans=[
+            {
+                "plan_id": "plan_1",
+                "route_source": "selected",
+                "process_id": "cnc_milling",
+                "pack_ids": ["A_DRAWING", "B_CNC"],
+                "overlay_id": None,
+                "role_id": "general_dfm",
+                "template_id": "executive_1page",
+            }
+        ],
+        context_payload=context_payload,
+    )
+
+    violations = {
+        finding["rule_id"]: finding
+        for finding in response["routes"][0]["findings"]
+        if finding.get("finding_type") == "rule_violation"
+    }
+
+    for rule_id in ("CNC-002", "CNC-003"):
+        blame_map = violations[rule_id]["blame_map"]
+        assert blame_map["primary_anchor"]["anchor_id"] == "hole-feature-1"
+        assert blame_map["primary_anchor"]["label"] == "Through Hole 1"
+        assert blame_map["source_feature_refs"] == ["hole-feature-1"]
+        assert blame_map["secondary_anchors"] == []
 
 
 def test_review_v2_wall_findings_can_emit_violating_instances():

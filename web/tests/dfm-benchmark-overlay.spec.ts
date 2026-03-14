@@ -189,6 +189,28 @@ const benchmarkReviewWithFeatureGroupAnchor: Record<string, any> = {
   },
 };
 
+const benchmarkReviewWithLocalizedFindingAnchor: Record<string, any> = {
+  ...benchmarkReviewWithFeatureGroupAnchor,
+  routes: [
+    {
+      ...benchmarkReviewWithFeatureGroupAnchor.routes[0],
+      findings: [
+        {
+          ...benchmarkReviewWithFeatureGroupAnchor.routes[0].findings[0],
+          blame_map: {
+            localization_status: "region",
+            primary_anchor: localizedPocketFeature.geometry_anchor,
+            secondary_anchors: [],
+            source_fact_keys: ["max_pocket_depth_mm", "min_internal_radius_mm"],
+            source_feature_refs: [localizedPocketFeature.feature_id],
+            explanation: "Mapped region for CNC-024: deep rib pocket corner.",
+          },
+        },
+      ],
+    },
+  ],
+};
+
 const cachedBenchmarkReview = {
   saved_at: "2026-03-14T19:00:00.000Z",
   payload: benchmarkReviewPayload,
@@ -513,6 +535,22 @@ test("keeps the compact benchmark overlay anchored to the viewer top-right from 
   await expectCompactOverlayTopRight(page, {
     title: "Corner radius consistency across pockets",
     location: "top-right-front pocket corner",
+  });
+});
+
+test("prefers a localized feature anchor over the raw violating instance for benchmark issue focus", async ({ page }) => {
+  await mockApi(page, { reviewPayload: benchmarkReviewWithLocalizedFindingAnchor });
+  await seedCachedBenchmarkReview(page, benchmarkReviewWithLocalizedFindingAnchor);
+  await importBenchmarkModel(page);
+
+  const benchmarkSidebar = await openBenchmarkSidebar(page);
+  await expect(benchmarkSidebar.locator(".dfm-sidebar__issue-card")).toContainText("Corner radius consistency across pockets");
+
+  await benchmarkSidebar.getByRole("button", { name: "Show in model" }).first().click();
+
+  await expectCompactOverlayTopRight(page, {
+    title: "Corner radius consistency across pockets",
+    location: "Open pocket 1",
   });
 });
 

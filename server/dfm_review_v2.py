@@ -141,6 +141,7 @@ def generate_dfm_review_v2(
             bundle=bundle,
             execution_plan=plan,
             review_facts=review_facts,
+            component_context=component_context,
             mismatch=plan_payload.get("mismatch"),
             analysis_mode=analysis_mode,
         )
@@ -1825,6 +1826,7 @@ def _evaluate_plan(
     bundle: DfmBundle,
     execution_plan: dict[str, Any],
     review_facts: dict[str, Any],
+    component_context: dict[str, Any],
     mismatch: dict[str, Any] | None,
     analysis_mode: str,
 ) -> dict[str, Any]:
@@ -1834,6 +1836,7 @@ def _evaluate_plan(
     pack_map = _index_by_id(bundle.rule_library.get("packs", []), "pack_id")
     standards_trace = _init_standards_trace(bundle=bundle, overlay_id=overlay_id)
     coverage_summary = _init_route_coverage_summary()
+    localized_feature_lookup = _build_geometry_localized_feature_lookup(component_context)
 
     findings: list[dict[str, Any]] = []
     evaluated_pack_ids: list[str] = []
@@ -1919,6 +1922,7 @@ def _evaluate_plan(
                 rule_id=_clean_optional_string(rule.get("rule_id")) or None,
                 review_facts=review_facts,
                 violation=violation,
+                localized_feature_lookup=localized_feature_lookup,
                 violating_instances=violating_instances
                 if isinstance(violating_instances, list)
                 else [],
@@ -3234,6 +3238,7 @@ def _build_finding_blame_map(
     rule_id: str | None,
     review_facts: dict[str, Any],
     violation: dict[str, Any],
+    localized_feature_lookup: dict[str, list[dict[str, Any]]] | None,
     violating_instances: list[dict[str, Any]],
 ) -> dict[str, Any] | None:
     component_node_name = _clean_optional_string(review_facts.get("component_node_name")) or None
@@ -3269,6 +3274,57 @@ def _build_finding_blame_map(
             "source_fact_keys": source_fact_keys,
             "source_feature_refs": [],
             "explanation": f"Whole-part focus for {rule_id or 'DFM finding'}; no exact local region is preserved yet.",
+        }
+
+    localized_anchor_entries = _match_localized_feature_anchor_entries(
+        rule_id=rule_id,
+        source_fact_keys=source_fact_keys,
+        violating_instances=violating_instances,
+        localized_feature_lookup=localized_feature_lookup,
+    )
+    if localized_anchor_entries:
+        localized_primary_index = _select_primary_blame_anchor_index(
+            [
+                (entry["instance"], entry["anchor"])
+                for entry in localized_anchor_entries
+            ]
+        )
+        primary_entry = localized_anchor_entries[localized_primary_index]
+        primary_instance = primary_entry["instance"]
+        primary_anchor = primary_entry["anchor"]
+        primary_feature_id = primary_entry["feature_id"]
+        source_feature_refs: list[str] = []
+        secondary_anchors: list[dict[str, Any]] = []
+        seen_feature_ids = {primary_feature_id}
+
+        for entry in localized_anchor_entries:
+            feature_id = entry["feature_id"]
+            if feature_id not in source_feature_refs:
+                source_feature_refs.append(feature_id)
+            if feature_id in seen_feature_ids:
+                continue
+            seen_feature_ids.add(feature_id)
+            secondary_anchors.append(entry["anchor"])
+
+        anchor_count = len(source_feature_refs)
+        if anchor_count > 1:
+            localization_status = "multi"
+        elif primary_anchor.get("anchor_kind") == "region":
+            localization_status = "region"
+        else:
+            localization_status = "exact_feature"
+
+        return {
+            "localization_status": localization_status,
+            "primary_anchor": primary_anchor,
+            "secondary_anchors": secondary_anchors,
+            "source_fact_keys": source_fact_keys,
+            "source_feature_refs": source_feature_refs,
+            "explanation": _build_blame_map_explanation(
+                rule_id=rule_id,
+                primary_instance=primary_instance,
+                anchor_count=anchor_count,
+            ),
         }
 
     anchor_entries: list[tuple[dict[str, Any], dict[str, Any]]] = []
@@ -3406,6 +3462,214 @@ def _build_blame_map_explanation(
     if label:
         return f"Mapped region for {rule_id or 'DFM finding'}: {label}."
     return f"Primary mapped region for {rule_id or 'DFM finding'}."
+
+
+def _match_localized_feature_anchor_entries(
+    *,
+    rule_id: str | None,
+    source_fact_keys: list[str],
+    violating_instances: list[dict[str, Any]],
+    localized_feature_lookup: dict[str, list[dict[str, Any]]] | None,
+) -> list[dict[str, Any]]:
+    if not violating_instances or not isinstance(localized_feature_lookup, dict):
+        return []
+
+    candidate_group_ids = _localized_feature_group_hints(
+        rule_id=rule_id,
+        source_fact_keys=source_fact_keys,
+        violating_instances=violating_instances,
+    )
+    if not candidate_group_ids:
+        return []
+
+    candidate_features: list[dict[str, Any]] = []
+    seen_feature_ids: set[str] = set()
+    for group_id in candidate_group_ids:
+        for item in localized_feature_lookup.get(group_id, []):
+            if not isinstance(item, dict):
+                continue
+            feature_id = _clean_optional_string(item.get("feature_id"))
+            if not feature_id or feature_id in seen_feature_ids:
+                continue
+            seen_feature_ids.add(feature_id)
+            candidate_features.append(item)
+
+    if not candidate_features:
+        return []
+
+    matched_entries: list[dict[str, Any]] = []
+    for instance in violating_instances:
+        if not isinstance(instance, dict):
+            return []
+        matched_entry = _match_localized_feature_item(
+            instance=instance,
+            candidate_features=candidate_features,
+        )
+        if not matched_entry:
+            return []
+        matched_entries.append(matched_entry)
+
+    return matched_entries
+
+
+def _localized_feature_group_hints(
+    *,
+    rule_id: str | None,
+    source_fact_keys: list[str],
+    violating_instances: list[dict[str, Any]],
+) -> list[str]:
+    hints: list[str] = []
+    normalized_rule_id = (rule_id or "").lower()
+    normalized_fact_keys = [
+        candidate.lower()
+        for candidate in source_fact_keys
+        if isinstance(candidate, str) and candidate
+    ]
+
+    if (
+        any(_violating_instance_looks_like_hole(instance) for instance in violating_instances)
+        or "hole" in normalized_rule_id
+        or any("hole" in fact_key for fact_key in normalized_fact_keys)
+    ):
+        hints.append("holes")
+
+    if (
+        any(_violating_instance_looks_like_pocket(instance) for instance in violating_instances)
+        or "pocket" in normalized_rule_id
+        or any(
+            ("pocket" in fact_key)
+            or ("internal_radius" in fact_key)
+            or ("corner_radius" in fact_key)
+            for fact_key in normalized_fact_keys
+        )
+    ):
+        hints.append("pockets")
+
+    return hints
+
+
+def _violating_instance_looks_like_hole(instance: dict[str, Any]) -> bool:
+    return any(
+        instance.get(key) is not None
+        for key in ("diameter_mm", "depth_mm", "depth_to_diameter_ratio", "subtype")
+    )
+
+
+def _violating_instance_looks_like_pocket(instance: dict[str, Any]) -> bool:
+    return any(
+        instance.get(key) is not None
+        for key in ("pocket_depth_mm", "depth_to_radius_ratio")
+    )
+
+
+def _match_localized_feature_item(
+    *,
+    instance: dict[str, Any],
+    candidate_features: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    best_match: dict[str, Any] | None = None
+    best_score = 0
+    best_score_count = 0
+
+    for feature in candidate_features:
+        feature_id = _clean_optional_string(feature.get("feature_id"))
+        anchor = feature.get("geometry_anchor")
+        if not feature_id or not isinstance(anchor, dict):
+            continue
+        score = _localized_feature_match_score(instance=instance, anchor=anchor)
+        if score <= 0:
+            continue
+        if score > best_score:
+            best_match = {
+                "instance": instance,
+                "feature_id": feature_id,
+                "anchor": dict(anchor),
+            }
+            best_score = score
+            best_score_count = 1
+            continue
+        if score == best_score:
+            best_score_count += 1
+
+    if best_match is None or best_score_count != 1:
+        return None
+    return best_match
+
+
+def _localized_feature_match_score(
+    *,
+    instance: dict[str, Any],
+    anchor: dict[str, Any],
+) -> int:
+    score = 0
+    instance_face_indices = {
+        int(face_index)
+        for face_index in instance.get("face_indices", [])
+        if isinstance(face_index, int)
+    }
+    anchor_face_indices = {
+        int(face_index)
+        for face_index in anchor.get("face_indices", [])
+        if isinstance(face_index, int)
+    }
+    face_overlap_count = len(instance_face_indices & anchor_face_indices)
+    if face_overlap_count > 0:
+        score += 100 + face_overlap_count
+
+    instance_bbox = _normalize_bbox_bounds(instance.get("bbox_bounds_mm"))
+    anchor_bbox = _normalize_bbox_bounds(anchor.get("bbox_bounds_mm"))
+    instance_position = _normalize_xyz(instance.get("position_mm"))
+    anchor_position = _normalize_xyz(anchor.get("position_mm"))
+    instance_bbox_center = _bbox_center(instance_bbox)
+
+    if anchor_bbox is not None and instance_bbox is not None and _bbox_contains_bbox(anchor_bbox, instance_bbox):
+        score += 60
+    if anchor_bbox is not None and instance_position is not None and _bbox_contains_point(anchor_bbox, instance_position):
+        score += 50
+    if anchor_bbox is not None and instance_bbox_center is not None and _bbox_contains_point(anchor_bbox, instance_bbox_center):
+        score += 40
+    if (
+        anchor_position is not None
+        and instance_position is not None
+        and _points_are_close(anchor_position, instance_position, tolerance_mm=0.5)
+    ):
+        score += 30
+
+    return score
+
+
+def _bbox_contains_bbox(
+    outer_bbox: tuple[float, float, float, float, float, float],
+    inner_bbox: tuple[float, float, float, float, float, float],
+) -> bool:
+    return (
+        outer_bbox[0] <= inner_bbox[0]
+        and outer_bbox[1] <= inner_bbox[1]
+        and outer_bbox[2] <= inner_bbox[2]
+        and outer_bbox[3] >= inner_bbox[3]
+        and outer_bbox[4] >= inner_bbox[4]
+        and outer_bbox[5] >= inner_bbox[5]
+    )
+
+
+def _bbox_contains_point(
+    bbox: tuple[float, float, float, float, float, float],
+    point: tuple[float, float, float],
+) -> bool:
+    return (
+        bbox[0] <= point[0] <= bbox[3]
+        and bbox[1] <= point[1] <= bbox[4]
+        and bbox[2] <= point[2] <= bbox[5]
+    )
+
+
+def _points_are_close(
+    first: tuple[float, float, float],
+    second: tuple[float, float, float],
+    *,
+    tolerance_mm: float,
+) -> bool:
+    return all(abs(first[index] - second[index]) <= tolerance_mm for index in range(3))
 
 
 def _normalized_internal_radius_instances(review_facts: dict[str, Any]) -> list[dict[str, Any]]:
