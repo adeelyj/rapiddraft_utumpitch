@@ -1,0 +1,756 @@
+{
+    "version": "1",
+    "parts": [
+        {
+            "partId": "5cbb91d0-f69e-4e22-aefa-e1e7791fc3d5",
+            "partName": "Part113",
+            "geometricProperties": {
+                "volume": "30465.09",
+                "surfaceArea": "13442.53",
+                "AABB": {
+                    "dimensions": {
+                        "x": "133.06",
+                        "y": "21.06",
+                        "z": "61.06"
+                    },
+                    "minCorner": {
+                        "x": "-132.53",
+                        "y": "-0.53",
+                        "z": "-30.53"
+                    },
+                    "maxCorner": {
+                        "x": "0.53",
+                        "y": "20.53",
+                        "z": "30.53"
+                    }
+                }
+            },
+            "process": "CNC Machining Milling",
+            "featureRecognition": {
+                "name": "Feature Recognition",
+                "totalFeatureCount": "22",
+                "featureGroups": [
+                    {
+                        "name": "Curved Milled Face(s)",
+                        "color": "(22, 65, 124)",
+                        "totalGroupFeatureCount": "3",
+                        "featureCount": "3",
+                        "features": [
+                            {
+                                "shapeIDCount": "1",
+                                "shapeIDs": [
+                                    {
+                                        "id": "3773298677314467008"
+                                    }
+                                ]
+                            },
+                            {
+                                "shapeIDCount": "1",
+                                "shapeIDs": [
+                                    {
+                                        "id": "5417269887033025950"
+                                    }
+                                ]
+                            },
+                            {
+                                "shapeIDCount": "1",
+                                "shapeIDs": [
+                                    {
+                                        "id": "1402563436415696917"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Flat Face Milled Face(s)",
+                        "color": "(115, 251, 253)",
+                        "totalGroupFeatureCount": "7",
+                        "featureCount": "7",
+                        "features": [
+                            {
+                                "shapeIDCount": "1",
+                                "shapeIDs": [
+                                    {
+                                        "id": "9996513354326003891"
+                                    }
+                                ]
+                            },
+                            {
+                                "shapeIDCount": "1",
+                                "shapeIDs": [
+                                    {
+                                        "id": "2178587090289108866"
+                                    }
+                                ]
+                            },
+                            {
+                                "shapeIDCount": "1",
+                                "shapeIDs": [
+                                    {
+                                        "id": "12676686976790384013"
+                                    }
+                                ]
+                            },
+                            {
+                                "shapeIDCount": "1",
+                                "shapeIDs": [
+                                    {
+                                        "id": "3955264848826403846"
+                                    }
+                                ]
+                            },
+                            {
+                                "shapeIDCount": "1",
+                                "shapeIDs": [
+                                    {
+                                        "id": "87102086820174652"
+                                    }
+                                ]
+                            },
+                            {
+                                "shapeIDCount": "1",
+                                "shapeIDs": [
+                                    {
+                                        "id": "6227789854520973959"
+                                    }
+                                ]
+                            },
+                            {
+                                "shapeIDCount": "1",
+                                "shapeIDs": [
+                                    {
+                                        "id": "9581970120718254810"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Flat Side Milled Face(s)",
+                        "color": "(0, 35, 245)",
+                        "totalGroupFeatureCount": "6",
+                        "featureCount": "6",
+                        "features": [
+                            {
+                                "shapeIDCount": "1",
+                                "shapeIDs": [
+                                    {
+                                        "id": "4408141772614699925"
+                                    }
+                                ]
+                            },
+                            {
+                                "shapeIDCount": "1",
+                                "shapeIDs": [
+                                    {
+                                        "id": "380321816031639875"
+                                    }
+                                ]
+                            },
+                            {
+                                "shapeIDCount": "1",
+                                "shapeIDs": [
+                                    {
+                                        "id": "10151142034539675385"
+                                    }
+                                ]
+                            },
+                            {
+                                "shapeIDCount": "1",
+                                "shapeIDs": [
+                                    {
+                                        "id": "11243556814496535658"
+                                    }
+                                ]
+                            },
+                            {
+                                "shapeIDCount": "1",
+                                "shapeIDs": [
+                                    {
+                                        "id": "3480214190003115364"
+                                    }
+                                ]
+                            },
+                            {
+                                "shapeIDCount": "1",
+                                "shapeIDs": [
+                                    {
+                                        "id": "8422550312335460202"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Through Hole(s)",
+                        "color": "(240, 135, 132)",
+                        "totalGroupFeatureCount": "3",
+                        "subGroupCount": "3",
+                        "subGroups": [
+                            {
+                                "parametersCount": "3",
+                                "parameters": [
+                                    {
+                                        "name": "Radius",
+                                        "units": "mm",
+                                        "value": "4.00"
+                                    },
+                                    {
+                                        "name": "Depth",
+                                        "units": "mm",
+                                        "value": "13.56"
+                                    },
+                                    {
+                                        "name": "Axis",
+                                        "units": "",
+                                        "value": "(1.00, 0.00, 0.00)"
+                                    }
+                                ],
+                                "featureCount": "1",
+                                "features": [
+                                    {
+                                        "shapeIDCount": "1",
+                                        "shapeIDs": [
+                                            {
+                                                "id": "1921879151622945002"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "parametersCount": "3",
+                                "parameters": [
+                                    {
+                                        "name": "Radius",
+                                        "units": "mm",
+                                        "value": "4.00"
+                                    },
+                                    {
+                                        "name": "Depth",
+                                        "units": "mm",
+                                        "value": "13.57"
+                                    },
+                                    {
+                                        "name": "Axis",
+                                        "units": "",
+                                        "value": "(1.00, 0.00, 0.00)"
+                                    }
+                                ],
+                                "featureCount": "1",
+                                "features": [
+                                    {
+                                        "shapeIDCount": "1",
+                                        "shapeIDs": [
+                                            {
+                                                "id": "1628068683025947043"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "parametersCount": "3",
+                                "parameters": [
+                                    {
+                                        "name": "Radius",
+                                        "units": "mm",
+                                        "value": "7.50"
+                                    },
+                                    {
+                                        "name": "Depth",
+                                        "units": "mm",
+                                        "value": "20.00"
+                                    },
+                                    {
+                                        "name": "Axis",
+                                        "units": "",
+                                        "value": "(0.00, -1.00, 0.00)"
+                                    }
+                                ],
+                                "featureCount": "1",
+                                "features": [
+                                    {
+                                        "shapeIDCount": "1",
+                                        "shapeIDs": [
+                                            {
+                                                "id": "17736833994866083577"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Partial Hole(s)",
+                        "color": "(58, 6, 3)",
+                        "totalGroupFeatureCount": "1",
+                        "subGroupCount": "1",
+                        "subGroups": [
+                            {
+                                "parametersCount": "3",
+                                "parameters": [
+                                    {
+                                        "name": "Radius",
+                                        "units": "mm",
+                                        "value": "13.68"
+                                    },
+                                    {
+                                        "name": "Depth",
+                                        "units": "mm",
+                                        "value": "18.00"
+                                    },
+                                    {
+                                        "name": "Axis",
+                                        "units": "",
+                                        "value": "(0.00, -1.00, 0.00)"
+                                    }
+                                ],
+                                "featureCount": "1",
+                                "features": [
+                                    {
+                                        "shapeIDCount": "1",
+                                        "shapeIDs": [
+                                            {
+                                                "id": "9081776772722553506"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Closed Pocket(s)",
+                        "color": "(81, 20, 0)",
+                        "totalGroupFeatureCount": "1",
+                        "subGroupCount": "1",
+                        "subGroups": [
+                            {
+                                "parametersCount": "4",
+                                "parameters": [
+                                    {
+                                        "name": "Length",
+                                        "units": "mm",
+                                        "value": "82.97"
+                                    },
+                                    {
+                                        "name": "Width",
+                                        "units": "mm",
+                                        "value": "14.00"
+                                    },
+                                    {
+                                        "name": "Depth",
+                                        "units": "mm",
+                                        "value": "10.00"
+                                    },
+                                    {
+                                        "name": "Axis",
+                                        "units": "",
+                                        "value": "(0.00, 1.00, 0.00)"
+                                    }
+                                ],
+                                "featureCount": "1",
+                                "features": [
+                                    {
+                                        "shapeIDCount": "7",
+                                        "shapeIDs": [
+                                            {
+                                                "id": "14945590169914821008"
+                                            },
+                                            {
+                                                "id": "10247216579939660091"
+                                            },
+                                            {
+                                                "id": "15391063609997817375"
+                                            },
+                                            {
+                                                "id": "13979173525983496938"
+                                            },
+                                            {
+                                                "id": "4708691509374895461"
+                                            },
+                                            {
+                                                "id": "8874536289323687517"
+                                            },
+                                            {
+                                                "id": "4453535746152670655"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Boss(es)",
+                        "color": "(56, 72, 13)",
+                        "totalGroupFeatureCount": "1",
+                        "subGroupCount": "1",
+                        "subGroups": [
+                            {
+                                "parametersCount": "3",
+                                "parameters": [
+                                    {
+                                        "name": "Length",
+                                        "units": "mm",
+                                        "value": "30.00"
+                                    },
+                                    {
+                                        "name": "Width",
+                                        "units": "mm",
+                                        "value": "20.00"
+                                    },
+                                    {
+                                        "name": "Height",
+                                        "units": "mm",
+                                        "value": "112.00"
+                                    }
+                                ],
+                                "featureCount": "1",
+                                "features": [
+                                    {
+                                        "shapeIDCount": "9",
+                                        "shapeIDs": [
+                                            {
+                                                "id": "8375214289759511422"
+                                            },
+                                            {
+                                                "id": "3552737585953264367"
+                                            },
+                                            {
+                                                "id": "15318606167918275512"
+                                            },
+                                            {
+                                                "id": "10805442063852466273"
+                                            },
+                                            {
+                                                "id": "13079998452982217342"
+                                            },
+                                            {
+                                                "id": "15455786353650797031"
+                                            },
+                                            {
+                                                "id": "5269900130237102148"
+                                            },
+                                            {
+                                                "id": "110138309048807258"
+                                            },
+                                            {
+                                                "id": "7087774598596359745"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "dfm": {
+                "name": "Design for Manufacturing",
+                "totalFeatureCount": "12",
+                "featureGroups": [
+                    {
+                        "name": "Non Standard Diameter Hole(s)",
+                        "color": "(22, 65, 124)",
+                        "totalGroupFeatureCount": "1",
+                        "subGroupCount": "1",
+                        "subGroups": [
+                            {
+                                "parametersCount": "3",
+                                "parameters": [
+                                    {
+                                        "name": "Expected Standart Diameters",
+                                        "units": "mm",
+                                        "value": "[3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0, 31.0, 32.0, 33.0, 34.0, 35.0, 36.0, 37.0, 38.0]"
+                                    },
+                                    {
+                                        "name": "Nearest Standard Diameter",
+                                        "units": "mm",
+                                        "value": "27.00"
+                                    },
+                                    {
+                                        "name": "Actual Diameter",
+                                        "units": "mm",
+                                        "value": "27.36"
+                                    }
+                                ],
+                                "featureCount": "1",
+                                "features": [
+                                    {
+                                        "shapeIDCount": "1",
+                                        "shapeIDs": [
+                                            {
+                                                "id": "9081776772722553506"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Partial Hole(s)",
+                        "color": "(255, 254, 145)",
+                        "totalGroupFeatureCount": "1",
+                        "subGroupCount": "1",
+                        "subGroups": [
+                            {
+                                "parametersCount": "2",
+                                "parameters": [
+                                    {
+                                        "name": "Expected Minimum Material Percent",
+                                        "units": "%",
+                                        "value": "0.75"
+                                    },
+                                    {
+                                        "name": "Actual Material Percent",
+                                        "units": "%",
+                                        "value": "50.00"
+                                    }
+                                ],
+                                "featureCount": "1",
+                                "features": [
+                                    {
+                                        "shapeIDCount": "1",
+                                        "shapeIDs": [
+                                            {
+                                                "id": "9081776772722553506"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Non Perpendicular Hole(s)",
+                        "color": "(129, 127, 38)",
+                        "totalGroupFeatureCount": "2",
+                        "featureCount": "2",
+                        "features": [
+                            {
+                                "shapeIDCount": "1",
+                                "shapeIDs": [
+                                    {
+                                        "id": "1628068683025947043"
+                                    }
+                                ]
+                            },
+                            {
+                                "shapeIDCount": "1",
+                                "shapeIDs": [
+                                    {
+                                        "id": "1921879151622945002"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "High Boss Issue(s)",
+                        "color": "(180, 100, 50)",
+                        "totalGroupFeatureCount": "1",
+                        "subGroupCount": "1",
+                        "subGroups": [
+                            {
+                                "parametersCount": "4",
+                                "parameters": [
+                                    {
+                                        "name": "Expected Maximum Height To Length And Width Ratio",
+                                        "units": "mm",
+                                        "value": "4.00"
+                                    },
+                                    {
+                                        "name": "Actual Height",
+                                        "units": "mm",
+                                        "value": "112.00"
+                                    },
+                                    {
+                                        "name": "Actual Length",
+                                        "units": "mm",
+                                        "value": "30.00"
+                                    },
+                                    {
+                                        "name": "Actual Width",
+                                        "units": "mm",
+                                        "value": "20.00"
+                                    }
+                                ],
+                                "featureCount": "1",
+                                "features": [
+                                    {
+                                        "shapeIDCount": "9",
+                                        "shapeIDs": [
+                                            {
+                                                "id": "8375214289759511422"
+                                            },
+                                            {
+                                                "id": "3552737585953264367"
+                                            },
+                                            {
+                                                "id": "15318606167918275512"
+                                            },
+                                            {
+                                                "id": "10805442063852466273"
+                                            },
+                                            {
+                                                "id": "13079998452982217342"
+                                            },
+                                            {
+                                                "id": "15455786353650797031"
+                                            },
+                                            {
+                                                "id": "5269900130237102148"
+                                            },
+                                            {
+                                                "id": "110138309048807258"
+                                            },
+                                            {
+                                                "id": "7087774598596359745"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Small Radius Milled Part Internal Corner(s)",
+                        "color": "(10, 10, 200)",
+                        "totalGroupFeatureCount": "7",
+                        "subGroupCount": "2",
+                        "subGroups": [
+                            {
+                                "parametersCount": "3",
+                                "parameters": [
+                                    {
+                                        "name": "Expected Minimum Depth To Radius Ratio",
+                                        "units": "mm",
+                                        "value": "3.00"
+                                    },
+                                    {
+                                        "name": "Actual Depth",
+                                        "units": "mm",
+                                        "value": "3.18"
+                                    },
+                                    {
+                                        "name": "Actual Radius",
+                                        "units": "mm",
+                                        "value": "0.00"
+                                    }
+                                ],
+                                "featureCount": "2",
+                                "features": [
+                                    {
+                                        "shapeIDCount": "2",
+                                        "shapeIDs": [
+                                            {
+                                                "id": "4408141772614699925"
+                                            },
+                                            {
+                                                "id": "3773298677314467008"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "shapeIDCount": "2",
+                                        "shapeIDs": [
+                                            {
+                                                "id": "11243556814496535658"
+                                            },
+                                            {
+                                                "id": "3773298677314467008"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "parametersCount": "3",
+                                "parameters": [
+                                    {
+                                        "name": "Expected Minimum Depth To Radius Ratio",
+                                        "units": "mm",
+                                        "value": "3.00"
+                                    },
+                                    {
+                                        "name": "Actual Depth",
+                                        "units": "mm",
+                                        "value": "10.00"
+                                    },
+                                    {
+                                        "name": "Actual Radius",
+                                        "units": "mm",
+                                        "value": "0.00"
+                                    }
+                                ],
+                                "featureCount": "5",
+                                "features": [
+                                    {
+                                        "shapeIDCount": "2",
+                                        "shapeIDs": [
+                                            {
+                                                "id": "10247216579939660091"
+                                            },
+                                            {
+                                                "id": "8874536289323687517"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "shapeIDCount": "2",
+                                        "shapeIDs": [
+                                            {
+                                                "id": "8375214289759511422"
+                                            },
+                                            {
+                                                "id": "10805442063852466273"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "shapeIDCount": "2",
+                                        "shapeIDs": [
+                                            {
+                                                "id": "13079998452982217342"
+                                            },
+                                            {
+                                                "id": "15455786353650797031"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "shapeIDCount": "2",
+                                        "shapeIDs": [
+                                            {
+                                                "id": "15455786353650797031"
+                                            },
+                                            {
+                                                "id": "3773298677314467008"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "shapeIDCount": "2",
+                                        "shapeIDs": [
+                                            {
+                                                "id": "10805442063852466273"
+                                            },
+                                            {
+                                                "id": "3773298677314467008"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

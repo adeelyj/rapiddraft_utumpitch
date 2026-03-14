@@ -1,0 +1,1440 @@
+{
+  "version": "1",
+  "parts": [
+    {
+      "partId": "5cbb91d0-f69e-4e22-aefa-e1e7791fc3d5",
+      "partName": "beval gear",
+      "geometricProperties": {
+        "volume": "1234967.10",
+        "surfaceArea": "150239.30",
+        "AABB": {
+          "dimensions": {
+            "x": "171.64",
+            "y": "171.64",
+            "z": "260.06"
+          },
+          "minCorner": {
+            "x": "-85.82",
+            "y": "-85.82",
+            "z": "-164.03"
+          },
+          "maxCorner": {
+            "x": "85.82",
+            "y": "85.82",
+            "z": "96.03"
+          }
+        }
+      },
+      "process": "CNC Machining Lathe+Milling",
+      "featureRecognition": {
+        "name": "Feature Recognition",
+        "totalFeatureCount": "84",
+        "featureGroups": [
+          {
+            "name": "Curved Milled Face(s)",
+            "color": "(22, 65, 124)",
+            "totalGroupFeatureCount": "16",
+            "features": [
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "7636137648949937450"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "17981532316454969607"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "15984945866229530953"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "13161822680390704503"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "9731777476503005505"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "8572572232474962114"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "6846385040142485982"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "11156265289373976928"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "5179626993102606667"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "10686778782314253662"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "15827662256834813004"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "12389697770358605294"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "263075471873155580"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "14793056141409163591"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "7157758274960603146"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "10064176331952115578"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Flat Milled Face(s)",
+            "color": "(115, 43, 245)",
+            "totalGroupFeatureCount": "29",
+            "features": [
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "17585605324603139878"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "7260732760476660691"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "1100696462447693269"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "1366168504342223386"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "8761973495957291649"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "13048099840991726889"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "2429090520008755160"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "3433990269763469642"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "3956919547873344389"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "18168294310480369986"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "4586948428937045055"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "13824465588661752684"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "13303010842076828716"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "5625175668539969282"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "14110842150181882349"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "11488980284762329527"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "2436401195253108076"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "8730472726927444483"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "2256388774401900429"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "13972408495590387961"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "18002524682701971275"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "9512211396955897502"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "16043211915704177769"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "6728237590729879960"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "17549249730509370876"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "13709940887461071480"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "4739316921386657113"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "10373171264548431841"
+                  }
+                ]
+              },
+              {
+                "shapeIDCount": "1",
+                "shapeIDs": [
+                  {
+                    "id": "6949517504621116069"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Turn Diameter Face(s)",
+            "color": "(88, 19, 94)",
+            "totalGroupFeatureCount": "4",
+            "subGroupCount": "4",
+            "subGroups": [
+              {
+                "parametersCount": "1",
+                "parameters": [
+                  {
+                    "name": "Radius",
+                    "units": "mm",
+                    "value": "32.50"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "4236637223826841873"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "1",
+                "parameters": [
+                  {
+                    "name": "Radius",
+                    "units": "mm",
+                    "value": "38.00"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "16521422241518792958"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "1",
+                "parameters": [
+                  {
+                    "name": "Radius",
+                    "units": "mm",
+                    "value": "39.00"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "13029696885859617030"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "1",
+                "parameters": [
+                  {
+                    "name": "Radius",
+                    "units": "mm",
+                    "value": "45.00"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "7037362646082515103"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Turn Face Face(s)",
+            "color": "(239, 136, 190)",
+            "totalGroupFeatureCount": "20",
+            "subGroupCount": "8",
+            "subGroups": [
+              {
+                "parametersCount": "1",
+                "parameters": [
+                  {
+                    "name": "Radius",
+                    "units": "mm",
+                    "value": "32.50"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "5331197790023194687"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "1",
+                "parameters": [
+                  {
+                    "name": "Radius",
+                    "units": "mm",
+                    "value": "36.00"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "136670146034875699"
+                      }
+                    ]
+                  },
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "17636857509915469629"
+                      }
+                    ]
+                  },
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "1234195394416750761"
+                      }
+                    ]
+                  },
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "4305550537900019686"
+                      }
+                    ]
+                  },
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "1402492862627447955"
+                      }
+                    ]
+                  },
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "11516121298377537534"
+                      }
+                    ]
+                  },
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "35077019792392542"
+                      }
+                    ]
+                  },
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "1330367396511058047"
+                      }
+                    ]
+                  },
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "4316216738266876252"
+                      }
+                    ]
+                  },
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "12666803420320244783"
+                      }
+                    ]
+                  },
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "9624778837606462362"
+                      }
+                    ]
+                  },
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "2298532181052330690"
+                      }
+                    ]
+                  },
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "2136496624667150749"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "1",
+                "parameters": [
+                  {
+                    "name": "Radius",
+                    "units": "mm",
+                    "value": "38.00"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "620112447170801651"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "1",
+                "parameters": [
+                  {
+                    "name": "Radius",
+                    "units": "mm",
+                    "value": "39.00"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "9201537254803163828"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "1",
+                "parameters": [
+                  {
+                    "name": "Radius",
+                    "units": "mm",
+                    "value": "41.30"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "11021867885492505632"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "1",
+                "parameters": [
+                  {
+                    "name": "Radius",
+                    "units": "mm",
+                    "value": "42.50"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "16481969671788039942"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "1",
+                "parameters": [
+                  {
+                    "name": "Radius",
+                    "units": "mm",
+                    "value": "45.00"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "220628864587495942"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "1",
+                "parameters": [
+                  {
+                    "name": "Radius",
+                    "units": "mm",
+                    "value": "85.00"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "9186163442678083046"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Turn Form Face(s)",
+            "color": "(161, 251, 142)",
+            "totalGroupFeatureCount": "1",
+            "subGroupCount": "1",
+            "subGroups": [
+              {
+                "parametersCount": "1",
+                "parameters": [
+                  {
+                    "name": "Radius",
+                    "units": "mm",
+                    "value": "36.00"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "4041668469769979739"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Open Pocket(s)",
+            "color": "(189, 103, 37)",
+            "totalGroupFeatureCount": "13",
+            "subGroupCount": "13",
+            "subGroups": [
+              {
+                "parametersCount": "4",
+                "parameters": [
+                  {
+                    "name": "Length",
+                    "units": "mm",
+                    "value": "48.00"
+                  },
+                  {
+                    "name": "Width",
+                    "units": "mm",
+                    "value": "9.91"
+                  },
+                  {
+                    "name": "Depth",
+                    "units": "mm",
+                    "value": "5.19"
+                  },
+                  {
+                    "name": "Axis",
+                    "units": "",
+                    "value": "(-0.99, -0.12, -0.00)"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "3",
+                    "shapeIDs": [
+                      {
+                        "id": "2292533531657240627"
+                      },
+                      {
+                        "id": "3772778190895264643"
+                      },
+                      {
+                        "id": "10949910608402542723"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "4",
+                "parameters": [
+                  {
+                    "name": "Length",
+                    "units": "mm",
+                    "value": "48.00"
+                  },
+                  {
+                    "name": "Width",
+                    "units": "mm",
+                    "value": "9.91"
+                  },
+                  {
+                    "name": "Depth",
+                    "units": "mm",
+                    "value": "5.19"
+                  },
+                  {
+                    "name": "Axis",
+                    "units": "",
+                    "value": "(-0.94, 0.35, 0.00)"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "3",
+                    "shapeIDs": [
+                      {
+                        "id": "10955739159006069830"
+                      },
+                      {
+                        "id": "8874879122865131909"
+                      },
+                      {
+                        "id": "17863295436524080972"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "4",
+                "parameters": [
+                  {
+                    "name": "Length",
+                    "units": "mm",
+                    "value": "48.00"
+                  },
+                  {
+                    "name": "Width",
+                    "units": "mm",
+                    "value": "9.91"
+                  },
+                  {
+                    "name": "Depth",
+                    "units": "mm",
+                    "value": "5.19"
+                  },
+                  {
+                    "name": "Axis",
+                    "units": "",
+                    "value": "(-0.82, -0.57, -0.00)"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "3",
+                    "shapeIDs": [
+                      {
+                        "id": "15145827954991084471"
+                      },
+                      {
+                        "id": "1179615721393293322"
+                      },
+                      {
+                        "id": "7671708770305747167"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "4",
+                "parameters": [
+                  {
+                    "name": "Length",
+                    "units": "mm",
+                    "value": "48.00"
+                  },
+                  {
+                    "name": "Width",
+                    "units": "mm",
+                    "value": "9.91"
+                  },
+                  {
+                    "name": "Depth",
+                    "units": "mm",
+                    "value": "5.19"
+                  },
+                  {
+                    "name": "Axis",
+                    "units": "",
+                    "value": "(-0.66, 0.75, 0.00)"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "3",
+                    "shapeIDs": [
+                      {
+                        "id": "14618421067775714"
+                      },
+                      {
+                        "id": "17148068441487370774"
+                      },
+                      {
+                        "id": "16106855375989717483"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "4",
+                "parameters": [
+                  {
+                    "name": "Length",
+                    "units": "mm",
+                    "value": "48.00"
+                  },
+                  {
+                    "name": "Width",
+                    "units": "mm",
+                    "value": "9.91"
+                  },
+                  {
+                    "name": "Depth",
+                    "units": "mm",
+                    "value": "5.19"
+                  },
+                  {
+                    "name": "Axis",
+                    "units": "",
+                    "value": "(-0.46, -0.89, -0.00)"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "3",
+                    "shapeIDs": [
+                      {
+                        "id": "17103557176140202165"
+                      },
+                      {
+                        "id": "9818650782883562107"
+                      },
+                      {
+                        "id": "9500384220224350094"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "4",
+                "parameters": [
+                  {
+                    "name": "Length",
+                    "units": "mm",
+                    "value": "48.00"
+                  },
+                  {
+                    "name": "Width",
+                    "units": "mm",
+                    "value": "9.91"
+                  },
+                  {
+                    "name": "Depth",
+                    "units": "mm",
+                    "value": "5.19"
+                  },
+                  {
+                    "name": "Axis",
+                    "units": "",
+                    "value": "(-0.24, 0.97, 0.00)"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "3",
+                    "shapeIDs": [
+                      {
+                        "id": "1020271132652709245"
+                      },
+                      {
+                        "id": "1652605791384993513"
+                      },
+                      {
+                        "id": "13658582378085163097"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "4",
+                "parameters": [
+                  {
+                    "name": "Length",
+                    "units": "mm",
+                    "value": "48.00"
+                  },
+                  {
+                    "name": "Width",
+                    "units": "mm",
+                    "value": "9.91"
+                  },
+                  {
+                    "name": "Depth",
+                    "units": "mm",
+                    "value": "5.19"
+                  },
+                  {
+                    "name": "Axis",
+                    "units": "",
+                    "value": "(0.00, -1.00, -0.00)"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "3",
+                    "shapeIDs": [
+                      {
+                        "id": "2723147174965139012"
+                      },
+                      {
+                        "id": "4431926851550637914"
+                      },
+                      {
+                        "id": "5921838990288903901"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "4",
+                "parameters": [
+                  {
+                    "name": "Length",
+                    "units": "mm",
+                    "value": "48.00"
+                  },
+                  {
+                    "name": "Width",
+                    "units": "mm",
+                    "value": "9.91"
+                  },
+                  {
+                    "name": "Depth",
+                    "units": "mm",
+                    "value": "5.19"
+                  },
+                  {
+                    "name": "Axis",
+                    "units": "",
+                    "value": "(0.24, 0.97, 0.00)"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "3",
+                    "shapeIDs": [
+                      {
+                        "id": "16340256799031845466"
+                      },
+                      {
+                        "id": "3799881463720737060"
+                      },
+                      {
+                        "id": "11414595280185446371"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "4",
+                "parameters": [
+                  {
+                    "name": "Length",
+                    "units": "mm",
+                    "value": "48.00"
+                  },
+                  {
+                    "name": "Width",
+                    "units": "mm",
+                    "value": "9.91"
+                  },
+                  {
+                    "name": "Depth",
+                    "units": "mm",
+                    "value": "5.19"
+                  },
+                  {
+                    "name": "Axis",
+                    "units": "",
+                    "value": "(0.46, -0.89, -0.00)"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "3",
+                    "shapeIDs": [
+                      {
+                        "id": "12350768310461075981"
+                      },
+                      {
+                        "id": "7205272776500081574"
+                      },
+                      {
+                        "id": "3399933359103068018"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "4",
+                "parameters": [
+                  {
+                    "name": "Length",
+                    "units": "mm",
+                    "value": "48.00"
+                  },
+                  {
+                    "name": "Width",
+                    "units": "mm",
+                    "value": "9.91"
+                  },
+                  {
+                    "name": "Depth",
+                    "units": "mm",
+                    "value": "5.19"
+                  },
+                  {
+                    "name": "Axis",
+                    "units": "",
+                    "value": "(0.66, 0.75, 0.00)"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "3",
+                    "shapeIDs": [
+                      {
+                        "id": "2228045108795140111"
+                      },
+                      {
+                        "id": "16145218737930091224"
+                      },
+                      {
+                        "id": "11281091795484411791"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "4",
+                "parameters": [
+                  {
+                    "name": "Length",
+                    "units": "mm",
+                    "value": "48.00"
+                  },
+                  {
+                    "name": "Width",
+                    "units": "mm",
+                    "value": "9.91"
+                  },
+                  {
+                    "name": "Depth",
+                    "units": "mm",
+                    "value": "5.19"
+                  },
+                  {
+                    "name": "Axis",
+                    "units": "",
+                    "value": "(0.82, -0.57, -0.00)"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "3",
+                    "shapeIDs": [
+                      {
+                        "id": "2216415263669025982"
+                      },
+                      {
+                        "id": "66842615589526454"
+                      },
+                      {
+                        "id": "13523709610759456795"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "4",
+                "parameters": [
+                  {
+                    "name": "Length",
+                    "units": "mm",
+                    "value": "48.00"
+                  },
+                  {
+                    "name": "Width",
+                    "units": "mm",
+                    "value": "9.91"
+                  },
+                  {
+                    "name": "Depth",
+                    "units": "mm",
+                    "value": "5.19"
+                  },
+                  {
+                    "name": "Axis",
+                    "units": "",
+                    "value": "(0.94, 0.35, 0.00)"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "3",
+                    "shapeIDs": [
+                      {
+                        "id": "5354056750978967226"
+                      },
+                      {
+                        "id": "10227060092777133118"
+                      },
+                      {
+                        "id": "9759028344187788390"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "parametersCount": "4",
+                "parameters": [
+                  {
+                    "name": "Length",
+                    "units": "mm",
+                    "value": "48.00"
+                  },
+                  {
+                    "name": "Width",
+                    "units": "mm",
+                    "value": "9.91"
+                  },
+                  {
+                    "name": "Depth",
+                    "units": "mm",
+                    "value": "5.19"
+                  },
+                  {
+                    "name": "Axis",
+                    "units": "",
+                    "value": "(0.99, -0.12, -0.00)"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "3",
+                    "shapeIDs": [
+                      {
+                        "id": "9242292339536053196"
+                      },
+                      {
+                        "id": "6808602357525061804"
+                      },
+                      {
+                        "id": "11112894330942433524"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Bore(s)",
+            "color": "(127, 130, 187)",
+            "totalGroupFeatureCount": "1",
+            "subGroupCount": "1",
+            "subGroups": [
+              {
+                "parametersCount": "2",
+                "parameters": [
+                  {
+                    "name": "Radius",
+                    "units": "mm",
+                    "value": "17.50"
+                  },
+                  {
+                    "name": "Depth",
+                    "units": "mm",
+                    "value": "258.00"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "1",
+                    "shapeIDs": [
+                      {
+                        "id": "18301109960634823770"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "dfm": {
+        "name": "Design for Manufacturing",
+        "totalFeatureCount": "4",
+        "featureGroups": [
+          {
+            "name": "Small Radius Turned Part Internal Corner(s)",
+            "color": "(127, 130, 187)",
+            "totalGroupFeatureCount": "4",
+            "subGroupCount": "1",
+            "subGroups": [
+              {
+                "parametersCount": "2",
+                "parameters": [
+                  {
+                    "name": "Expected Minimum Radius",
+                    "units": "mm",
+                    "value": "5.00"
+                  },
+                  {
+                    "name": "Actual Radius",
+                    "units": "mm",
+                    "value": "0.00"
+                  }
+                ],
+                "features": [
+                  {
+                    "shapeIDCount": "2",
+                    "shapeIDs": [
+                      {
+                        "id": "11021867885492505632"
+                      },
+                      {
+                        "id": "4236637223826841873"
+                      }
+                    ]
+                  },
+                  {
+                    "shapeIDCount": "2",
+                    "shapeIDs": [
+                      {
+                        "id": "9201537254803163828"
+                      },
+                      {
+                        "id": "16521422241518792958"
+                      }
+                    ]
+                  },
+                  {
+                    "shapeIDCount": "2",
+                    "shapeIDs": [
+                      {
+                        "id": "220628864587495942"
+                      },
+                      {
+                        "id": "13029696885859617030"
+                      }
+                    ]
+                  },
+                  {
+                    "shapeIDCount": "2",
+                    "shapeIDs": [
+                      {
+                        "id": "9186163442678083046"
+                      },
+                      {
+                        "id": "7037362646082515103"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
