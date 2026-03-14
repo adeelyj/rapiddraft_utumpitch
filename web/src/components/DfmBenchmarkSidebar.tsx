@@ -491,6 +491,7 @@ const DfmBenchmarkSidebar = ({
     const violatingInstances = Array.isArray(finding.evidence?.violating_instances)
       ? (finding.evidence.violating_instances as DfmViolatingInstance[])
       : [];
+    const routeLabel = reviewRoutes.length > 1 ? (route.process_label ?? route.process_id ?? "Unknown route") : null;
     const blameMap = finding.blame_map as DfmFindingBlameMap | undefined;
     const blameMapHint = blameMapLabel(blameMap);
     const primaryFindingAnchor =
@@ -505,12 +506,12 @@ const DfmBenchmarkSidebar = ({
         (instance.position_mm && instance.position_mm.length === 3) ||
         (instance.bbox_bounds_mm && instance.bbox_bounds_mm.length === 6),
     );
-    const previewInstances = violatingInstances.slice(0, violatingInstances.length > 6 ? 3 : 4);
+    const previewInstances = violatingInstances.slice(0, violatingInstances.length > 4 ? 2 : 3);
 
     const focusFindingAnchor = (anchor: DfmFindingAnchor, explanation?: string | null) => {
       if (!onFocusInModel) return;
       const details = [
-        route.process_label ?? route.process_id ?? "Unknown route",
+        routeLabel,
         explanation || null,
         anchor.label || null,
       ].filter((value): value is string => Boolean(value && value.trim()));
@@ -521,6 +522,8 @@ const DfmBenchmarkSidebar = ({
         title: finding.title ?? finding.rule_id ?? "DFM issue",
         details: details.join(" | "),
         severity: finding.severity ?? "info",
+        camera_behavior: "preserve",
+        overlay_variant: "compact",
         component_node_name: anchor.component_node_name ?? selectedComponent?.nodeName ?? null,
         anchor_kind: anchor.anchor_kind,
         position_mm: anchor.position_mm ?? null,
@@ -540,18 +543,9 @@ const DfmBenchmarkSidebar = ({
       }
 
       const details = [
-        route.process_label ?? route.process_id ?? "Unknown route",
         instance.location_description || instance.instance_id,
-        typeof instance.radius_mm === "number" ? `Radius ${formatCompactNumber(instance.radius_mm, 2)} mm` : null,
-        typeof instance.diameter_mm === "number" ? `Diameter ${formatCompactNumber(instance.diameter_mm, 2)} mm` : null,
-        typeof instance.depth_mm === "number" ? `Depth ${formatCompactNumber(instance.depth_mm, 2)} mm` : null,
-        typeof instance.thickness_mm === "number" ? `Thickness ${formatCompactNumber(instance.thickness_mm, 2)} mm` : null,
-        typeof instance.depth_to_radius_ratio === "number"
-          ? `Depth/radius ${formatCompactNumber(instance.depth_to_radius_ratio, 2)}`
-          : null,
-        typeof instance.depth_to_diameter_ratio === "number"
-          ? `Depth/diameter ${formatCompactNumber(instance.depth_to_diameter_ratio, 2)}`
-          : null,
+        routeLabel,
+        instanceMetricFragments(instance)[0] ?? null,
       ].filter((value): value is string => Boolean(value && value.trim()));
 
       onFocusInModel({
@@ -560,6 +554,8 @@ const DfmBenchmarkSidebar = ({
         title: finding.title ?? finding.rule_id ?? "DFM issue",
         details: details.join(" | "),
         severity: finding.severity ?? "info",
+        camera_behavior: "preserve",
+        overlay_variant: "compact",
         component_node_name: selectedComponent?.nodeName ?? null,
         anchor_kind:
           instance.bbox_bounds_mm && instance.bbox_bounds_mm.length === 6 ? "region" : "point",
@@ -594,9 +590,7 @@ const DfmBenchmarkSidebar = ({
             <span className="dfm-sidebar__issue-badge">{finding.severity ?? "info"}</span>
           </div>
         </div>
-        <p className="dfm-sidebar__issue-rule">
-          {finding.rule_id ?? "Unknown rule"} | {route.process_label ?? route.process_id ?? "Unknown route"}
-        </p>
+        {routeLabel ? <p className="dfm-sidebar__issue-rule">{routeLabel}</p> : null}
         {finding.description ? <p className="dfm-sidebar__issue-description">{finding.description}</p> : null}
         {finding.recommended_action ? <div className="dfm-sidebar__finding-action">{finding.recommended_action}</div> : null}
         {blameMapHint ? <div className="dfm-sidebar__issue-focus-hint">{blameMapHint}</div> : null}
@@ -649,7 +643,7 @@ const DfmBenchmarkSidebar = ({
                 })}
               </div>
             </div>
-            <details className="dfm-sidebar__issue-instances" open={violatingInstances.length <= 4}>
+            <details className="dfm-sidebar__issue-instances">
             <summary>
               {violatingInstances.length > previewInstances.length
                 ? `Show all ${violatingInstances.length} mapped locations`
@@ -712,9 +706,9 @@ const DfmBenchmarkSidebar = ({
   const renderEvidenceGapItem = (route: Record<string, any>, finding: Record<string, any>) => (
     <li key={`${route.plan_id}-${finding.rule_id}-${finding.pack_id}-${finding.finding_type ?? "gap"}`} className="dfm-sidebar__gap-card">
       <strong>{finding.title ?? finding.rule_id ?? "Untitled gap"}</strong>
-      <p className="dfm-sidebar__issue-rule">
-        {finding.rule_id ?? "Unknown rule"} | {route.process_label ?? route.process_id ?? "Unknown route"}
-      </p>
+      {reviewRoutes.length > 1 ? (
+        <p className="dfm-sidebar__issue-rule">{route.process_label ?? route.process_id ?? "Unknown route"}</p>
+      ) : null}
       {finding.recommended_action ? <p className="dfm-sidebar__hint">{finding.recommended_action}</p> : null}
     </li>
   );
@@ -822,6 +816,11 @@ const DfmBenchmarkSidebar = ({
             </button>
           </div>
 
+          <div className="dfm-sidebar__selected-part dfm-sidebar__panel--compact">
+            <span className="dfm-sidebar__selected-part-label">Selected part</span>
+            <strong>{selectedComponent?.displayName ?? "Select a part to review"}</strong>
+          </div>
+
           <details className="dfm-sidebar__plan-summary dfm-sidebar__part-context dfm-sidebar__panel--compact">
             <summary>Profile context</summary>
             <div className="dfm-sidebar__compact-meta-list">
@@ -913,9 +912,6 @@ const DfmBenchmarkSidebar = ({
               <p className="dfm-sidebar__meta">
                 Likely process: {geometryEvidence?.process_summary?.effective_process_label ?? reviewRoutes[0]?.process_label ?? "Not resolved"}
               </p>
-              {geometryEvidence?.process_summary?.ai_process_label ? (
-                <p className="dfm-sidebar__meta">AI recommendation: {geometryEvidence.process_summary.ai_process_label}</p>
-              ) : null}
             </div>
 
             {geometryEvidence?.feature_groups?.length ? (

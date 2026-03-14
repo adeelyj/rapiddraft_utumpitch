@@ -318,11 +318,18 @@ const ModelContents = ({
 
   useEffect(() => {
     if (!analysisFocus) return;
-    setAnalysisMarkerExpanded(true);
+    setAnalysisMarkerExpanded(analysisFocus.overlay_variant !== "compact");
   }, [analysisFocus?.id]);
 
   useEffect(() => {
     if (!analysisFocus) return;
+    if (analysisFocus.camera_behavior === "preserve") {
+      flyRef.current = null;
+      if (controls) {
+        controls.enabled = pinMode === "none";
+      }
+      return;
+    }
     const requestedNode = analysisFocus.component_node_name || null;
     const fallbackNode = components[0]?.nodeName ?? null;
     const targetNodeName = requestedNode || fallbackNode;
@@ -355,7 +362,7 @@ const ModelContents = ({
     if (controls) {
       controls.enabled = false;
     }
-  }, [analysisFocus?.id, analysisFocus, camera, components, controls, scene]);
+  }, [analysisFocus?.id, analysisFocus, camera, components, controls, pinMode, scene]);
 
   useEffect(() => {
     if (pinMode === "none" || (!onCommentPin && !onReviewPin)) {
@@ -582,7 +589,11 @@ const ModelContents = ({
                 aria-label={`Focus marker: ${analysisFocus.title}`}
               />
               {analysisMarkerExpanded ? (
-                <div className="analysis-pin-card">
+                <div
+                  className={`analysis-pin-card${
+                    analysisFocus.overlay_variant === "compact" ? " analysis-pin-card--compact" : ""
+                  }`}
+                >
                   <div className="analysis-pin-card__title">{analysisFocus.title}</div>
                   <div className="analysis-pin-card__meta">
                     <span>{analysisFocus.source.toUpperCase()}</span>
@@ -660,6 +671,8 @@ const ModelViewer = ({
   const [partFactsLoading, setPartFactsLoading] = useState(false);
   const [partFactsRefreshing, setPartFactsRefreshing] = useState(false);
   const [partFactsError, setPartFactsError] = useState<string | null>(null);
+  const useCompactAnalysisOverlay =
+    chromeDensity === "compact" || analysisFocus?.overlay_variant === "compact";
   const handleFitCaptured = useCallback((snapshot: CameraSnapshot) => {
     setHomeView((previous) => previous ?? snapshot);
   }, []);
@@ -831,7 +844,7 @@ const ModelViewer = ({
       {resolvedPreviewUrl && analysisFocus ? (
         <div
           className={`analysis-focus-overlay analysis-focus-overlay--${analysisTone(analysisFocus.severity)} ${
-            chromeDensity === "compact" ? "analysis-focus-overlay--compact" : ""
+            useCompactAnalysisOverlay ? "analysis-focus-overlay--compact" : ""
           }`}
         >
           <div className="analysis-focus-overlay__header">
