@@ -44,6 +44,16 @@ type GeometryFeatureGroup = {
   summary: string;
   metrics: GeometryMetric[];
   geometry_anchor?: GeometryAnchor | null;
+  localized_features?: GeometryFeatureItem[];
+};
+
+type GeometryFeatureItem = {
+  feature_id: string;
+  label: string;
+  summary?: string | null;
+  geometry_anchor?: GeometryAnchor | null;
+  feature_type?: string | null;
+  feature_subtype?: string | null;
 };
 
 type DfmFindingAnchor = GeometryAnchor;
@@ -79,6 +89,7 @@ type DfmViolatingInstance = {
 };
 
 const DFM_BENCHMARK_CACHE_PREFIX = "dfm_benchmark_sidebar_review_last_v1";
+const LOCALIZED_FEATURE_PREVIEW_LIMIT = 4;
 const DEFAULT_FLOW_ORDER = [
   "analysis_mode",
   "manufacturing_process",
@@ -789,6 +800,33 @@ const DfmBenchmarkSidebar = ({
     });
   };
 
+  const focusLocalizedFeature = (group: GeometryFeatureGroup, feature: GeometryFeatureItem) => {
+    if (!onFocusInModel) return;
+
+    const anchor = hasAnchorFocusData(feature.geometry_anchor) ? feature.geometry_anchor : null;
+    const componentNodeName = anchor?.component_node_name ?? selectedComponent?.nodeName ?? null;
+    if (!anchor && !componentNodeName) return;
+
+    const details = [group.label, feature.summary]
+      .filter((value): value is string => Boolean(value && value.trim()))
+      .filter((value, index, array) => array.indexOf(value) === index);
+
+    onFocusInModel({
+      id: anchor?.anchor_id || feature.feature_id,
+      source: "dfm_benchmark",
+      title: feature.label,
+      details: details.join(" | ") || undefined,
+      severity: "info",
+      overlay_location: compactOverlayLocation(anchor?.label),
+      component_node_name: componentNodeName,
+      anchor_kind: anchor?.anchor_kind ?? "part",
+      position_mm: anchor?.position_mm ?? null,
+      normal: anchor?.normal ?? null,
+      bbox_bounds_mm: anchor?.bbox_bounds_mm ?? null,
+      face_indices: anchor?.face_indices ?? [],
+    });
+  };
+
   const focusGeometryMetric = (
     metric: GeometryMetric,
     options: {
@@ -863,6 +901,41 @@ const DfmBenchmarkSidebar = ({
     );
   };
 
+  const renderLocalizedFeatureItem = (
+    group: GeometryFeatureGroup,
+    feature: GeometryFeatureItem,
+  ) => {
+    const interactive = Boolean(onFocusInModel && (hasAnchorFocusData(feature.geometry_anchor) || selectedComponent?.nodeName));
+    const className = `dfm-sidebar__localized-feature${interactive ? " dfm-sidebar__localized-feature--interactive" : ""}`;
+    const content = (
+      <>
+        <strong className="dfm-sidebar__localized-feature-title">{feature.label}</strong>
+        {feature.summary ? <span className="dfm-sidebar__localized-feature-summary">{feature.summary}</span> : null}
+      </>
+    );
+
+    if (!interactive) {
+      return (
+        <div key={feature.feature_id} className={className}>
+          {content}
+        </div>
+      );
+    }
+
+    return (
+      <button
+        key={feature.feature_id}
+        type="button"
+        className={className}
+        onClick={() => focusLocalizedFeature(group, feature)}
+        title={`Show ${feature.label.toLowerCase()} in model`}
+        aria-label={`Show ${feature.label.toLowerCase()} in model`}
+      >
+        {content}
+      </button>
+    );
+  };
+
   const reviewRoutes = (reviewResult?.routes ?? []) as Array<Record<string, any>>;
   const routeFindings = reviewRoutes.map((route) => {
     const designRiskFindings = (route.findings ?? []).filter((finding: Record<string, any>) => finding.finding_type === "rule_violation");
@@ -871,7 +944,10 @@ const DfmBenchmarkSidebar = ({
   });
   const totalDesignRiskCount = routeFindings.reduce((sum, entry) => sum + entry.designRiskFindings.length, 0);
   const totalEvidenceGapCount = routeFindings.reduce((sum, entry) => sum + entry.evidenceGapFindings.length, 0);
-  const featureRecognitionCount = (geometryEvidence?.feature_groups?.length ?? 0) + (geometryEvidence?.detail_metrics?.length ?? 0);
+  const localizedFeatureCount =
+    geometryEvidence?.feature_groups?.reduce((sum, group) => sum + (group.localized_features?.length ?? 0), 0) ?? 0;
+  const featureRecognitionCount =
+    (geometryEvidence?.feature_groups?.length ?? 0) + (geometryEvidence?.detail_metrics?.length ?? 0) + localizedFeatureCount;
 
   return (
     <aside className={`sidebar-panel sidebar-panel--right ${open ? "sidebar-panel--open" : ""}`}>
@@ -1008,6 +1084,28 @@ const DfmBenchmarkSidebar = ({
                         <p className="dfm-sidebar__feature-group-summary">{group.summary}</p>
                       </>
                     )}
+                    {group.localized_features?.length ? (
+                      <div className="dfm-sidebar__localized-features">
+                        <p className="dfm-sidebar__localized-features-label">
+                          Localized features ({group.localized_features.length})
+                        </p>
+                        <div className="dfm-sidebar__localized-feature-list">
+                          {group.localized_features
+                            .slice(0, LOCALIZED_FEATURE_PREVIEW_LIMIT)
+                            .map((feature) => renderLocalizedFeatureItem(group, feature))}
+                        </div>
+                        {group.localized_features.length > LOCALIZED_FEATURE_PREVIEW_LIMIT ? (
+                          <details className="dfm-sidebar__details dfm-sidebar__details--nested">
+                            <summary>More localized features ({group.localized_features.length - LOCALIZED_FEATURE_PREVIEW_LIMIT})</summary>
+                            <div className="dfm-sidebar__localized-feature-list">
+                              {group.localized_features
+                                .slice(LOCALIZED_FEATURE_PREVIEW_LIMIT)
+                                .map((feature) => renderLocalizedFeatureItem(group, feature))}
+                            </div>
+                          </details>
+                        ) : null}
+                      </div>
+                    ) : null}
                     <div className="dfm-sidebar__metric-list">
                       {group.metrics.map((metric) =>
                         renderMetricRow(metric, {

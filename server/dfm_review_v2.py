@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any, Callable, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -221,6 +221,7 @@ def _build_geometry_evidence(
         ai_process_label = _clean_optional_string(ai_recommendation.get("process_label"))
 
     geometry_anchors = _build_geometry_anchor_lookup(component_context)
+    localized_features = _build_geometry_localized_feature_lookup(component_context)
 
     turning_metrics: list[dict[str, Any]] = []
     turning_detail_metrics: list[dict[str, Any]] = []
@@ -511,6 +512,7 @@ def _build_geometry_evidence(
                     geometry_anchors.get("turned_face_count"),
                     geometry_anchors.get("rotational_symmetry"),
                 ),
+                localized_features=localized_features.get("turning"),
             )
         )
     if hole_metrics:
@@ -525,6 +527,7 @@ def _build_geometry_evidence(
                 ),
                 hole_metrics,
                 geometry_anchor=geometry_anchors.get("hole_count"),
+                localized_features=localized_features.get("holes"),
             )
         )
     if pocket_metrics:
@@ -539,6 +542,7 @@ def _build_geometry_evidence(
                 ),
                 pocket_metrics,
                 geometry_anchor=geometry_anchors.get("pocket_count"),
+                localized_features=localized_features.get("pockets"),
             )
         )
     if groove_metrics:
@@ -555,6 +559,7 @@ def _build_geometry_evidence(
                     geometry_anchors.get("outer_diameter_groove_count"),
                     geometry_anchors.get("end_face_groove_count"),
                 ),
+                localized_features=localized_features.get("grooves"),
             )
         )
     if milled_metrics:
@@ -568,6 +573,7 @@ def _build_geometry_evidence(
                 ),
                 milled_metrics,
                 geometry_anchor=geometry_anchors.get("milled_face_count"),
+                localized_features=localized_features.get("milled_faces"),
             )
         )
     if boss_metrics:
@@ -578,6 +584,7 @@ def _build_geometry_evidence(
                 _boss_summary(boss_count=boss_count),
                 boss_metrics,
                 geometry_anchor=geometry_anchors.get("boss_count"),
+                localized_features=localized_features.get("bosses"),
             )
         )
 
@@ -641,20 +648,251 @@ def _geometry_feature_group(
     metrics: list[dict[str, Any]],
     *,
     geometry_anchor: dict[str, Any] | None = None,
+    localized_features: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    return {
+    payload = {
         "group_id": group_id,
         "label": label,
         "summary": summary,
         "metrics": metrics,
-        "geometry_anchor": geometry_anchor,
     }
+    if geometry_anchor:
+        payload["geometry_anchor"] = geometry_anchor
+    if localized_features:
+        payload["localized_features"] = localized_features
+    return payload
+
+
+def _geometry_feature_item(
+    feature_id: str,
+    label: str,
+    *,
+    summary: str | None = None,
+    geometry_anchor: dict[str, Any] | None = None,
+    feature_type: str | None = None,
+    feature_subtype: str | None = None,
+) -> dict[str, Any]:
+    payload = {
+        "feature_id": feature_id,
+        "label": label,
+    }
+    if summary:
+        payload["summary"] = summary
+    if geometry_anchor:
+        payload["geometry_anchor"] = geometry_anchor
+    if feature_type:
+        payload["feature_type"] = feature_type
+    if feature_subtype:
+        payload["feature_subtype"] = feature_subtype
+    return payload
 
 
 def _normalize_geometry_metric_value(value: str | int | float | bool) -> str | int | float | bool:
     if isinstance(value, float) and value.is_integer():
         return int(value)
     return value
+
+
+def _build_geometry_localized_feature_lookup(component_context: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+    inventory = component_context.get("geometry_feature_inventory")
+    if not isinstance(inventory, dict):
+        return {}
+
+    component_node_name = _clean_optional_string(component_context.get("component_node_name")) or _clean_optional_string(
+        inventory.get("component_node_name")
+    )
+    face_lookup = {
+        int(face.get("face_index")): face
+        for face in inventory.get("face_inventory", [])
+        if isinstance(face, dict) and isinstance(face.get("face_index"), int)
+    }
+
+    turning_detection = inventory.get("turning_detection")
+    hole_detection = inventory.get("hole_detection")
+    pocket_detection = inventory.get("pocket_detection")
+    boss_detection = inventory.get("boss_detection")
+
+    localized_features = {
+        "holes": _geometry_feature_items_from_payloads(
+            component_node_name=component_node_name or None,
+            face_lookup=face_lookup,
+            payloads=hole_detection.get("candidates") if isinstance(hole_detection, dict) else None,
+            anchor_prefix="hole-feature",
+            feature_type="hole",
+            label_builder=_hole_feature_item_label,
+            summary_builder=_hole_feature_item_summary,
+        ),
+        "pockets": [
+            *_geometry_feature_items_from_payloads(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                payloads=pocket_detection.get("open_pocket_feature_groups") if isinstance(pocket_detection, dict) else None,
+                anchor_prefix="open-pocket",
+                feature_type="pocket",
+                feature_subtype="open_pocket",
+                label_builder=lambda _payload, index: f"Open pocket {index}",
+                summary_builder=_pocket_feature_item_summary,
+            ),
+            *_geometry_feature_items_from_payloads(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                payloads=pocket_detection.get("closed_pocket_feature_groups") if isinstance(pocket_detection, dict) else None,
+                anchor_prefix="closed-pocket",
+                feature_type="pocket",
+                feature_subtype="closed_pocket",
+                label_builder=lambda _payload, index: f"Closed pocket {index}",
+                summary_builder=_pocket_feature_item_summary,
+            ),
+        ],
+        "grooves": [
+            *_geometry_feature_items_from_payloads(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                payloads=turning_detection.get("outer_diameter_groove_groups") if isinstance(turning_detection, dict) else None,
+                anchor_prefix="outer-groove",
+                feature_type="groove",
+                feature_subtype="outer_diameter",
+                label_builder=lambda _payload, index: f"Outer diameter groove {index}",
+                summary_builder=_groove_feature_item_summary,
+            ),
+            *_geometry_feature_items_from_payloads(
+                component_node_name=component_node_name or None,
+                face_lookup=face_lookup,
+                payloads=turning_detection.get("end_face_groove_groups") if isinstance(turning_detection, dict) else None,
+                anchor_prefix="end-face-groove",
+                feature_type="groove",
+                feature_subtype="end_face",
+                label_builder=lambda _payload, index: f"End-face groove {index}",
+                summary_builder=_groove_feature_item_summary,
+            ),
+        ],
+        "bosses": _geometry_feature_items_from_payloads(
+            component_node_name=component_node_name or None,
+            face_lookup=face_lookup,
+            payloads=boss_detection.get("candidates") if isinstance(boss_detection, dict) else None,
+            anchor_prefix="boss",
+            feature_type="boss",
+            label_builder=lambda _payload, index: f"Boss {index}",
+            summary_builder=_boss_feature_item_summary,
+        ),
+    }
+
+    return {
+        key: items
+        for key, items in localized_features.items()
+        if items
+    }
+
+
+def _geometry_feature_items_from_payloads(
+    *,
+    component_node_name: str | None,
+    face_lookup: dict[int, dict[str, Any]],
+    payloads: Any,
+    anchor_prefix: str,
+    feature_type: str,
+    label_builder: Callable[[Any, int], str],
+    summary_builder: Callable[[Any], str | None] | None = None,
+    feature_subtype: str | None = None,
+) -> list[dict[str, Any]]:
+    if not isinstance(payloads, list):
+        return []
+
+    items: list[dict[str, Any]] = []
+    for index, payload in enumerate(payloads, start=1):
+        label = label_builder(payload, index)
+        payload_subtype = _clean_optional_string(payload.get("subtype")) if isinstance(payload, dict) else ""
+        anchor = _anchor_from_payload(
+            component_node_name=component_node_name,
+            face_lookup=face_lookup,
+            payload=payload,
+            anchor_id=f"{anchor_prefix}-{index}",
+            label=label,
+        )
+        if not anchor:
+            continue
+        anchor["label"] = label
+        items.append(
+            _geometry_feature_item(
+                f"{anchor_prefix}-{index}",
+                label,
+                summary=summary_builder(payload) if summary_builder else None,
+                geometry_anchor=anchor,
+                feature_type=feature_type,
+                feature_subtype=feature_subtype or payload_subtype or None,
+            )
+        )
+    return items
+
+
+def _hole_feature_item_label(payload: Any, index: int) -> str:
+    subtype = _clean_optional_string(payload.get("subtype")) if isinstance(payload, dict) else ""
+    normalized_subtype = subtype.replace("_", " ").strip().title() if subtype else "Hole"
+    return f"{normalized_subtype} {index}"
+
+
+def _hole_feature_item_summary(payload: Any) -> str | None:
+    if not isinstance(payload, dict):
+        return None
+    fragments = []
+    diameter_mm = _optional_float(payload.get("diameter_mm"))
+    depth_mm = _optional_float(payload.get("depth_mm"))
+    depth_to_diameter_ratio = _optional_float(payload.get("depth_to_diameter_ratio"))
+    if diameter_mm is not None and diameter_mm > 0:
+        fragments.append(f"Dia {_format_geometry_number(diameter_mm)} mm")
+    if depth_mm is not None and depth_mm > 0:
+        fragments.append(f"Depth {_format_geometry_number(depth_mm)} mm")
+    if depth_to_diameter_ratio is not None and depth_to_diameter_ratio > 0:
+        fragments.append(f"D/D {_format_geometry_number(depth_to_diameter_ratio)}")
+    selection_reason = _clean_optional_string(payload.get("selection_reason"))
+    if selection_reason:
+        fragments.append(selection_reason.replace("_", " "))
+    return " | ".join(fragments) or None
+
+
+def _pocket_feature_item_summary(payload: Any) -> str | None:
+    face_count = len(_extract_face_indices(payload))
+    if face_count <= 0:
+        return None
+    return f"{face_count} connected face{'s' if face_count != 1 else ''}"
+
+
+def _groove_feature_item_summary(payload: Any) -> str | None:
+    if not isinstance(payload, dict):
+        return None
+    fragments = []
+    radius_mm = _optional_float(payload.get("radius_mm"))
+    span_mm = _optional_float(payload.get("span_mm"))
+    face_count = len(_extract_face_indices(payload))
+    if radius_mm is not None and radius_mm > 0:
+        fragments.append(f"R {_format_geometry_number(radius_mm)} mm")
+    if span_mm is not None and span_mm > 0:
+        fragments.append(f"Span {_format_geometry_number(span_mm)} mm")
+    if face_count > 0:
+        fragments.append(f"{face_count} face{'s' if face_count != 1 else ''}")
+    return " | ".join(fragments) or None
+
+
+def _boss_feature_item_summary(payload: Any) -> str | None:
+    if not isinstance(payload, dict):
+        return None
+    fragments = []
+    max_diameter_mm = _optional_float(payload.get("max_diameter_mm"))
+    group_span_mm = _optional_float(payload.get("group_span_mm"))
+    face_count = len(_extract_face_indices(payload))
+    if max_diameter_mm is not None and max_diameter_mm > 0:
+        fragments.append(f"Max dia {_format_geometry_number(max_diameter_mm)} mm")
+    if group_span_mm is not None and group_span_mm > 0:
+        fragments.append(f"Span {_format_geometry_number(group_span_mm)} mm")
+    if face_count > 0:
+        fragments.append(f"{face_count} face{'s' if face_count != 1 else ''}")
+    return " | ".join(fragments) or None
+
+
+def _format_geometry_number(value: float, digits: int = 2) -> str:
+    if float(value).is_integer():
+        return str(int(value))
+    return f"{value:.{digits}f}".rstrip("0").rstrip(".")
 
 
 def _build_geometry_anchor_lookup(component_context: dict[str, Any]) -> dict[str, dict[str, Any]]:

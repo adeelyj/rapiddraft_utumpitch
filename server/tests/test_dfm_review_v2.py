@@ -994,6 +994,161 @@ def test_review_v2_geometry_evidence_can_emit_feature_anchors():
     assert holes_group_anchor["face_indices"] == [7]
 
 
+def test_review_v2_geometry_evidence_surfaces_localized_feature_items():
+    bundle = _bundle()
+
+    response = generate_dfm_review_v2(
+        bundle,
+        model_id="geometry-evidence-localized-items",
+        component_context={
+            "component_node_name": "component_1",
+            "component_display_name": "Localized Feature Part",
+            "profile": {
+                "material": "Aluminum",
+                "manufacturingProcess": "CNC Machining",
+                "industry": "Aerospace",
+            },
+            "geometry_feature_inventory": {
+                "face_inventory": [
+                    {
+                        "face_index": 7,
+                        "centroid_mm": [10.0, 20.0, 30.0],
+                        "bbox_bounds": [8.0, 18.0, 28.0, 12.0, 22.0, 32.0],
+                        "sample_point_mm": [10.0, 20.0, 30.0],
+                        "sample_normal": [0.0, 0.0, 1.0],
+                    },
+                    {
+                        "face_index": 9,
+                        "centroid_mm": [25.0, 18.0, 8.0],
+                        "bbox_bounds": [22.0, 16.0, 6.0, 28.0, 20.0, 10.0],
+                        "sample_point_mm": [25.0, 18.0, 8.0],
+                        "sample_normal": [0.0, 0.0, 1.0],
+                    },
+                    {
+                        "face_index": 10,
+                        "centroid_mm": [28.0, 18.0, 8.0],
+                        "bbox_bounds": [26.0, 16.0, 6.0, 30.0, 20.0, 10.0],
+                        "sample_point_mm": [28.0, 18.0, 8.0],
+                        "sample_normal": [0.0, 0.0, 1.0],
+                    },
+                    {
+                        "face_index": 11,
+                        "centroid_mm": [40.0, 14.0, 5.0],
+                        "bbox_bounds": [38.0, 12.0, 4.0, 42.0, 16.0, 6.0],
+                        "sample_point_mm": [40.0, 14.0, 5.0],
+                        "sample_normal": [1.0, 0.0, 0.0],
+                    },
+                    {
+                        "face_index": 12,
+                        "centroid_mm": [43.0, 14.0, 5.0],
+                        "bbox_bounds": [41.0, 12.0, 4.0, 45.0, 16.0, 6.0],
+                        "sample_point_mm": [43.0, 14.0, 5.0],
+                        "sample_normal": [1.0, 0.0, 0.0],
+                    },
+                    {
+                        "face_index": 13,
+                        "centroid_mm": [55.0, 24.0, 18.0],
+                        "bbox_bounds": [52.0, 22.0, 15.0, 58.0, 26.0, 21.0],
+                        "sample_point_mm": [55.0, 24.0, 18.0],
+                        "sample_normal": [0.0, 1.0, 0.0],
+                    },
+                    {
+                        "face_index": 14,
+                        "centroid_mm": [58.0, 24.0, 18.0],
+                        "bbox_bounds": [56.0, 22.0, 15.0, 60.0, 26.0, 21.0],
+                        "sample_point_mm": [58.0, 24.0, 18.0],
+                        "sample_normal": [0.0, 1.0, 0.0],
+                    },
+                ],
+                "turning_detection": {
+                    "primary_cluster": None,
+                    "turned_diameter_groups": [],
+                    "turned_end_face_indices": [],
+                    "outer_diameter_groove_groups": [
+                        {
+                            "face_indices": [11, 12],
+                            "radius_mm": 6.0,
+                            "span_mm": 2.5,
+                        }
+                    ],
+                    "end_face_groove_groups": [],
+                },
+                "hole_detection": {
+                    "candidates": [
+                        {
+                            "face_index": 7,
+                            "group_face_indices": [7],
+                            "bbox_bounds": [8.0, 18.0, 28.0, 12.0, 22.0, 32.0],
+                            "subtype": "bore",
+                            "selection_reason": "interior_cylinder",
+                            "diameter_mm": 6.0,
+                            "depth_mm": 12.0,
+                            "depth_to_diameter_ratio": 2.0,
+                        }
+                    ]
+                },
+                "pocket_detection": {
+                    "open_pocket_feature_groups": [[9, 10]],
+                    "closed_pocket_feature_groups": [],
+                },
+                "boss_detection": {
+                    "candidates": [
+                        {
+                            "face_indices": [13, 14],
+                            "group_span_mm": 14.0,
+                            "max_diameter_mm": 18.0,
+                            "selection_reason": "exterior_revolved_protrusion",
+                        }
+                    ]
+                },
+                "milled_face_detection": {"face_indices": []},
+            },
+        },
+        planning_inputs={
+            "extracted_part_facts": {
+                "hole_count": 1,
+                "bore_count": 1,
+                "pocket_count": 1,
+                "open_pocket_count": 1,
+                "outer_diameter_groove_count": 1,
+                "boss_count": 1,
+            },
+            "analysis_mode": "geometry_dfm",
+            "selected_process_override": None,
+            "selected_overlay": None,
+            "process_selection_mode": "auto",
+            "overlay_selection_mode": "none",
+            "selected_role": "general_dfm",
+            "selected_template": "executive_1page",
+            "run_both_if_mismatch": False,
+        },
+        context_payload={},
+    )
+
+    groups = {entry["group_id"]: entry for entry in response["geometry_evidence"]["feature_groups"]}
+
+    hole_item = groups["holes"]["localized_features"][0]
+    pocket_item = groups["pockets"]["localized_features"][0]
+    groove_item = groups["grooves"]["localized_features"][0]
+    boss_item = groups["bosses"]["localized_features"][0]
+
+    assert hole_item["label"] == "Bore 1"
+    assert "Dia 6 mm" in hole_item["summary"]
+    assert hole_item["geometry_anchor"]["face_indices"] == [7]
+
+    assert pocket_item["label"] == "Open pocket 1"
+    assert pocket_item["summary"] == "2 connected faces"
+    assert pocket_item["geometry_anchor"]["face_indices"] == [9, 10]
+
+    assert groove_item["label"] == "Outer diameter groove 1"
+    assert "Span 2.5 mm" in groove_item["summary"]
+    assert groove_item["geometry_anchor"]["face_indices"] == [11, 12]
+
+    assert boss_item["label"] == "Boss 1"
+    assert "Max dia 18 mm" in boss_item["summary"]
+    assert boss_item["geometry_anchor"]["face_indices"] == [13, 14]
+
+
 def test_review_v2_response_includes_effective_context_when_provided():
     bundle = _bundle()
     response = generate_dfm_review_v2(

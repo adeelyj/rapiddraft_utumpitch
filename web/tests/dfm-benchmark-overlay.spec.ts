@@ -79,6 +79,17 @@ const pocketFeatureGroupAnchor = {
   label: "Open pocket",
 };
 
+const localizedPocketFeature = {
+  feature_id: "open-pocket-1",
+  label: "Open pocket 1",
+  summary: "2 connected faces",
+  geometry_anchor: {
+    ...pocketFeatureGroupAnchor,
+    anchor_id: "open-pocket-1",
+    label: "Open pocket 1",
+  },
+};
+
 const benchmarkReviewWithFeatureGroupAnchor: Record<string, any> = {
   ...benchmarkReviewPayload,
   geometry_evidence: {
@@ -91,6 +102,7 @@ const benchmarkReviewWithFeatureGroupAnchor: Record<string, any> = {
         label: "Pocket features",
         summary: "2 pockets detected, including 1 open pocket candidate.",
         geometry_anchor: pocketFeatureGroupAnchor,
+        localized_features: [localizedPocketFeature],
         metrics: [
           {
             key: "pocket_count",
@@ -450,6 +462,24 @@ test("focuses a feature-recognition group from its geometry anchor", async ({ pa
     "2 pockets detected, including 1 open pocket candidate.",
   );
   await expect(overlay.locator(".analysis-focus-overlay__details")).toContainText("Open pocket");
+});
+
+test("focuses a localized feature-recognition item from its geometry anchor", async ({ page }) => {
+  await mockApi(page, { reviewPayload: benchmarkReviewWithFeatureGroupAnchor });
+  await seedCachedBenchmarkReview(page, benchmarkReviewWithFeatureGroupAnchor);
+  await importBenchmarkModel(page);
+
+  const benchmarkSidebar = await openBenchmarkSidebar(page);
+  const featureRecognition = benchmarkSidebar.locator(".dfm-sidebar__evidence");
+  await featureRecognition.locator("summary").click();
+
+  await benchmarkSidebar.getByRole("button", { name: "Show open pocket 1 in model" }).click();
+
+  const overlay = page.locator(".analysis-focus-overlay");
+  await expect(overlay).toBeVisible();
+  await expect(overlay.locator(".analysis-focus-overlay__title")).toHaveText("Open pocket 1");
+  await expect(overlay.locator(".analysis-focus-overlay__details")).toContainText("Pocket features");
+  await expect(overlay.locator(".analysis-focus-overlay__details")).toContainText("2 connected faces");
 });
 
 test("runs the benchmark generate review flow before showing the compact overlay", async ({ page }) => {
