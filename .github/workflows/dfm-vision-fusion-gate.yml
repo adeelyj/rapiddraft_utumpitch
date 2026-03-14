@@ -56,6 +56,14 @@ jobs:
         working-directory: web
         run: npm ci
 
+      - name: Install Playwright Chromium
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser regression coverage
+        working-directory: web
+        run: npm run test:e2e
+
       - name: Build web
         working-directory: web
         run: npm run build

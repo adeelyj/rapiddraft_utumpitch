@@ -2,6 +2,7 @@
 web/node_modules/
 web/.vite/
 web/dist/
+web/test-results/
 
 # Python
 __pycache__/
