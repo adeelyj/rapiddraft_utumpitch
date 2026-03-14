@@ -9,7 +9,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from server.dfm_benchmark import run_benchmark
+from server.freecad_setup import relaunch_with_compatible_freecad_python
 
 
 PREFERRED_MANIFEST = REPO_ROOT / "plans" / "20260313" / "dfm_mtk_benchmark_manifest.local.json"
@@ -37,6 +37,15 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main() -> int:
+    relaunch_exit_code = relaunch_with_compatible_freecad_python(
+        argv=[__file__, *sys.argv[1:]],
+        require_occ=True,
+    )
+    if relaunch_exit_code is not None:
+        return relaunch_exit_code
+
+    from server.dfm_benchmark import run_benchmark
+
     args = _parser().parse_args()
     summary = run_benchmark(
         args.manifest,
